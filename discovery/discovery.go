@@ -2,9 +2,8 @@ package discovery
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-
-	"github.com/Sirupsen/logrus"
 )
 
 // A PlatformInfo describes the Aporeto platform services.
@@ -15,35 +14,23 @@ type PlatformInfo struct {
 }
 
 // RetrievePlatformInfo retrieves
-func RetrievePlatformInfo(squallURL string) PlatformInfo {
+func RetrievePlatformInfo(squallURL string) (*PlatformInfo, error) {
 
 	resp, err := http.Get(squallURL + "/systeminfos")
 
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"package":   "main",
-			"squallURL": squallURL,
-			"error":     err.Error(),
-		}).Fatal("Unable to create request")
+		return nil, fmt.Errorf("Unable to create request: %d", resp.StatusCode)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		logrus.WithFields(logrus.Fields{
-			"package":   "main",
-			"squallURL": squallURL,
-			"code":      resp.StatusCode,
-		}).Fatal("Unable to get system info")
+		return nil, fmt.Errorf("Unable to retrieve system info: status code %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
-	info := PlatformInfo{}
+	info := &PlatformInfo{}
 	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"package":   "main",
-			"squallURL": squallURL,
-			"code":      resp.StatusCode,
-		}).Fatal("Unable to decode system info")
+		return nil, fmt.Errorf("Unable to decode system info: %s", err)
 	}
 
-	return info
+	return info, nil
 }

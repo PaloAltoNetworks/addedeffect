@@ -8,9 +8,11 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
-	MidgardURL    string `json:"midgardURL"`
-	PubsubService string `json:"pubsubService"`
-	ZackURL       string `json:"zackURL"`
+	MidgardURL       string `json:"midgardURL"`
+	PubSubService    string `json:"pubSubService"`
+	ZackURL          string `json:"zackURL"`
+	KairosDBURL      string `json:"kairosDBURL"`
+	CassandraService string `json:"cassandraService"`
 }
 
 // RetrievePlatformInfo retrieves the Platform Information from a Squall URL.

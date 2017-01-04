@@ -1,6 +1,8 @@
 package discovery
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,12 +18,24 @@ type PlatformInfo struct {
 }
 
 // RetrievePlatformInfo retrieves the Platform Information from a Squall URL.
-func RetrievePlatformInfo(squallURL string) (*PlatformInfo, error) {
+func RetrievePlatformInfo(squallURL string, CAPool *x509.CertPool) (*PlatformInfo, error) {
 
-	resp, err := http.Get(squallURL + "/systeminfos")
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: CAPool,
+			},
+		},
+	}
 
+	req, err := http.NewRequest(http.MethodGet, squallURL+"/systeminfos", nil)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create request %s: %s", squallURL+"/systeminfos", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to send request %s: %s", squallURL+"/systeminfos", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {

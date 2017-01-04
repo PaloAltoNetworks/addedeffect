@@ -21,7 +21,7 @@ func RetrievePlatformInfo(squallURL string) (*PlatformInfo, error) {
 	resp, err := http.Get(squallURL + "/systeminfos")
 
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create request: %d", resp.StatusCode)
+		return nil, fmt.Errorf("Unable to create request %s: %s", squallURL+"/systeminfos", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {

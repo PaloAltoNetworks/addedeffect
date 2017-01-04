@@ -13,7 +13,7 @@ type PlatformInfo struct {
 	ZackURL       string `json:"zackURL"`
 }
 
-// RetrievePlatformInfo retrieves
+// RetrievePlatformInfo retrieves the Platform Information from a Squall URL.
 func RetrievePlatformInfo(squallURL string) (*PlatformInfo, error) {
 
 	resp, err := http.Get(squallURL + "/systeminfos")

@@ -6,7 +6,16 @@ import (
 	"strings"
 )
 
-// Parse is a wrapper to docopt.Parse that will check for environment variable
+// Parse parses the environment variables to find any environment that matches docopt usage.
+//
+// It will use the given prefix to match the variables.
+// Options are translated like:
+//      --option-a: PREFIX_OPTION_A
+// If the usage needs a value, it will add in the os.Args:
+//      --options-a=${PREFIX_OPTION_A}
+// If not, it will simply add:
+//      --options-a
+// And the value of environment variable will be simply ignored.
 func Parse(prefix string, doc string) error {
 
 	args := extractArguments(extractUsage(doc))

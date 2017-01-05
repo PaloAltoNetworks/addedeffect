@@ -89,4 +89,21 @@ func TestCommon_ProcessCreate(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given I have some os.Args that already contains an option set in environment", t, func() {
+
+		os.Args = []string{"--option-x=a", "--option-y"}
+		os.Setenv("TEST_OPTION_X", "not-a")
+		os.Setenv("TEST_OPTION_Y", "1")
+
+		Convey("When I use Parse", func() {
+
+			Parse("TEST", usage)
+
+			Convey("Then the original options should remain unchanged", func() {
+				So(os.Args, ShouldContain, "--option-x=a")
+				So(os.Args, ShouldContain, "--option-y")
+			})
+		})
+	})
 }

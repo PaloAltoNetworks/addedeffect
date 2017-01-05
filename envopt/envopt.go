@@ -25,21 +25,28 @@ func Parse(prefix string, doc string) error {
 	for _, flag := range args {
 
 		parts := strings.Split(flag, "=")
+		option := parts[0]
 
-		if done[parts[0]] {
+		// Check if we already set the value
+		if done[option] {
 			continue
 		}
-		done[parts[0]] = true
+		done[option] = true
 
 		hasValue := hasValue(flag)
 
-		env := prefix + "_" + strings.ToUpper(strings.Replace(strings.Replace(parts[0], "--", "", -1), "-", "_", -1))
+		env := prefix + "_" + strings.ToUpper(strings.Replace(strings.Replace(option, "--", "", -1), "-", "_", -1))
 
 		if e := os.Getenv(env); e != "" {
+
+			// if os.Args already contains the option, we skip
+			if isAlreadySet(option) {
+				continue
+			}
 			if hasValue {
-				os.Args = append(os.Args, parts[0]+`=`+e)
+				os.Args = append(os.Args, option+`=`+e)
 			} else {
-				os.Args = append(os.Args, parts[0])
+				os.Args = append(os.Args, option)
 			}
 		}
 	}
@@ -71,4 +78,16 @@ func hasValue(option string) bool {
 	s := p.FindStringSubmatch(option)
 
 	return len(s) > 0
+}
+
+func isAlreadySet(option string) bool {
+
+	for _, arg := range os.Args {
+		k := strings.Split(arg, "=")
+		if k[0] == option {
+			return true
+		}
+	}
+
+	return false
 }

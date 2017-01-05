@@ -20,9 +20,17 @@ func Parse(prefix string, doc string) error {
 
 	args := extractArguments(extractUsage(doc))
 
+	done := map[string]bool{}
+
 	for _, flag := range args {
 
 		parts := strings.Split(flag, "=")
+
+		if done[parts[0]] {
+			continue
+		}
+		done[parts[0]] = true
+
 		hasValue := hasValue(flag)
 
 		env := prefix + "_" + strings.ToUpper(strings.Replace(strings.Replace(parts[0], "--", "", -1), "-", "_", -1))

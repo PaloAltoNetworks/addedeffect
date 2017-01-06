@@ -15,6 +15,7 @@ type PlatformInfo struct {
 	ZackURL          string `json:"zackURL"`
 	KairosDBURL      string `json:"kairosDBURL"`
 	CassandraService string `json:"cassandraService"`
+	GoogleClientID   string `json:"googleClientID"`
 }
 
 // RetrievePlatformInfo retrieves the Platform Information from a Squall URL.

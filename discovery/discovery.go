@@ -21,10 +21,16 @@ type PlatformInfo struct {
 // RetrievePlatformInfo retrieves the Platform Information from a Squall URL.
 func RetrievePlatformInfo(squallURL string, CAPool *x509.CertPool) (*PlatformInfo, error) {
 
+	skip := false
+	if CAPool == nil {
+		skip = true
+	}
+
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				RootCAs: CAPool,
+				RootCAs:            CAPool,
+				InsecureSkipVerify: skip,
 			},
 		},
 	}

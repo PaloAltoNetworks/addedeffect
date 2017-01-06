@@ -7,7 +7,7 @@ image_resource:
 
 inputs:
 - name: src
-  path: go/src/github.com/aporeto-inc/utils
+  path: go/src/github.com/aporeto-inc/addedeffect
 
 run:
   path: sh
@@ -18,7 +18,7 @@ run:
       export PATH=$PATH:$GOPATH/bin:$PWD/go/bin
       export GOPATH=$PWD/go:$GOPATH
 
-      cd go/src/github.com/aporeto-inc/utils
+      cd go/src/github.com/aporeto-inc/addedeffect
       make init || exit 1
       make test || exit 1
       make release || exit 1

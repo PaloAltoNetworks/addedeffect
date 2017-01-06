@@ -1,6 +1,6 @@
 include domingo.mk
 
-PROJECT_NAME := utils
+PROJECT_NAME := addedeffect
 
 ci: domingo_contained_build
 init: domingo_init

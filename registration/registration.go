@@ -30,7 +30,6 @@ func RegisterAgent(
 	server := gaia.NewServer()
 	server.Name = serverName
 	server.Description = serverDescription
-	server.Environment = gaia.ServerEnvironmentPrivate
 	server.AssociatedTags = serverTags
 	server.OperationalStatus = gaia.ServerOperationalStatusConnected
 
@@ -49,7 +48,7 @@ func RegisterAgent(
 	}
 
 	certData := []byte(fmt.Sprintf("%s\n", server.Certificate))
-	keyData := []byte(fmt.Sprintf("%s\n", server.Key))
+	keyData := []byte(fmt.Sprintf("%s\n", server.CertificateKey))
 
 	if err := writeCertificate(folderPath, certificateName, keyName, 0700, 0600, certData, keyData); err != nil {
 		return nil, err

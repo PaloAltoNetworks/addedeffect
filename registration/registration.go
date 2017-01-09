@@ -48,10 +48,8 @@ func RegisterAgent(
 		return nil, err
 	}
 
-	certData, keyData, err := createCertificates(manipulator, server, certificateExpirationDate)
-	if err != nil {
-		return nil, err
-	}
+	certData := []byte(fmt.Sprintf("%s\n", server.Certificate))
+	keyData := []byte(fmt.Sprintf("%s\n", server.Key))
 
 	if err := writeCertificate(folderPath, certificateName, keyName, 0700, 0600, certData, keyData); err != nil {
 		return nil, err
@@ -108,25 +106,6 @@ func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) 
 	}
 
 	return profile[0], nil
-}
-
-func createCertificates(manipulator manipulate.Manipulator, server *gaia.Server, certificateExpirationDate time.Time) (cert, key []byte, err error) {
-
-	certificate := gaia.NewCertificate()
-	certificate.Name = server.ID
-	certificate.ExpirationDate = certificateExpirationDate
-
-	ctx := manipulate.NewContext()
-	ctx.Parent = server
-
-	if err = manipulator.Create(ctx, certificate); err != nil {
-		return []byte{}, []byte{}, err
-	}
-
-	key = []byte(fmt.Sprintf("%s\n", certificate.Key))
-	cert = []byte(fmt.Sprintf("%s\n", certificate.Certificate))
-
-	return
 }
 
 func writeCertificate(folder, certName, keyName string, folderPerm os.FileMode, certPerm os.FileMode, certData, keyData []byte) error {

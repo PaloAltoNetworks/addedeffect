@@ -19,6 +19,7 @@ import (
 func RegisterAgent(
 	manipulator manipulate.Manipulator,
 	serverName string,
+	serverFQDN string,
 	serverDescription string,
 	serverTags []string,
 	folderPath string,
@@ -29,6 +30,7 @@ func RegisterAgent(
 
 	server := gaia.NewServer()
 	server.Name = serverName
+	server.FQDN = serverFQDN
 	server.Description = serverDescription
 	server.AssociatedTags = serverTags
 	server.OperationalStatus = gaia.ServerOperationalStatusConnected

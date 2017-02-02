@@ -18,6 +18,7 @@ import (
 // RegisterAgent registers a new agent server with given name, description and tags in Squall using the given Manipulator.
 func RegisterAgent(
 	manipulator manipulate.Manipulator,
+	namespace string,
 	serverName string,
 	serverFQDN string,
 	serverDescription string,
@@ -38,14 +39,31 @@ func RegisterAgent(
 	// Check if the server already exists
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues["tag"] = "$name=" + server.Name
+
 	if n, err := manipulator.Count(mctx, gaia.ServerIdentity); err != nil || n > 0 {
 		if err != nil {
 			return nil, err
 		}
+
 		return nil, fmt.Errorf("A server with the name %s already exists.", server.Name)
 	}
 
 	if err := manipulator.Create(nil, server); err != nil {
+		return nil, err
+	}
+
+	APIAuthorizationPolicy := gaia.NewAPIAuthorizationPolicy()
+	APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:email=" + serverName}}
+	APIAuthorizationPolicy.Object = [][]string{[]string{"namespace=" + namespace}}
+	APIAuthorizationPolicy.Name = "APIAuthorizationPolicy of" + serverName
+	APIAuthorizationPolicy.AllowsDelete = true
+	APIAuthorizationPolicy.AllowsGet = true
+	APIAuthorizationPolicy.AllowsHead = true
+	APIAuthorizationPolicy.AllowsPatch = true
+	APIAuthorizationPolicy.AllowsPost = true
+	APIAuthorizationPolicy.AllowsPut = true
+
+	if err := manipulator.Create(nil, APIAuthorizationPolicy); err != nil {
 		return nil, err
 	}
 

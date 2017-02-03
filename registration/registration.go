@@ -63,7 +63,8 @@ func RegisterAgent(
 
 	if len(policies) == 0 {
 		APIAuthorizationPolicy := gaia.NewAPIAuthorizationPolicy()
-		APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:email=" + serverName}}
+		APIAuthorizationPolicy.Description = "Auto generated policy to allow agents to communicate with Squall."
+		APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:commonname=" + server.ID}}
 		APIAuthorizationPolicy.AuthorizedNamespace = namespace
 		APIAuthorizationPolicy.AuthorizedIdentities = []string{"*"}
 		APIAuthorizationPolicy.Name = serverAPIAuthorizationName
@@ -80,7 +81,7 @@ func RegisterAgent(
 		}
 	} else {
 		APIAuthorizationPolicy := policies[0]
-		APIAuthorizationPolicy.Subject = append(APIAuthorizationPolicy.Subject, []string{"auth:email=" + serverName})
+		APIAuthorizationPolicy.Subject = append(APIAuthorizationPolicy.Subject, []string{"auth:commonname=" + server.ID})
 
 		if err := manipulator.Update(nil, APIAuthorizationPolicy); err != nil {
 			return nil, err

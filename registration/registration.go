@@ -67,6 +67,7 @@ func RegisterAgent(
 		APIAuthorizationPolicy.AuthorizedNamespace = namespace
 		APIAuthorizationPolicy.AuthorizedIdentities = []string{"*"}
 		APIAuthorizationPolicy.Name = serverAPIAuthorizationName
+		APIAuthorizationPolicy.Propagate = true
 		APIAuthorizationPolicy.AllowsDelete = true
 		APIAuthorizationPolicy.AllowsGet = true
 		APIAuthorizationPolicy.AllowsHead = true

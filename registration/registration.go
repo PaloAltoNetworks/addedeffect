@@ -15,6 +15,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+const serverAPIAuthorizationName = "APIAuthorizationPolicies of servers"
+
 // RegisterAgent registers a new agent server with given name, description and tags in Squall using the given Manipulator.
 func RegisterAgent(
 	manipulator manipulate.Manipulator,
@@ -52,19 +54,35 @@ func RegisterAgent(
 		return nil, err
 	}
 
-	APIAuthorizationPolicy := gaia.NewAPIAuthorizationPolicy()
-	APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:email=" + serverName}}
-	APIAuthorizationPolicy.Object = [][]string{[]string{"namespace=" + namespace}}
-	APIAuthorizationPolicy.Name = "APIAuthorizationPolicy of" + serverName
-	APIAuthorizationPolicy.AllowsDelete = true
-	APIAuthorizationPolicy.AllowsGet = true
-	APIAuthorizationPolicy.AllowsHead = true
-	APIAuthorizationPolicy.AllowsPatch = true
-	APIAuthorizationPolicy.AllowsPost = true
-	APIAuthorizationPolicy.AllowsPut = true
+	policies := gaia.APIAuthorizationPoliciesList{}
+	mctx = manipulate.NewContextWithFilter(manipulate.NewFilterComposer().WithKey("name").Equals(serverAPIAuthorizationName).Done())
 
-	if err := manipulator.Create(nil, APIAuthorizationPolicy); err != nil {
+	if err := manipulator.RetrieveMany(mctx, gaia.APIAuthorizationPolicyIdentity, &policies); err != nil {
 		return nil, err
+	}
+
+	if len(policies) == 0 {
+		APIAuthorizationPolicy := gaia.NewAPIAuthorizationPolicy()
+		APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:email=" + serverName}}
+		APIAuthorizationPolicy.Object = [][]string{[]string{"namespace=" + namespace}}
+		APIAuthorizationPolicy.Name = serverAPIAuthorizationName
+		APIAuthorizationPolicy.AllowsDelete = true
+		APIAuthorizationPolicy.AllowsGet = true
+		APIAuthorizationPolicy.AllowsHead = true
+		APIAuthorizationPolicy.AllowsPatch = true
+		APIAuthorizationPolicy.AllowsPost = true
+		APIAuthorizationPolicy.AllowsPut = true
+
+		if err := manipulator.Create(nil, APIAuthorizationPolicy); err != nil {
+			return nil, err
+		}
+	} else {
+		APIAuthorizationPolicy := policies[0]
+		APIAuthorizationPolicy.Subject = append(APIAuthorizationPolicy.Subject, []string{"auth:email=" + serverName})
+
+		if err := manipulator.Update(nil, APIAuthorizationPolicy); err != nil {
+			return nil, err
+		}
 	}
 
 	certData := []byte(fmt.Sprintf("%s\n", server.Certificate))

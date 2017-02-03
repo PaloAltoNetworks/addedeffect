@@ -15,7 +15,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const serverAPIAuthorizationName = "APIAuthorizationPolicies of servers"
+const serverAPIAuthorizationName = "[auto] aporeto agent api authorizations"
 
 // RegisterAgent registers a new agent server with given name, description and tags in Squall using the given Manipulator.
 func RegisterAgent(
@@ -64,7 +64,8 @@ func RegisterAgent(
 	if len(policies) == 0 {
 		APIAuthorizationPolicy := gaia.NewAPIAuthorizationPolicy()
 		APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:email=" + serverName}}
-		APIAuthorizationPolicy.Object = [][]string{[]string{"namespace=" + namespace}}
+		APIAuthorizationPolicy.AuthorizedNamespace = namespace
+		APIAuthorizationPolicy.AuthorizedIdentities = []string{"*"}
 		APIAuthorizationPolicy.Name = serverAPIAuthorizationName
 		APIAuthorizationPolicy.AllowsDelete = true
 		APIAuthorizationPolicy.AllowsGet = true

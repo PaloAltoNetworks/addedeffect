@@ -83,7 +83,7 @@ func NewSigner(certFile, keyFile, keyPass string) (*Signer, error) {
 // IssueClientCertificate creates a new client certificate and signs it with the CA certificate in memory.
 //
 // It will return the private key in a PEM formatted string, the certificate or an error.
-func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email string, org []string, units []string, dnsNames []string) (string, string, error) {
+func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email string, org []string, units []string, dnsNames []string) (string, string, string, error) {
 
 	var key crypto.PrivateKey
 	var err error
@@ -98,7 +98,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 
 	if err != nil {
 		log.Entry.WithField("error", err.Error()).Error("Failed to generate private key.")
-		return "", "", errors.New("Certificate generation failed", "Failed to generate private key", http.StatusInternalServerError, nil)
+		return "", "", "", errors.New("Certificate generation failed", "Failed to generate private key", http.StatusInternalServerError, nil)
 	}
 
 	// Generate random serial number.
@@ -106,7 +106,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
 		log.Entry.WithField("error", err.Error()).Error("Failed to generate serial number for the certificate.")
-		return "", "", errors.New("Certificate generation failed", "Failed to generate serial number for the certificate", http.StatusInternalServerError, nil)
+		return "", "", "", errors.New("Certificate generation failed", "Failed to generate serial number for the certificate", http.StatusInternalServerError, nil)
 	}
 
 	// Create certfificate template.
@@ -141,7 +141,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 
 	if err != nil {
 		log.Entry.WithField("error", err.Error()).Error("Failed to create certificate.")
-		return "", "", errors.New("Failed to Create Certificate", err.Error(), http.StatusInternalServerError, nil)
+		return "", "", "", errors.New("Failed to Create Certificate", err.Error(), http.StatusInternalServerError, nil)
 	}
 
 	clientCertificate := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
@@ -150,5 +150,5 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	clientKeyCertificate := pem.EncodeToMemory(pemBlockForKey(key))
 	keyPem := string(bytes.TrimSpace(clientKeyCertificate))
 
-	return keyPem, certificatePem, nil
+	return keyPem, certificatePem, serialNumber.String(), nil
 }

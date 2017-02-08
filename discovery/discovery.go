@@ -15,6 +15,7 @@ type PlatformInfo struct {
 	ZackURL              string `json:"zackURL"`
 	KairosDBURL          string `json:"kairosDBURL"`
 	CassandraService     string `json:"cassandraService"`
+	VinceURL             string `json:"vinceURL"`
 	GoogleClientID       string `json:"googleClientID"`
 	CertificateAuthority string `json:"certificateAuthority"`
 }

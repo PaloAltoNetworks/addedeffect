@@ -11,43 +11,61 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
-	SquallURL          string   `json:"squall"`
-	MidgardURL         string   `json:"midgard"`
-	ZackURL            string   `json:"zack"`
-	VinceURL           string   `json:"vince"`
-	KairosDBURL        string   `json:"kairosdb"`
-	PubSubServices     []string `json:"pubsub"`
-	CassandraServices  []string `json:"cassandra"`
-	MongoServices      []string `json:"mongo"`
-	GoogleClientID     string   `json:"googleClientID"`
-	GrayLogServer      string   `json:"graylog"`
-	GrayLogID          string   `json:"graylogID"`
-	CACert             string   `json:"CACert"`
-	CACertKey          string   `json:"CACertKey"`
-	ServicesCert       string   `json:"servicesCert"`
-	ServicesCertKey    string   `json:"servicesCertKey"`
-	ZackClientCert     string   `json:"zackClientCert"`
-	ZackClientCertKey  string   `json:"zackClientCertKey"`
-	VinceClientCert    string   `json:"vinceClientCert"`
-	VinceClientCertKey string   `json:"vinceClientCertKey"`
+	SquallURL             string   `json:"squall"`
+	MidgardURL            string   `json:"midgard"`
+	ZackURL               string   `json:"zack"`
+	VinceURL              string   `json:"vince"`
+	KairosDBURL           string   `json:"kairosdb"`
+	PubSubServices        []string `json:"pubsub"`
+	CassandraServices     []string `json:"cassandra"`
+	MongoServices         []string `json:"mongo"`
+	GoogleClientID        string   `json:"googleClientID"`
+	GrayLogServer         string   `json:"graylog"`
+	GrayLogID             string   `json:"graylogID"`
+	CACert                string   `json:"CACert"`
+	CACertKey             string   `json:"CACertKey"`
+	ServicesCert          string   `json:"servicesCert"`
+	ServicesCertKey       string   `json:"servicesCertKey"`
+	PublicServicesCert    string   `json:"publicServicesCert"`
+	PublicServicesCertKey string   `json:"publicServicesCertKey"`
+	ZackClientCert        string   `json:"zackClientCert"`
+	ZackClientCertKey     string   `json:"zackClientCertKey"`
+	VinceClientCert       string   `json:"vinceClientCert"`
+	VinceClientCertKey    string   `json:"vinceClientCertKey"`
 }
 
 // ServicesKeyPair decodes the services certificates using the given password.
-func (p *PlatformInfo) ServicesKeyPair(password string) (tls.Certificate, error) {
+func (p *PlatformInfo) ServicesKeyPair(password string) ([]tls.Certificate, error) {
 
-	return tls.X509KeyPair([]byte(p.ServicesCert), []byte(p.ServicesCertKey))
+	ret := []tls.Certificate{}
+
+	internalKeyPair, err := loadCertificates([]byte(p.ServicesCert), []byte(p.ServicesCertKey), password)
+	if err != nil {
+		return nil, err
+	}
+	ret = append(ret, internalKeyPair)
+
+	if p.PublicServicesCert != "" && p.PublicServicesCertKey != "" {
+		externalKeyPair, err := loadCertificates([]byte(p.PublicServicesCert), []byte(p.PublicServicesCertKey), password)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, externalKeyPair)
+	}
+
+	return ret, nil
 }
 
 // ZackClientKeyPair decodes the zack client certificates using the given password.
 func (p *PlatformInfo) ZackClientKeyPair(password string) (tls.Certificate, error) {
 
-	return tls.X509KeyPair([]byte(p.ZackClientCert), []byte(p.ZackClientCertKey))
+	return loadCertificates([]byte(p.ZackClientCert), []byte(p.ZackClientCertKey), password)
 }
 
 // VinceClientKeyPair decodes the vince client certificates using the given password.
 func (p *PlatformInfo) VinceClientKeyPair(password string) (tls.Certificate, error) {
 
-	return tls.X509KeyPair([]byte(p.VinceClientCert), []byte(p.VinceClientCertKey))
+	return loadCertificates([]byte(p.VinceClientCert), []byte(p.VinceClientCertKey), password)
 }
 
 func (p *PlatformInfo) String() string {

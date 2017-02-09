@@ -10,7 +10,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 )
 
@@ -33,12 +32,7 @@ func pemBlockForKey(priv interface{}) *pem.Block {
 	}
 }
 
-func loadCertificateBundle(filename string) ([]*x509.Certificate, error) {
-
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
+func loadCertificateBundle(b []byte) ([]*x509.Certificate, error) {
 
 	certificates := []*x509.Certificate{}
 	var block *pem.Block

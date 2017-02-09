@@ -11,7 +11,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"net/http"
 	"time"
@@ -30,12 +29,12 @@ type Signer struct {
 // NewSigner returns a pointer to a new Signer given a certificate path, a private key path and a password.
 //
 // If something went wrong the returned signer will be nil, and an error will be returned.
-func NewSigner(certFile, keyFile, keyPass string) (*Signer, error) {
+func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error) {
 
 	var c Signer
 
 	// Load CA.pem.
-	cacert, err := loadCertificateBundle(certFile)
+	cacert, err := loadCertificateBundle(CACertData)
 	if err != nil {
 		log.Entry.WithField("error", err.Error()).Error("Failed to load ca certificate.")
 
@@ -46,13 +45,7 @@ func NewSigner(certFile, keyFile, keyPass string) (*Signer, error) {
 
 	// Load CA-Key.pem file.
 
-	pemencodedbytes, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		log.Entry.WithField("error", err.Error()).Error("Failed to load ca key.")
-		return nil, errors.New("Invalid CA key", "Failed to read ca key", http.StatusUnprocessableEntity, nil)
-	}
-
-	block, _ := pem.Decode(pemencodedbytes)
+	block, _ := pem.Decode(CACertKeyData)
 	if block == nil {
 		return nil, fmt.Errorf("Can not decode CA private key")
 	}

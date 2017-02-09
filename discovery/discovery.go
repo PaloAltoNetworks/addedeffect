@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // A PlatformInfo describes the Aporeto platform services.
@@ -49,6 +50,19 @@ func (p *PlatformInfo) VinceClientKeyPair(password string) (tls.Certificate, err
 	return tls.X509KeyPair([]byte(p.VinceClientCert), []byte(p.VinceClientCertKey))
 }
 
+func (p *PlatformInfo) String() string {
+
+	return fmt.Sprintf(
+		"<platform: squall:%s midgard:%s zack:%s vince:%s graylog:%s logid:%s>",
+		p.SquallURL,
+		p.MidgardURL,
+		p.ZackURL,
+		p.VinceURL,
+		p.GrayLogServer,
+		p.GrayLogID,
+	)
+}
+
 // RootCAPool returns the a CA pool using the system certificates + the custom CA.
 func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 
@@ -82,9 +96,20 @@ func DiscoverPlatform(cidURL string) (*PlatformInfo, error) {
 	}
 	req.Close = true
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to send request %s: %s", cidURL, err)
+	try := 0
+	var resp *http.Response
+
+	for {
+		resp, err = client.Do(req)
+		if err == nil {
+			break
+		}
+
+		<-time.After(3 * time.Second)
+		try++
+		if try > 20 {
+			return nil, fmt.Errorf("Unable retrieve platform info after 1m. Aborting. error: %s", err)
+		}
 	}
 
 	if resp.StatusCode != http.StatusOK {

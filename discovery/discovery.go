@@ -106,7 +106,13 @@ func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 // DiscoverPlatform retrieves the Platform Information from a Squall URL.
 func DiscoverPlatform(cidURL string) (*PlatformInfo, error) {
 
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
 
 	req, err := http.NewRequest(http.MethodGet, cidURL, nil)
 	if err != nil {

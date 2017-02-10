@@ -44,7 +44,7 @@ func RegisterAgent(
 
 	if n, err := manipulator.Count(mctx, gaia.ServerIdentity); err != nil || n > 0 {
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
 		}
 
 		return nil, fmt.Errorf("A server with the name %s already exists.", server.Name)

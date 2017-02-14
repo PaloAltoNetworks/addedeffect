@@ -11,27 +11,29 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
-	SquallURL             string   `json:"squall"`
-	MidgardURL            string   `json:"midgard"`
-	ZackURL               string   `json:"zack"`
-	VinceURL              string   `json:"vince"`
-	KairosDBURL           string   `json:"kairosdb"`
-	PubSubServices        []string `json:"pubsub"`
-	CassandraServices     []string `json:"cassandra"`
-	MongoServices         []string `json:"mongo"`
-	GoogleClientID        string   `json:"googleClientID"`
-	GrayLogServer         string   `json:"graylog"`
-	GrayLogID             string   `json:"graylogID"`
-	CACert                string   `json:"CACert"`
-	CACertKey             string   `json:"CACertKey"`
-	ServicesCert          string   `json:"servicesCert"`
-	ServicesCertKey       string   `json:"servicesCertKey"`
-	PublicServicesCert    string   `json:"publicServicesCert"`
-	PublicServicesCertKey string   `json:"publicServicesCertKey"`
-	ZackClientCert        string   `json:"zackClientCert"`
-	ZackClientCertKey     string   `json:"zackClientCertKey"`
-	VinceClientCert       string   `json:"vinceClientCert"`
-	VinceClientCertKey    string   `json:"vinceClientCertKey"`
+	SquallURL             string   `json:"squall,omitempty"`
+	MidgardURL            string   `json:"midgard,omitempty"`
+	ZackURL               string   `json:"zack,omitempty"`
+	VinceURL              string   `json:"vince,omitempty"`
+	KairosDBURL           string   `json:"kairosdb,omitempty"`
+	PubSubServices        []string `json:"pubsub,omitempty"`
+	CassandraServices     []string `json:"cassandra,omitempty"`
+	MongoServices         []string `json:"mongo,omitempty"`
+	GoogleClientID        string   `json:"googleClientID,omitempty"`
+	GrayLogServer         string   `json:"graylog,omitempty"`
+	GrayLogID             string   `json:"graylogID,omitempty"`
+	CACert                string   `json:"CACert,omitempty"`
+	CACertKey             string   `json:"CACertKey,omitempty"`
+	ServicesCert          string   `json:"servicesCert,omitempty"`
+	ServicesCertKey       string   `json:"servicesCertKey,omitempty"`
+	PublicServicesCert    string   `json:"publicServicesCert,omitempty"`
+	PublicServicesCertKey string   `json:"publicServicesCertKey,omitempty"`
+	ZackClientCert        string   `json:"zackClientCert,omitempty"`
+	ZackClientCertKey     string   `json:"zackClientCertKey,omitempty"`
+	VinceClientCert       string   `json:"vinceClientCert,omitempty"`
+	VinceClientCertKey    string   `json:"vinceClientCertKey,omitempty"`
+	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
+	SystemVersion         string   `json:"systemVersion,omitempty"`
 }
 
 // ServicesKeyPair decodes the services certificates using the given password.

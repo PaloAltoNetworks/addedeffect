@@ -36,7 +36,7 @@ func RegisterAgent(
 	server.FQDN = serverFQDN
 	server.Description = serverDescription
 	server.AssociatedTags = serverTags
-	server.OperationalStatus = gaia.ServerOperationalStatusConnected
+	server.LastSyncTime = time.Now()
 
 	// Check if the server already exists
 	mctx := manipulate.NewContext()
@@ -124,6 +124,17 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (uuid.UUI
 	}
 
 	return serverID, namespace, nil
+}
+
+// SendServerHeartBeat sends a heartbeat message for the given server.
+func SendServerHeartBeat(manipulator manipulate.Manipulator, server *gaia.Server) error {
+
+	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, server) }, nil, 10); err != nil {
+		return err
+	}
+
+	server.LastSyncTime = time.Now()
+	return manipulate.RetryManipulation(func() error { return manipulator.Update(nil, server) }, nil, 10)
 }
 
 // RetrieveServerProfile retrieves the profile to use according to the given serverID.

@@ -106,6 +106,19 @@ func (p *PlatformInfo) Fields() logrus.Fields {
 	}
 }
 
+// PublicFields returns ready to be dump logrus fields.
+func (p *PlatformInfo) PublicFields() logrus.Fields {
+	return logrus.Fields{
+		"squall":         p.SquallURL,
+		"midgard":        p.MidgardURL,
+		"zack":           p.ZackURL,
+		"vince":          p.VinceURL,
+		"graylog":        p.GrayLogServer,
+		"graylog-id":     p.GrayLogID,
+		"system-version": p.SystemVersion,
+	}
+}
+
 // RootCAPool returns the a CA pool using the system certificates + the custom CA.
 func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 

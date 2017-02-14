@@ -127,13 +127,13 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (uuid.UUI
 }
 
 // SendServerHeartBeat sends a heartbeat message for the given server.
-func SendServerHeartBeat(manipulator manipulate.Manipulator, server *gaia.Server) error {
+func SendServerHeartBeat(manipulator manipulate.Manipulator, server *gaia.Server, t time.Time) error {
 
 	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, server) }, nil, 10); err != nil {
 		return err
 	}
 
-	server.LastSyncTime = time.Now()
+	server.LastSyncTime = t
 	return manipulate.RetryManipulation(func() error { return manipulator.Update(nil, server) }, nil, 10)
 }
 

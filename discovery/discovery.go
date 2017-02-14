@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // A PlatformInfo describes the Aporeto platform services.
@@ -34,6 +36,10 @@ type PlatformInfo struct {
 	VinceClientCertKey    string   `json:"vinceClientCertKey,omitempty"`
 	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
 	SystemVersion         string   `json:"systemVersion,omitempty"`
+	ApoctlLinuxURL        string   `json:"apoctlLinuxURL,omitempty"`
+	ApoctlWindowsURL      string   `json:"apoctlWindowsURL,omitempty"`
+	ApoctlDarwinURL       string   `json:"apoctlDarwinURL,omitempty"`
+	AgentURL              string   `json:"agentURL,omitempty"`
 }
 
 // ServicesKeyPair decodes the services certificates using the given password.
@@ -81,6 +87,23 @@ func (p *PlatformInfo) String() string {
 		p.GrayLogServer,
 		p.GrayLogID,
 	)
+}
+
+// Fields returns ready to be dump logrus fields.
+func (p *PlatformInfo) Fields() logrus.Fields {
+	return logrus.Fields{
+		"squall":         p.SquallURL,
+		"midgard":        p.MidgardURL,
+		"zack":           p.ZackURL,
+		"vince":          p.VinceURL,
+		"graylog":        p.GrayLogServer,
+		"graylog-id":     p.GrayLogID,
+		"mongo":          p.MongoServices,
+		"cassandra":      p.CassandraServices,
+		"kairos":         p.KairosDBURL,
+		"nats":           p.PubSubServices,
+		"system-version": p.SystemVersion,
+	}
 }
 
 // RootCAPool returns the a CA pool using the system certificates + the custom CA.

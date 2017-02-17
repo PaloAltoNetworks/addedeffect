@@ -156,7 +156,6 @@ func DiscoverPlatform(cidURL string) (*PlatformInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create request %s: %s", cidURL, err)
 	}
-	req.Close = true
 
 	try := 0
 	var resp *http.Response

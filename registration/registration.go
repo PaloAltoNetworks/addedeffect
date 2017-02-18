@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/aporeto-inc/manipulate"
@@ -54,40 +55,6 @@ func RegisterAgent(
 		return nil, err
 	}
 
-	policies := gaia.APIAuthorizationPoliciesList{}
-	mctx = manipulate.NewContextWithFilter(manipulate.NewFilterComposer().WithKey("name").Equals(serverAPIAuthorizationName).Done())
-
-	if err := manipulator.RetrieveMany(mctx, gaia.APIAuthorizationPolicyIdentity, &policies); err != nil {
-		return nil, err
-	}
-
-	if len(policies) == 0 {
-		APIAuthorizationPolicy := gaia.NewAPIAuthorizationPolicy()
-		APIAuthorizationPolicy.Description = "Auto generated policy to allow agents to communicate with Squall."
-		APIAuthorizationPolicy.Subject = [][]string{[]string{"auth:commonname=" + server.ID}}
-		APIAuthorizationPolicy.AuthorizedNamespace = namespace
-		APIAuthorizationPolicy.AuthorizedIdentities = []string{"*"}
-		APIAuthorizationPolicy.Name = serverAPIAuthorizationName
-		APIAuthorizationPolicy.Propagate = true
-		APIAuthorizationPolicy.AllowsDelete = true
-		APIAuthorizationPolicy.AllowsGet = true
-		APIAuthorizationPolicy.AllowsHead = true
-		APIAuthorizationPolicy.AllowsPatch = true
-		APIAuthorizationPolicy.AllowsPost = true
-		APIAuthorizationPolicy.AllowsPut = true
-
-		if err := manipulator.Create(nil, APIAuthorizationPolicy); err != nil {
-			return nil, err
-		}
-	} else {
-		APIAuthorizationPolicy := policies[0]
-		APIAuthorizationPolicy.Subject = append(APIAuthorizationPolicy.Subject, []string{"auth:commonname=" + server.ID})
-
-		if err := manipulator.Update(nil, APIAuthorizationPolicy); err != nil {
-			return nil, err
-		}
-	}
-
 	certData := []byte(fmt.Sprintf("%s\n", server.Certificate))
 	keyData := []byte(fmt.Sprintf("%s\n", server.CertificateKey))
 
@@ -116,8 +83,9 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (uuid.UUI
 		return uuid.UUID{}, "", fmt.Errorf("Missing Organizational Unit field.")
 	}
 
-	serverID := uuid.FromStringOrNil(cert.Subject.CommonName)
-	namespace := cert.Subject.OrganizationalUnit[0]
+	parts := strings.SplitN(cert.Subject.CommonName, "@", 2)
+	serverID := uuid.FromStringOrNil(parts[0])
+	namespace := parts[1]
 
 	if err != nil {
 		return uuid.UUID{}, "", err

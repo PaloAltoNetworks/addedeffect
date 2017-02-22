@@ -12,7 +12,7 @@ import (
 	"github.com/aporeto-inc/manipulate"
 	"github.com/aporeto-inc/trireme/crypto"
 
-	gaia "github.com/aporeto-inc/gaia/golang"
+	squallmodels "github.com/aporeto-inc/gaia/squall/golang"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -30,9 +30,9 @@ func RegisterAgent(
 	certificateName string,
 	keyName string,
 	certificateExpirationDate time.Time,
-) (*gaia.Server, error) {
+) (*squallmodels.Server, error) {
 
-	server := gaia.NewServer()
+	server := squallmodels.NewServer()
 	server.Name = serverName
 	server.FQDN = serverFQDN
 	server.Description = serverDescription
@@ -43,12 +43,12 @@ func RegisterAgent(
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues["tag"] = "$name=" + server.Name
 
-	if n, err := manipulator.Count(mctx, gaia.ServerIdentity); err != nil || n > 0 {
+	if n, err := manipulator.Count(mctx, squallmodels.ServerIdentity); err != nil || n > 0 {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
 		}
 
-		return nil, fmt.Errorf("A server with the name %s already exists.", server.Name)
+		return nil, fmt.Errorf("A server with the name %s already exists", server.Name)
 	}
 
 	if err := manipulator.Create(nil, server); err != nil {
@@ -80,7 +80,7 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (uuid.UUI
 	}
 
 	if len(cert.Subject.OrganizationalUnit) == 0 {
-		return uuid.UUID{}, "", fmt.Errorf("Missing Organizational Unit field.")
+		return uuid.UUID{}, "", fmt.Errorf("Missing Organizational Unit field")
 	}
 
 	parts := strings.SplitN(cert.Subject.CommonName, "@", 2)
@@ -95,7 +95,7 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (uuid.UUI
 }
 
 // SendServerHeartBeat sends a heartbeat message for the given server.
-func SendServerHeartBeat(manipulator manipulate.Manipulator, server *gaia.Server, t time.Time) error {
+func SendServerHeartBeat(manipulator manipulate.Manipulator, server *squallmodels.Server, t time.Time) error {
 
 	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, server) }, nil, 10); err != nil {
 		return err
@@ -106,17 +106,17 @@ func SendServerHeartBeat(manipulator manipulate.Manipulator, server *gaia.Server
 }
 
 // RetrieveServerProfile retrieves the profile to use according to the given serverID.
-func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) (*gaia.ServerProfile, error) {
+func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) (*squallmodels.ServerProfile, error) {
 
-	server := gaia.NewServer()
+	server := squallmodels.NewServer()
 	server.ID = serverID
 
-	profile := gaia.ServerProfilesList{}
+	profile := squallmodels.ServerProfilesList{}
 
 	ctx := manipulate.NewContext()
 	ctx.Parent = server
 
-	if err := manipulator.RetrieveMany(ctx, gaia.ServerProfileIdentity, &profile); err != nil {
+	if err := manipulator.RetrieveMany(ctx, squallmodels.ServerProfileIdentity, &profile); err != nil {
 		return nil, err
 	}
 

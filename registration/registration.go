@@ -12,7 +12,7 @@ import (
 	"github.com/aporeto-inc/manipulate"
 	"github.com/aporeto-inc/trireme/crypto"
 
-	squallmodels "github.com/aporeto-inc/gaia/squall/golang"
+	squallmodels "github.com/aporeto-inc/gaia/squallmodels/golang"
 	uuid "github.com/satori/go.uuid"
 )
 

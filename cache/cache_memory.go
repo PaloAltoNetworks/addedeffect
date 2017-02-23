@@ -105,7 +105,7 @@ func (c *memoryCache) delNotify(id string, notify bool) {
 	}
 
 	if _, ok := item.data.(ExpirationNotifier); ok {
-		item.data.(ExpirationNotifier).Expired(c, id)
+		item.data.(ExpirationNotifier).Expired(c, id, item.data)
 	}
 }
 

@@ -24,5 +24,5 @@ type cacheItem struct {
 // ExpirationNotifier is an interface that cacheable structs can implement to be
 // notified in case of expiration
 type ExpirationNotifier interface {
-	Expired(c Cacher, id string)
+	Expired(c Cacher, id string, item interface{})
 }

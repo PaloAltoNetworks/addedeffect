@@ -9,6 +9,7 @@ type memoryCache struct {
 	data       map[string]*cacheItem
 	lock       *sync.Mutex
 	expiration time.Duration
+	expirer    ExpirationNotifier
 }
 
 // NewMemoryCache returns a new generic cache.
@@ -24,6 +25,11 @@ func NewMemoryCache() Cacher {
 func (c *memoryCache) SetDefaultExpiration(exp time.Duration) {
 
 	c.expiration = exp
+}
+
+func (c *memoryCache) SetDefaultExpirationNotifier(expirer ExpirationNotifier) {
+
+	c.expirer = expirer
 }
 
 func (c *memoryCache) Get(id string) interface{} {
@@ -66,6 +72,11 @@ func (c *memoryCache) Set(id string, item interface{}) {
 
 func (c *memoryCache) SetWithExpiration(id string, item interface{}, exp time.Duration) {
 
+	c.SetWithExpirationAndNotifier(id, item, c.expiration, c.expirer)
+}
+
+func (c *memoryCache) SetWithExpirationAndNotifier(id string, item interface{}, exp time.Duration, expirer ExpirationNotifier) {
+
 	var timer *time.Timer
 	if exp != -1 {
 		timer = time.AfterFunc(exp, func() { c.delNotify(id, true) })
@@ -76,6 +87,7 @@ func (c *memoryCache) SetWithExpiration(id string, item interface{}, exp time.Du
 		data:       item,
 		timestamp:  time.Now(),
 		timer:      timer,
+		expirer:    expirer,
 	}
 
 	c.lock.Lock()
@@ -104,8 +116,8 @@ func (c *memoryCache) delNotify(id string, notify bool) {
 		return
 	}
 
-	if _, ok := item.data.(ExpirationNotifier); ok {
-		item.data.(ExpirationNotifier).Expired(c, id, item.data)
+	if item.expirer != nil {
+		item.expirer(c, id, item.data)
 	}
 }
 

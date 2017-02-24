@@ -55,12 +55,10 @@ func (c *memoryCache) GetReset(id string) interface{} {
 		return nil
 	}
 
-	if c.expiration != -1 {
-		if item.timer != nil {
-			item.timer.Stop()
-		}
-		item.timer = time.AfterFunc(c.expiration, func() { c.delNotify(id, true) })
+	if item.timer != nil {
+		item.timer.Stop()
 	}
+	item.timer = time.AfterFunc(item.expiration, func() { c.delNotify(id, true) })
 
 	return item.data
 }
@@ -87,6 +85,7 @@ func (c *memoryCache) SetWithExpirationAndNotifier(id string, item interface{}, 
 		data:       item,
 		timestamp:  time.Now(),
 		timer:      timer,
+		expiration: exp,
 		expirer:    expirer,
 	}
 

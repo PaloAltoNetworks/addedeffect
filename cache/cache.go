@@ -25,5 +25,6 @@ type cacheItem struct {
 	identifier string
 	data       interface{}
 	timer      *time.Timer
+	expiration time.Duration
 	expirer    ExpirationNotifier
 }

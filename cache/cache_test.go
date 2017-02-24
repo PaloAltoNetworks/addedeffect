@@ -26,6 +26,14 @@ func TestCaching_NewGenericCache(t *testing.T) {
 			})
 		})
 
+		Convey("When I GetReset a non cached object", func() {
+			smt := c.GetReset("id-something")
+
+			Convey("Then retrieved object should be nil", func() {
+				So(smt, ShouldBeNil)
+			})
+		})
+
 		Convey("When I Exists a non cached object", func() {
 			ex := c.Exists("id-something")
 
@@ -55,6 +63,11 @@ func TestCaching_NewGenericCache(t *testing.T) {
 
 			Convey("Then the object should be cached", func() {
 				So(len(c.(*memoryCache).data), ShouldEqual, 1)
+			})
+
+			Convey("When I All the cache", func() {
+				ex := c.All()
+				So(len(ex), ShouldEqual, 1)
 			})
 
 			Convey("When I Get a cached object", func() {
@@ -91,6 +104,133 @@ func TestCaching_NewGenericCache(t *testing.T) {
 	})
 }
 
+func TestCaching_NewGenericCacheWithDefaultExpiration(t *testing.T) {
+
+	Convey("Given I create a new memory cache with default expiration", t, func() {
+
+		c := NewMemoryCache()
+		c.SetDefaultExpiration(2 * time.Second)
+
+		Convey("Then the cache should be initialized", func() {
+			So(c.(*memoryCache).data, ShouldResemble, map[string]*cacheItem{})
+			So(len(c.(*memoryCache).data), ShouldBeZeroValue)
+		})
+
+		Convey("When I set an item that should expire by default", func() {
+			c.Set("id-default", "item-default")
+			Convey("When I wait for 1.5 seconds", func() {
+				<-time.After(1500 * time.Millisecond)
+				So(c.Get("id-default"), ShouldEqual, "item-default")
+
+				Convey("When I wait for another 1 second", func() {
+					<-time.After(1000 * time.Millisecond)
+					Convey("Then the item should be gone", func() {
+						So(c.Get("id-default"), ShouldEqual, nil)
+					})
+				})
+			})
+		})
+
+		Convey("When I set an item that expired after 1sec", func() {
+			c.SetWithExpiration("id", "item", 1*time.Second)
+
+			Convey("Then the item should be present", func() {
+				So(c.Get("id"), ShouldEqual, "item")
+
+				Convey("When I wait for 1.5 seconds", func() {
+					<-time.After(1500 * time.Millisecond)
+					Convey("Then the item should be gone", func() {
+						So(c.Get("id"), ShouldBeNil)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestCaching_NewGenericCacheWithDefaultExpirationAndMultipleSets(t *testing.T) {
+
+	Convey("Given I create a new memory cache with default expiration", t, func() {
+
+		c := NewMemoryCache()
+		c.SetDefaultExpiration(2 * time.Second)
+
+		Convey("Then the cache should be initialized", func() {
+			So(c.(*memoryCache).data, ShouldResemble, map[string]*cacheItem{})
+			So(len(c.(*memoryCache).data), ShouldBeZeroValue)
+		})
+
+		Convey("When I set an item that expired after 1sec", func() {
+			c.SetWithExpiration("id", "item", 1*time.Second)
+
+			Convey("Then the item should be present", func() {
+				So(c.Get("id"), ShouldEqual, "item")
+
+				Convey("When I wait for 0.5 seconds", func() {
+					<-time.After(500 * time.Millisecond)
+
+					Convey("When I set the item again to expire after 1sec", func() {
+						c.SetWithExpiration("id", "item", 1*time.Second)
+
+						Convey("When I wait for 0.7 seconds", func() {
+							<-time.After(700 * time.Millisecond)
+							Convey("Then the item should be exists", func() {
+								So(c.Get("id"), ShouldEqual, "item")
+							})
+
+							Convey("When I wait for 0.5 seconds", func() {
+								<-time.After(500 * time.Millisecond)
+								Convey("Then the item should be gone", func() {
+									So(c.Get("id"), ShouldBeNil)
+								})
+							})
+						})
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestCaching_NewGenericCacheWithDefaultNotifier(t *testing.T) {
+
+	Convey("Given I create a new memory cache with default notifier", t, func() {
+
+		var expiredObject interface{}
+		cachedItem := "item"
+
+		c := NewMemoryCache()
+		c.SetDefaultExpirationNotifier(func(c Cacher, id string, item interface{}) {
+			expiredObject = item
+		})
+
+		Convey("Then the cache should be initialized", func() {
+			So(c.(*memoryCache).data, ShouldResemble, map[string]*cacheItem{})
+			So(len(c.(*memoryCache).data), ShouldBeZeroValue)
+		})
+
+		Convey("When I set an item that expires after 1sec", func() {
+			c.SetWithExpiration("id", cachedItem, 1*time.Second)
+
+			Convey("Then the item should be present", func() {
+				So(c.Get("id"), ShouldEqual, "item")
+
+				Convey("When I wait for 1.5 seconds", func() {
+					<-time.After(1500 * time.Millisecond)
+
+					Convey("Then the item should be gone", func() {
+						So(c.Get("id"), ShouldBeNil)
+					})
+
+					Convey("Then the item should stored as expiredObject", func() {
+						So(expiredObject, ShouldEqual, cachedItem)
+					})
+				})
+			})
+		})
+	})
+}
+
 func TestCaching_Expiration(t *testing.T) {
 
 	Convey("Given I create a new memory cache", t, func() {
@@ -110,6 +250,47 @@ func TestCaching_Expiration(t *testing.T) {
 
 					Convey("Then the item should be gone", func() {
 						So(c.Get("id"), ShouldBeNil)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestCaching_GetReset(t *testing.T) {
+
+	Convey("Given I create a new memory cache", t, func() {
+
+		c := NewMemoryCache()
+
+		Convey("When I set an item that expired after 1sec", func() {
+
+			c.SetWithExpiration("id", "item", 1*time.Second)
+
+			Convey("Then the item should be present", func() {
+				So(c.Get("id"), ShouldEqual, "item")
+
+				Convey("When I wait for 0.5 seconds", func() {
+					<-time.After(500 * time.Millisecond)
+
+					Convey("When I GetReset the item", func() {
+						So(c.GetReset("id"), ShouldEqual, "item")
+
+						Convey("When I wait for 0.7 more seconds", func() {
+							<-time.After(700 * time.Millisecond)
+
+							Convey("Then the item should exist", func() {
+								So(c.Get("id"), ShouldEqual, "item")
+							})
+
+							Convey("When I wait for 0.5 more seconds", func() {
+								<-time.After(500 * time.Millisecond)
+
+								Convey("Then the item should be gone", func() {
+									So(c.Get("id"), ShouldBeNil)
+								})
+							})
+						})
 					})
 				})
 			})

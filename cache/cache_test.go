@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -196,17 +197,12 @@ func TestCaching_NewGenericCacheWithDefaultNotifier(t *testing.T) {
 
 	Convey("Given I create a new memory cache with default notifier", t, func() {
 
-		var expiredObject interface{}
+		expiredCalled := int32(0)
 		cachedItem := "item"
 
 		c := NewMemoryCache()
 		c.SetDefaultExpirationNotifier(func(c Cacher, id string, item interface{}) {
-			expiredObject = item
-		})
-
-		Convey("Then the cache should be initialized", func() {
-			So(c.(*memoryCache).data, ShouldResemble, map[string]*cacheItem{})
-			So(len(c.(*memoryCache).data), ShouldBeZeroValue)
+			atomic.AddInt32(&expiredCalled, 1)
 		})
 
 		Convey("When I set an item that expires after 1sec", func() {
@@ -222,8 +218,8 @@ func TestCaching_NewGenericCacheWithDefaultNotifier(t *testing.T) {
 						So(c.Get("id"), ShouldBeNil)
 					})
 
-					Convey("Then the item should stored as expiredObject", func() {
-						So(expiredObject, ShouldEqual, cachedItem)
+					Convey("Then the expiration notification should have been called 1 times", func() {
+						So(atomic.LoadInt32(&expiredCalled), ShouldEqual, 1)
 					})
 				})
 			})

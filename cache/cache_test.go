@@ -104,9 +104,9 @@ func TestCaching_Expiration(t *testing.T) {
 
 				So(c.Get("id"), ShouldEqual, "item")
 
-				Convey("When I wait for 2 sec", func() {
+				Convey("When I wait for 1.5 seconds", func() {
 
-					<-time.After(2 * time.Second)
+					<-time.After(1500 * time.Millisecond)
 
 					Convey("Then the item should be gone", func() {
 						So(c.Get("id"), ShouldBeNil)

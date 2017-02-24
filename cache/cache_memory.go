@@ -72,7 +72,7 @@ func (c *memoryCache) Set(id string, item interface{}) {
 
 func (c *memoryCache) SetWithExpiration(id string, item interface{}, exp time.Duration) {
 
-	c.SetWithExpirationAndNotifier(id, item, c.expiration, c.expirer)
+	c.SetWithExpirationAndNotifier(id, item, exp, c.expirer)
 }
 
 func (c *memoryCache) SetWithExpirationAndNotifier(id string, item interface{}, exp time.Duration, expirer ExpirationNotifier) {

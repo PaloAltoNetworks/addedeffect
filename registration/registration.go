@@ -116,7 +116,7 @@ func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) 
 	ctx := manipulate.NewContext()
 	ctx.Parent = server
 
-	if err := manipulator.RetrieveMany(ctx, squallmodels.ServerProfileIdentity, &profile); err != nil {
+	if err := manipulator.RetrieveMany(ctx, &profile); err != nil {
 		return nil, err
 	}
 

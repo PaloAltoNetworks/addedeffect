@@ -16,8 +16,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const serverAPIAuthorizationName = "[auto] aporeto agent api authorizations"
-
 // RegisterAgent registers a new agent server with given name, description and tags in Squall using the given Manipulator.
 func RegisterAgent(
 	manipulator manipulate.Manipulator,

@@ -13,7 +13,7 @@ func loadCertificates(certData []byte, keyData []byte, password string) (tls.Cer
 	keyBlock, rest := pem.Decode(keyData)
 
 	if len(rest) != 0 {
-		return tls.Certificate{}, fmt.Errorf("Multiple private key is not supported.")
+		return tls.Certificate{}, fmt.Errorf("multiple private key is not supported")
 	}
 
 	if !x509.IsEncryptedPEMBlock(keyBlock) {

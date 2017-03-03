@@ -177,7 +177,7 @@ func DiscoverPlatform(cidURL string) (*PlatformInfo, error) {
 		return nil, fmt.Errorf("Unable to retrieve system info: status code %d", resp.StatusCode)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	info := &PlatformInfo{}
 	if err = json.NewDecoder(resp.Body).Decode(&info); err != nil {
 		return nil, fmt.Errorf("Unable to decode system info: %s", err)

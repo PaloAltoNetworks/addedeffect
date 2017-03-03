@@ -26,7 +26,7 @@ func TestCommon_ProcessCreate(t *testing.T) {
 
 		Convey("When I call Parse on the usage", func() {
 
-			Parse("TEST", usage)
+			_ = Parse("TEST", usage)
 
 			Convey("Then os.Args should be empty", func() {
 				So(len(os.Args), ShouldEqual, 0)
@@ -40,17 +40,17 @@ func TestCommon_ProcessCreate(t *testing.T) {
 
 		Convey("When I call Parse on the usage", func() {
 
-			os.Setenv("TEST_OPTION_A", "value1")
-			os.Setenv("TEST_OPTION_B", "1")
-			os.Setenv("TEST_OPTION_C", "value2")
-			os.Setenv("TEST_OPTION_D", "2")
+			_ = os.Setenv("TEST_OPTION_A", "value1")
+			_ = os.Setenv("TEST_OPTION_B", "1")
+			_ = os.Setenv("TEST_OPTION_C", "value2")
+			_ = os.Setenv("TEST_OPTION_D", "2")
 
-			os.Setenv("TEST_OPTION_E", "value1")
-			os.Setenv("TEST_OPTION_F", "1")
-			os.Setenv("TEST_OPTION_G", "value2")
-			os.Setenv("TEST_OPTION_H", "2")
+			_ = os.Setenv("TEST_OPTION_E", "value1")
+			_ = os.Setenv("TEST_OPTION_F", "1")
+			_ = os.Setenv("TEST_OPTION_G", "value2")
+			_ = os.Setenv("TEST_OPTION_H", "2")
 
-			Parse("TEST", usage)
+			_ = Parse("TEST", usage)
 
 			Convey("Then os.Args should not be empty", func() {
 				So(len(os.Args), ShouldEqual, 8)
@@ -93,12 +93,12 @@ func TestCommon_ProcessCreate(t *testing.T) {
 	Convey("Given I have some os.Args that already contains an option set in environment", t, func() {
 
 		os.Args = []string{"--option-x=a", "--option-y"}
-		os.Setenv("TEST_OPTION_X", "not-a")
-		os.Setenv("TEST_OPTION_Y", "1")
+		_ = os.Setenv("TEST_OPTION_X", "not-a")
+		_ = os.Setenv("TEST_OPTION_Y", "1")
 
 		Convey("When I use Parse", func() {
 
-			Parse("TEST", usage)
+			_ = Parse("TEST", usage)
 
 			Convey("Then the original options should remain unchanged", func() {
 				So(os.Args, ShouldContain, "--option-x=a")

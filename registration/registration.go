@@ -13,7 +13,6 @@ import (
 	"github.com/aporeto-inc/trireme/crypto"
 
 	squallmodels "github.com/aporeto-inc/gaia/squallmodels/golang"
-	uuid "github.com/satori/go.uuid"
 )
 
 // RegisterAgent registers a new agent server with given name, description and tags in Squall using the given Manipulator.
@@ -65,28 +64,28 @@ func RegisterAgent(
 
 // ServerInfoFromCertificate retrieves and verifies the serverID and namespace stored in the
 // certificate at the given path using the given x509.CertPool.
-func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (uuid.UUID, string, error) {
+func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, string, error) {
 
 	certificate, err := ioutil.ReadFile(certPath)
 	if err != nil {
-		return uuid.UUID{}, "", err
+		return "", "", err
 	}
 
 	cert, err := crypto.LoadAndVerifyCertificate(certificate, CAPool)
 	if err != nil {
-		return uuid.UUID{}, "", err
+		return "", "", err
 	}
 
 	if len(cert.Subject.OrganizationalUnit) == 0 {
-		return uuid.UUID{}, "", fmt.Errorf("Missing Organizational Unit field")
+		return "", "", fmt.Errorf("Missing Organizational Unit field")
 	}
 
 	parts := strings.SplitN(cert.Subject.CommonName, "@", 2)
-	serverID := uuid.FromStringOrNil(parts[0])
+	serverID := parts[0]
 	namespace := parts[1]
 
 	if err != nil {
-		return uuid.UUID{}, "", err
+		return "", "", err
 	}
 
 	return serverID, namespace, nil

@@ -15,8 +15,8 @@ import (
 	squallmodels "github.com/aporeto-inc/gaia/squallmodels/golang"
 )
 
-// RegisterAgent registers a new agent server with given name, description and tags in Squall using the given Manipulator.
-func RegisterAgent(
+// RegisterEnforcer registers a new agent server with given name, description and tags in Squall using the given Manipulator.
+func RegisterEnforcer(
 	manipulator manipulate.Manipulator,
 	namespace string,
 	serverName string,
@@ -62,7 +62,7 @@ func RegisterAgent(
 	return server, nil
 }
 
-// ServerInfoFromCertificate retrieves and verifies the serverID and namespace stored in the
+// ServerInfoFromCertificate retrieves and verifies the enforcerID and namespace stored in the
 // certificate at the given path using the given x509.CertPool.
 func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, string, error) {
 
@@ -81,18 +81,18 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, 
 	}
 
 	parts := strings.SplitN(cert.Subject.CommonName, "@", 2)
-	serverID := parts[0]
+	enforcerID := parts[0]
 	namespace := parts[1]
 
 	if err != nil {
 		return "", "", err
 	}
 
-	return serverID, namespace, nil
+	return enforcerID, namespace, nil
 }
 
-// SendServerHeartBeat sends a heartbeat message for the given server.
-func SendServerHeartBeat(manipulator manipulate.Manipulator, enforcer *squallmodels.Enforcer, t time.Time) error {
+// SendEnforcerHeartBeat sends a heartbeat message for the given enforcer.
+func SendEnforcerHeartBeat(manipulator manipulate.Manipulator, enforcer *squallmodels.Enforcer, t time.Time) error {
 
 	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, enforcer) }, nil, 10); err != nil {
 		return err
@@ -102,11 +102,11 @@ func SendServerHeartBeat(manipulator manipulate.Manipulator, enforcer *squallmod
 	return manipulate.RetryManipulation(func() error { return manipulator.Update(nil, enforcer) }, nil, 10)
 }
 
-// RetrieveServerProfile retrieves the profile to use according to the given serverID.
-func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) (*squallmodels.EnforcerProfile, error) {
+// RetrieveEnforcerProfile retrieves the profile to use according to the given enforcerID.
+func RetrieveEnforcerProfile(manipulator manipulate.Manipulator, enforcerID string) (*squallmodels.EnforcerProfile, error) {
 
 	enforcer := squallmodels.NewEnforcer()
-	enforcer.ID = serverID
+	enforcer.ID = enforcerID
 
 	profiles := squallmodels.EnforcerProfilesList{}
 

@@ -27,9 +27,9 @@ func RegisterAgent(
 	certificateName string,
 	keyName string,
 	certificateExpirationDate time.Time,
-) (*squallmodels.Server, error) {
+) (*squallmodels.Enforcer, error) {
 
-	server := squallmodels.NewServer()
+	server := squallmodels.NewEnforcer()
 	server.Name = serverName
 	server.FQDN = serverFQDN
 	server.Description = serverDescription
@@ -40,7 +40,7 @@ func RegisterAgent(
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues["tag"] = "$name=" + server.Name
 
-	if n, err := manipulator.Count(mctx, squallmodels.ServerIdentity); err != nil || n > 0 {
+	if n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity); err != nil || n > 0 {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
 		}
@@ -92,36 +92,36 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, 
 }
 
 // SendServerHeartBeat sends a heartbeat message for the given server.
-func SendServerHeartBeat(manipulator manipulate.Manipulator, server *squallmodels.Server, t time.Time) error {
+func SendServerHeartBeat(manipulator manipulate.Manipulator, enforcer *squallmodels.Enforcer, t time.Time) error {
 
-	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, server) }, nil, 10); err != nil {
+	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, enforcer) }, nil, 10); err != nil {
 		return err
 	}
 
-	server.LastSyncTime = t
-	return manipulate.RetryManipulation(func() error { return manipulator.Update(nil, server) }, nil, 10)
+	enforcer.LastSyncTime = t
+	return manipulate.RetryManipulation(func() error { return manipulator.Update(nil, enforcer) }, nil, 10)
 }
 
 // RetrieveServerProfile retrieves the profile to use according to the given serverID.
-func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) (*squallmodels.ServerProfile, error) {
+func RetrieveServerProfile(manipulator manipulate.Manipulator, serverID string) (*squallmodels.EnforcerProfile, error) {
 
-	server := squallmodels.NewServer()
-	server.ID = serverID
+	enforcer := squallmodels.NewEnforcer()
+	enforcer.ID = serverID
 
-	profile := squallmodels.ServerProfilesList{}
+	profiles := squallmodels.EnforcerProfilesList{}
 
 	ctx := manipulate.NewContext()
-	ctx.Parent = server
+	ctx.Parent = enforcer
 
-	if err := manipulator.RetrieveMany(ctx, &profile); err != nil {
+	if err := manipulator.RetrieveMany(ctx, &profiles); err != nil {
 		return nil, err
 	}
 
-	if len(profile) == 0 {
-		return nil, fmt.Errorf("Could not find any profile")
+	if len(profiles) == 0 {
+		return nil, fmt.Errorf("Could not find any enforcer profile")
 	}
 
-	return profile[0], nil
+	return profiles[0], nil
 }
 
 func writeCertificate(folder, certName, keyName string, folderPerm os.FileMode, certPerm os.FileMode, certData, keyData []byte) error {

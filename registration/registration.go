@@ -12,7 +12,7 @@ import (
 	"github.com/aporeto-inc/manipulate"
 	"github.com/aporeto-inc/trireme/crypto"
 
-	squallmodels "github.com/aporeto-inc/gaia/squallmodels/golang"
+	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
 )
 
 // RegisterEnforcer registers a new agent server with given name, description and tags in Squall using the given Manipulator.

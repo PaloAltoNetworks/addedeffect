@@ -13,6 +13,7 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
+	CladURL               string   `json:"clad,omitempty"`
 	SquallURL             string   `json:"squall,omitempty"`
 	MidgardURL            string   `json:"midgard,omitempty"`
 	ZackURL               string   `json:"zack,omitempty"`
@@ -92,6 +93,7 @@ func (p *PlatformInfo) String() string {
 // Fields returns ready to be dump logrus fields.
 func (p *PlatformInfo) Fields() logrus.Fields {
 	return logrus.Fields{
+		"clad":           p.CladURL,
 		"squall":         p.SquallURL,
 		"midgard":        p.MidgardURL,
 		"zack":           p.ZackURL,
@@ -109,6 +111,7 @@ func (p *PlatformInfo) Fields() logrus.Fields {
 // PublicFields returns ready to be dump logrus fields.
 func (p *PlatformInfo) PublicFields() logrus.Fields {
 	return logrus.Fields{
+		"clad":           p.CladURL,
 		"squall":         p.SquallURL,
 		"midgard":        p.MidgardURL,
 		"zack":           p.ZackURL,

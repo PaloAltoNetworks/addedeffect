@@ -15,8 +15,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aporeto-inc/squall/errors"
-	"github.com/aporeto-inc/squall/log"
+	"github.com/aporeto-inc/elemental"
+	"github.com/sirupsen/logrus"
 )
 
 // A Signer is certificate signing object. It uses a CA certificate
@@ -36,9 +36,9 @@ func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error
 	// Load CA.pem.
 	cacert, err := loadCertificateBundle(CACertData)
 	if err != nil {
-		log.Entry.WithField("error", err.Error()).Error("Failed to load ca certificate.")
+		logrus.WithField("error", err.Error()).Error("Failed to load ca certificate.")
 
-		return nil, errors.New("Invalid CA certificate", "Failed to load the ca certificate", http.StatusUnprocessableEntity, nil)
+		return nil, elemental.NewError("Invalid CA certificate", "Failed to load the ca certificate", "certification", http.StatusUnprocessableEntity)
 	}
 
 	c.cacert = cacert
@@ -68,7 +68,7 @@ func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error
 	}
 
 	if err != nil || c.key == nil {
-		return nil, errors.New("Unmarshal failed", "Failed to unmarshal the ca key file", http.StatusUnprocessableEntity, nil)
+		return nil, elemental.NewError("Unmarshal failed", "Failed to unmarshal the ca key file", "certification", http.StatusUnprocessableEntity)
 	}
 	return &c, nil
 }
@@ -90,16 +90,16 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	}
 
 	if err != nil {
-		log.Entry.WithField("error", err.Error()).Error("Failed to generate private key.")
-		return "", "", "", errors.New("Certificate generation failed", "Failed to generate private key", http.StatusInternalServerError, nil)
+		logrus.WithField("error", err.Error()).Error("Failed to generate private key.")
+		return "", "", "", elemental.NewError("Certificate generation failed", "Failed to generate private key", "certification", http.StatusInternalServerError)
 	}
 
 	// Generate random serial number.
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Entry.WithField("error", err.Error()).Error("Failed to generate serial number for the certificate.")
-		return "", "", "", errors.New("Certificate generation failed", "Failed to generate serial number for the certificate", http.StatusInternalServerError, nil)
+		logrus.WithField("error", err.Error()).Error("Failed to generate serial number for the certificate.")
+		return "", "", "", elemental.NewError("Certificate generation failed", "Failed to generate serial number for the certificate", "certification", http.StatusInternalServerError)
 	}
 
 	// Create certfificate template.
@@ -133,8 +133,8 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	}
 
 	if err != nil {
-		log.Entry.WithField("error", err.Error()).Error("Failed to create certificate.")
-		return "", "", "", errors.New("Failed to Create Certificate", err.Error(), http.StatusInternalServerError, nil)
+		logrus.WithField("error", err.Error()).Error("Failed to create certificate.")
+		return "", "", "", elemental.NewError("Failed to Create Certificate", err.Error(), "certification", http.StatusInternalServerError)
 	}
 
 	clientCertificate := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})

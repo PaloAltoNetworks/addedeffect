@@ -15,8 +15,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/aporeto-inc/elemental"
-	"github.com/sirupsen/logrus"
 )
 
 // A Signer is certificate signing object. It uses a CA certificate

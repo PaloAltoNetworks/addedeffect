@@ -14,6 +14,7 @@ var exportNamespacesObjects = map[string]elemental.Identity{
 	"enforcerProfileMappingPolicies": squallmodels.EnforcerProfileMappingPolicyIdentity,
 
 	// Others
+	"namespaces":            squallmodels.NamespaceIdentity,
 	"externalServices":      squallmodels.ExternalServiceIdentity,
 	"filePaths":             squallmodels.FilePathIdentity,
 	"enforcerProfiles":      squallmodels.EnforcerProfileIdentity,

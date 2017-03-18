@@ -1,4 +1,4 @@
-package namespace
+package namespaceutils
 
 import (
 	"github.com/aporeto-inc/elemental"

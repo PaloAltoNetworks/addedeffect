@@ -25,7 +25,7 @@ func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string) (e
 
 	for _, identity := range exportNamespacesObjects {
 		go func() {
-			dest := squallmodels.ContentIdentifiableForIdentity(identity.Category)
+			dest := squallmodels.ContentIdentifiableForCategory(identity.Category)
 
 			if err := manipulator.RetrieveMany(mctx, dest); err != nil {
 				errorsChannel <- err

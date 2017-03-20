@@ -13,11 +13,11 @@ import (
 
 func Import(manipulator manipulate.Manipulator, namespace string, content map[string]interface{}, shouldClean bool) error {
 
-	if _, ok := content["namespace"]; !ok {
+	if _, ok := content[squallmodels.NamespaceIdentity.Category]; !ok {
 		return fmt.Errorf("The given content should have a key namespace")
 	}
 
-	topNamespace := content["namespace"].(map[string]interface{})["name"].(string)
+	topNamespace := content[squallmodels.NamespaceIdentity.Category].(map[string]interface{})["name"].(string)
 
 	mctx := manipulate.NewContext()
 	mctx.Namespace = namespace
@@ -53,7 +53,7 @@ func Import(manipulator manipulate.Manipulator, namespace string, content map[st
 		}
 	}
 
-	if err := importNamespaceContent(manipulator, namespace, content["namespace"].(map[string]interface{})); err != nil {
+	if err := importNamespaceContent(manipulator, namespace, content[squallmodels.NamespaceIdentity.Category].(map[string]interface{})); err != nil {
 		return err
 	}
 
@@ -62,6 +62,10 @@ func Import(manipulator manipulate.Manipulator, namespace string, content map[st
 			mctx := manipulate.NewContext()
 			mctx.Namespace = namespace
 			mctx.OverrideProtection = true
+
+			if value.Identity().Name == squallmodels.NamespaceIdentity.Category {
+				continue
+			}
 
 			if err := manipulator.Delete(mctx, value); err != nil {
 				return err
@@ -105,6 +109,8 @@ func importNamespaceContent(manipulator manipulate.Manipulator, currentNamespace
 		}
 	}
 
+	mctx.Namespace = namespace.Name
+
 	for key, value := range namespaceContent {
 
 		if key == squallmodels.NamespaceIdentity.Category {
@@ -113,7 +119,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, currentNamespace
 
 		for _, object := range value.([]interface{}) {
 
-			dest := squallmodels.ContentIdentifiableForCategory(key).(elemental.Identifiable)
+			dest := squallmodels.IdentifiableForCategory(key).(elemental.Identifiable)
 			importComputeNamespace(namespace.Name, key, object.(map[string]interface{}))
 			jsonRaw, err := json.Marshal(object)
 

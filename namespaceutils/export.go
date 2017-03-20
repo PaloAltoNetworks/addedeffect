@@ -25,7 +25,7 @@ func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string) (e
 
 	for _, identity := range exportNamespacesObjects {
 		go func() {
-			dest := squallmodels.ContentIdentifiableForIdentity(identity.Name)
+			dest := squallmodels.ContentIdentifiableForIdentity(identity.Category)
 
 			if err := manipulator.RetrieveMany(mctx, dest); err != nil {
 				errorsChannel <- err
@@ -76,17 +76,17 @@ func TreeContentOfNamespace(namespace string, identifiables elemental.Identifiab
 
 		attributeSpecifications := identifiable.(elemental.AttributeSpecifiable).AttributeSpecifications()
 		FilterResourceField(attributeSpecifications, object)
-		exportComputeNamespaceAttributes(namespace, identifiable.Identity().Name, object)
+		exportComputeNamespaceAttributes(namespace, identifiable.Identity().Category, object)
 
 		if ns == identifiable {
 			root = object
 		} else {
-			namespaceContentRegistry[objectNamespace] = append(namespaceContentRegistry[strings.Replace(objectNamespace, namespace, "", 1)], map[string]map[string]interface{}{identifiable.Identity().Name: object})
+			namespaceContentRegistry[objectNamespace] = append(namespaceContentRegistry[strings.Replace(objectNamespace, namespace, "", 1)], map[string]map[string]interface{}{identifiable.Identity().Category: object})
 		}
 	}
 
 	fillTreeForNamespace("", root, namespaceContentRegistry)
-	return map[string]interface{}{"namespace": root}, nil
+	return map[string]interface{}{squallmodels.NamespaceIdentity.Category: root}, nil
 }
 
 func fillTreeForNamespace(namespace string, currentNamespace map[string]interface{}, namespaceContentRegistry map[string][]map[string]map[string]interface{}) {
@@ -98,7 +98,7 @@ func fillTreeForNamespace(namespace string, currentNamespace map[string]interfac
 
 		for identity, object := range objects {
 
-			if identity == squallmodels.NamespaceIdentity.Name {
+			if identity == squallmodels.NamespaceIdentity.Category {
 				fillTreeForNamespace(fullNamespaceName+"/", object, namespaceContentRegistry)
 			}
 
@@ -116,15 +116,15 @@ func exportComputeNamespace(namespace string, objectNamespace string) string {
 }
 
 func exportComputeNamespaceAttributes(namespace string, identityName string, object map[string]interface{}) {
-	if identityName == squallmodels.NamespaceIdentity.Name {
+	if identityName == squallmodels.NamespaceIdentity.Category {
 		object["name"] = object["name"].(string)[strings.LastIndex(object["name"].(string), "/")+1:]
 	}
 
-	if identityName == squallmodels.APIAuthorizationPolicyIdentity.Name {
+	if identityName == squallmodels.APIAuthorizationPolicyIdentity.Category {
 		object["authorizedNamespace"] = exportComputeNamespace(namespace, object["authorizedNamespace"].(string))
 	}
 
-	if identityName == squallmodels.NamespaceMappingPolicyIdentity.Name {
+	if identityName == squallmodels.NamespaceMappingPolicyIdentity.Category {
 		object["mappedNamespace"] = exportComputeNamespace(namespace, object["mappedNamespace"].(string))
 	}
 

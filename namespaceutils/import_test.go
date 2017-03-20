@@ -17,10 +17,10 @@ func Test_importComputeNamespace(t *testing.T) {
 
 		Convey("Then I try to compute the data with namespace /1/2", func() {
 			namespace := "/1/2/3"
-			importComputeNamespace(namespace, squallmodels.APIAuthorizationPolicyIdentity.Name, apiAuthorizationPolicy1)
-			importComputeNamespace(namespace, squallmodels.APIAuthorizationPolicyIdentity.Name, apiAuthorizationPolicy2)
-			importComputeNamespace(namespace, squallmodels.NamespaceMappingPolicyIdentity.Name, namespaceMappingPolicy1)
-			importComputeNamespace(namespace, squallmodels.NamespaceMappingPolicyIdentity.Name, namespaceMappingPolicy2)
+			importComputeNamespace(namespace, squallmodels.APIAuthorizationPolicyIdentity.Category, apiAuthorizationPolicy1)
+			importComputeNamespace(namespace, squallmodels.APIAuthorizationPolicyIdentity.Category, apiAuthorizationPolicy2)
+			importComputeNamespace(namespace, squallmodels.NamespaceMappingPolicyIdentity.Category, namespaceMappingPolicy1)
+			importComputeNamespace(namespace, squallmodels.NamespaceMappingPolicyIdentity.Category, namespaceMappingPolicy2)
 
 			So(apiAuthorizationPolicy1["authorizedNamespace"], ShouldEqual, "/1/2/3/4")
 			So(apiAuthorizationPolicy2["authorizedNamespace"], ShouldEqual, "/1/2/3")

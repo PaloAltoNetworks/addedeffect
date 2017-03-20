@@ -43,7 +43,7 @@ func Import(manipulator manipulate.Manipulator, namespace string, content map[st
 			mctx.Namespace = topNamespace
 			mctx.Recursive = true
 
-			dest := squallmodels.ContentIdentifiableForIdentity(value.Name)
+			dest := squallmodels.ContentIdentifiableForCategory(value.Category)
 
 			if err := manipulator.RetrieveMany(mctx, dest); err != nil {
 				return err
@@ -53,7 +53,7 @@ func Import(manipulator manipulate.Manipulator, namespace string, content map[st
 		}
 	}
 
-	if err := importNamespaceContent(manipulator, namespace, content); err != nil {
+	if err := importNamespaceContent(manipulator, namespace, content["namespace"].(map[string]interface{})); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, currentNamespace
 	delete(content, namespaceContentKey)
 
 	namespace := &squallmodels.Namespace{}
-	jsonRaw, err := json.Marshal(namespaceContent)
+	jsonRaw, err := json.Marshal(content)
 
 	if err != nil {
 		return err
@@ -95,32 +95,40 @@ func importNamespaceContent(manipulator manipulate.Manipulator, currentNamespace
 		return err
 	}
 
-	if c, ok := namespaceContent[squallmodels.NamespaceIdentity.Name]; ok {
-		if err := importNamespaceContent(manipulator, namespace.Name, c.(map[string]interface{})); err != nil {
-			return err
+	for key, value := range namespaceContent {
+		if key == squallmodels.NamespaceIdentity.Category {
+			for _, n := range value.([]interface{}) {
+				if err := importNamespaceContent(manipulator, namespace.Name, n.(map[string]interface{})); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
 	for key, value := range namespaceContent {
 
-		if key == squallmodels.NamespaceIdentity.Name {
+		if key == squallmodels.NamespaceIdentity.Category {
 			continue
 		}
 
-		dest := squallmodels.ContentIdentifiableForIdentity(key).(elemental.Identifiable)
-		importComputeNamespace(namespace.Name, key, value.(map[string]interface{}))
-		jsonRaw, err := json.Marshal(value)
+		for _, object := range value.([]interface{}) {
 
-		if err != nil {
-			return err
-		}
+			dest := squallmodels.ContentIdentifiableForCategory(key).(elemental.Identifiable)
+			importComputeNamespace(namespace.Name, key, object.(map[string]interface{}))
+			jsonRaw, err := json.Marshal(object)
 
-		if err := json.Unmarshal(jsonRaw, &dest); err != nil {
-			return err
-		}
+			if err != nil {
+				return err
+			}
 
-		if err := manipulator.Create(mctx, dest); err != nil {
-			return err
+			if err := json.Unmarshal(jsonRaw, &dest); err != nil {
+				return err
+			}
+
+			if err := manipulator.Create(mctx, dest); err != nil {
+				return err
+			}
+
 		}
 	}
 
@@ -129,11 +137,11 @@ func importNamespaceContent(manipulator manipulate.Manipulator, currentNamespace
 
 func importComputeNamespace(namespace string, identityName string, object map[string]interface{}) {
 
-	if identityName == squallmodels.APIAuthorizationPolicyIdentity.Name {
+	if identityName == squallmodels.APIAuthorizationPolicyIdentity.Category {
 		object["authorizedNamespace"] = namespace[:len(namespace)-2] + object["authorizedNamespace"].(string)
 	}
 
-	if identityName == squallmodels.NamespaceMappingPolicyIdentity.Name {
+	if identityName == squallmodels.NamespaceMappingPolicyIdentity.Category {
 		object["mappedNamespace"] = namespace[:len(namespace)-2] + object["mappedNamespace"].(string)
 	}
 

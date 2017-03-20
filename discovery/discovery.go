@@ -35,6 +35,10 @@ type PlatformInfo struct {
 	ZackClientCertKey     string   `json:"zackClientCertKey,omitempty"`
 	VinceClientCert       string   `json:"vinceClientCert,omitempty"`
 	VinceClientCertKey    string   `json:"vinceClientCertKey,omitempty"`
+	SquallClientCert      string   `json:"squallClientCert,omitempty"`
+	SquallClientCertKey   string   `json:"squallClientCertKey,omitempty"`
+	TidusClientCert       string   `json:"tidusClientCert,omitempty"`
+	TidusClientCertKey    string   `json:"tidusClientCertKey,omitempty"`
 	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
 	SystemVersion         string   `json:"systemVersion,omitempty"`
 	ApoctlLinuxURL        string   `json:"apoctlLinuxURL,omitempty"`
@@ -75,6 +79,18 @@ func (p *PlatformInfo) ZackClientKeyPair(password string) (tls.Certificate, erro
 func (p *PlatformInfo) VinceClientKeyPair(password string) (tls.Certificate, error) {
 
 	return loadCertificates([]byte(p.VinceClientCert), []byte(p.VinceClientCertKey), password)
+}
+
+// SquallClientKeyPair decodes the squall client certificates using the given password.
+func (p *PlatformInfo) SquallClientKeyPair(password string) (tls.Certificate, error) {
+
+	return loadCertificates([]byte(p.SquallClientCert), []byte(p.SquallClientCertKey), password)
+}
+
+// TidusClientKeyPair decodes the tidus client certificates using the given password.
+func (p *PlatformInfo) TidusClientKeyPair(password string) (tls.Certificate, error) {
+
+	return loadCertificates([]byte(p.TidusClientCert), []byte(p.TidusClientCertKey), password)
 }
 
 func (p *PlatformInfo) String() string {

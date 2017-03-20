@@ -11,6 +11,8 @@ import (
 	"github.com/aporeto-inc/manipulate"
 )
 
+const namespaceContentKey = "content"
+
 func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string) (elemental.IdentifiablesList, error) {
 
 	identifiablesChannel := make(chan elemental.IdentifiablesList)
@@ -74,7 +76,7 @@ func TreeContentOfNamespace(namespace string, identifiables elemental.Identifiab
 
 		attributeSpecifications := identifiable.(elemental.AttributeSpecifiable).AttributeSpecifications()
 		FilterResourceField(attributeSpecifications, object)
-		computeNamespaceAttributes(namespace, identifiable.Identity().Name, object)
+		exportComputeNamespaceAttributes(namespace, identifiable.Identity().Name, object)
 
 		if ns == identifiable {
 			root = object
@@ -83,13 +85,13 @@ func TreeContentOfNamespace(namespace string, identifiables elemental.Identifiab
 		}
 	}
 
-	fillTreeNamespaceContent("", root, namespaceContentRegistry)
+	fillTreeForNamespace("", root, namespaceContentRegistry)
 	return map[string]interface{}{"namespace": root}, nil
 }
 
-func fillTreeNamespaceContent(namespace string, currentNamespace map[string]interface{}, namespaceContentRegistry map[string][]map[string]map[string]interface{}) {
+func fillTreeForNamespace(namespace string, currentNamespace map[string]interface{}, namespaceContentRegistry map[string][]map[string]map[string]interface{}) {
 
-	currentNamespace["resources"] = map[string][]map[string]interface{}{}
+	currentNamespace[namespaceContentKey] = map[string][]map[string]interface{}{}
 	fullNamespaceName := namespace + currentNamespace["name"].(string)
 
 	for _, objects := range namespaceContentRegistry[fullNamespaceName] {
@@ -97,15 +99,15 @@ func fillTreeNamespaceContent(namespace string, currentNamespace map[string]inte
 		for identity, object := range objects {
 
 			if identity == squallmodels.NamespaceIdentity.Name {
-				fillTreeNamespaceContent(fullNamespaceName+"/", object, namespaceContentRegistry)
+				fillTreeForNamespace(fullNamespaceName+"/", object, namespaceContentRegistry)
 			}
 
-			currentNamespace["resources"].(map[string][]map[string]interface{})[identity] = append(currentNamespace["resources"].(map[string][]map[string]interface{})[identity], object)
+			currentNamespace[namespaceContentKey].(map[string][]map[string]interface{})[identity] = append(currentNamespace[namespaceContentKey].(map[string][]map[string]interface{})[identity], object)
 		}
 	}
 }
 
-func computeNamespace(namespace string, objectNamespace string) string {
+func exportComputeNamespace(namespace string, objectNamespace string) string {
 	if objectNamespace == namespace {
 		return namespace[strings.LastIndex(namespace, "/"):]
 	} else {
@@ -113,17 +115,17 @@ func computeNamespace(namespace string, objectNamespace string) string {
 	}
 }
 
-func computeNamespaceAttributes(namespace string, identityName string, object map[string]interface{}) {
+func exportComputeNamespaceAttributes(namespace string, identityName string, object map[string]interface{}) {
 	if identityName == squallmodels.NamespaceIdentity.Name {
 		object["name"] = object["name"].(string)[strings.LastIndex(object["name"].(string), "/")+1:]
 	}
 
 	if identityName == squallmodels.APIAuthorizationPolicyIdentity.Name {
-		object["authorizedNamespace"] = computeNamespace(namespace, object["authorizedNamespace"].(string))
+		object["authorizedNamespace"] = exportComputeNamespace(namespace, object["authorizedNamespace"].(string))
 	}
 
 	if identityName == squallmodels.NamespaceMappingPolicyIdentity.Name {
-		object["mappedNamespace"] = computeNamespace(namespace, object["mappedNamespace"].(string))
+		object["mappedNamespace"] = exportComputeNamespace(namespace, object["mappedNamespace"].(string))
 	}
 
 	keys := []string{"subject", "object"}
@@ -135,7 +137,7 @@ func computeNamespaceAttributes(namespace string, identityName string, object ma
 					s := strings.SplitN(v.(string), "=", 2)
 
 					if s[0] == "$namespace" {
-						newNamespace := computeNamespace(namespace, s[1])
+						newNamespace := exportComputeNamespace(namespace, s[1])
 						vs.([]interface{})[i] = s[0] + "=" + newNamespace
 					}
 				}

@@ -22,6 +22,7 @@ func Import(manipulator manipulate.Manipulator, namespace string, content map[st
 func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace string, currentNamespace string, content map[string]interface{}, shouldClean bool) error {
 
 	previousContent := elemental.IdentifiablesList{}
+	originalNamespaceName := ""
 
 	for key, value := range content {
 
@@ -45,19 +46,30 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				return err
 			}
 
-			isNsExist, err := isNamespaceExist(manipulator, currentNamespace, currentNamespace+"/"+namespace.Name)
+			isNsExist := true
 
-			if err != nil {
-				return err
-			}
+			if namespace.Name != "" {
+				originalNamespaceName = namespace.Name
+				if currentNamespace == "/" {
+					namespace.Name = "/" + namespace.Name
+				} else {
+					namespace.Name = currentNamespace + "/" + namespace.Name
+				}
 
-			if shouldClean && isNsExist {
-				if err := deleteNamespace(manipulator, currentNamespace, currentNamespace+"/"+namespace.Name); err != nil {
+				isNsExist, err := isNamespaceExist(manipulator, currentNamespace, namespace)
+
+				if err != nil {
 					return err
+				}
+
+				if shouldClean && isNsExist {
+					if err := deleteNamespace(manipulator, currentNamespace, namespace); err != nil {
+						return err
+					}
 				}
 			}
 
-			if isNsExist && !shouldClean {
+			if (isNsExist && !shouldClean) || (originalNamespaceName == "" && shouldClean) {
 				previousContent, err = ContentOfNamespace(manipulator, currentNamespace, false)
 
 				if err != nil {
@@ -65,12 +77,12 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				}
 			}
 
-			if shouldClean || !isNsExist {
+			if (shouldClean || !isNsExist) && originalNamespaceName != "" {
+				namespace := &squallmodels.Namespace{}
+				namespace.Name = originalNamespaceName
 				if err := createNamespace(manipulator, currentNamespace, namespace); err != nil {
 					return err
 				}
-			} else if isNsExist {
-				namespace.Name = currentNamespace + "/" + namespace.Name
 			}
 
 			if err := importNamespaceContent(manipulator, topNamespace, namespace.Name, namespaceContent, shouldClean); err != nil {
@@ -83,7 +95,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 		return err
 	}
 
-	if !shouldClean {
+	if !shouldClean || (originalNamespaceName == "" && shouldClean) {
 		if err := deleteContent(manipulator, currentNamespace, previousContent); err != nil {
 			return err
 		}
@@ -131,13 +143,12 @@ func createNamespace(manipulator manipulate.Manipulator, namespaceSession string
 	return manipulator.Create(mctx, namespace)
 }
 
-func deleteNamespace(manipulator manipulate.Manipulator, namespaceSession string, namespaceName string) error {
+func deleteNamespace(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace) error {
 	mctx := manipulate.NewContext()
 	mctx.Namespace = namespaceSession
-	mctx.Filter = manipulate.NewFilterComposer().WithKey("namespace").Equals(namespaceName).Done()
 	mctx.OverrideProtection = true
 
-	return manipulator.DeleteMany(mctx, squallmodels.NamespaceIdentity)
+	return manipulator.Delete(mctx, namespace)
 }
 
 func createContent(manipulator manipulate.Manipulator, topNamespace string, namespace string, content map[string]interface{}) error {
@@ -191,18 +202,19 @@ func deleteContent(manipulator manipulate.Manipulator, namespace string, content
 	return nil
 }
 
-func isNamespaceExist(manipulator manipulate.Manipulator, namespaceSession string, namespaceName string) (bool, error) {
+func isNamespaceExist(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace) (bool, error) {
 	mctx := manipulate.NewContext()
 	mctx.Namespace = namespaceSession
-	mctx.Filter = manipulate.NewFilterComposer().WithKey("namespace").Equals(namespaceName).Done()
+	mctx.Filter = manipulate.NewFilterComposer().WithKey("name").Equals(namespace.Name).Done()
 
 	dest := squallmodels.NamespacesList{}
 
-	if err := manipulator.RetrieveMany(mctx, dest); err != nil {
+	if err := manipulator.RetrieveMany(mctx, &dest); err != nil {
 		return false, err
 	}
 
 	if len(dest) > 0 {
+		namespace.SetIdentifier(dest[0].Identifier())
 		return true, nil
 	}
 

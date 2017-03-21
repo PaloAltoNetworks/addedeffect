@@ -5,6 +5,8 @@ import (
 
 	"github.com/aporeto-inc/elemental"
 	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
+	"github.com/aporeto-inc/manipulate"
+	"github.com/aporeto-inc/manipulate/maniptest"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -297,6 +299,231 @@ func Test_computeNamespaceAttributes(t *testing.T) {
 			So(namespaceMappingPolicy2["subject"], ShouldResemble, []interface{}{[]interface{}{"$namespace=/3"}, []interface{}{"$namespace=/3/4"}, []interface{}{"$namespace=/3/5"}})
 			So(namespace1["name"], ShouldEqual, "4")
 			So(namespace2["name"], ShouldEqual, "3")
+		})
+	})
+}
+
+func Test_ContentOfNamespace(t *testing.T) {
+	Convey("Given test data is prepared", t, func() {
+
+		manipulator := maniptest.NewTestManipulator()
+
+		namespaceMappingPolicy1 := squallmodels.NewNamespaceMappingPolicy()
+		namespaceMappingPolicy1.Name = "namespaceMappingPolicy1"
+
+		namespaceMappingPolicy2 := squallmodels.NewNamespaceMappingPolicy()
+		namespaceMappingPolicy2.Name = "namespaceMappingPolicy2"
+
+		networksAccessPolicy1 := squallmodels.NewNetworkAccessPolicy()
+		networksAccessPolicy1.Name = "networksAccessPolicy1"
+
+		fileAccessPolicy1 := squallmodels.NewFileAccessPolicy()
+		fileAccessPolicy1.Name = "fileAccessPolicy1"
+
+		fileAccessPolicy2 := squallmodels.NewFileAccessPolicy()
+		fileAccessPolicy2.Name = "fileAccessPolicy2"
+
+		enforcerMappingPolicy1 := squallmodels.NewEnforcerProfileMappingPolicy()
+		enforcerMappingPolicy1.Name = "enforcerMappingPolicy1"
+
+		namespace1 := squallmodels.NewNamespace()
+		namespace1.Name = "namespace1"
+
+		externalService1 := squallmodels.NewExternalService()
+		externalService1.Name = "externalService1"
+
+		filePath1 := squallmodels.NewFilePath()
+		filePath1.Name = "filePath1"
+
+		enforcerProfile1 := squallmodels.NewEnforcerProfile()
+		enforcerProfile1.Name = "enforcerProfile1"
+
+		intergration1 := squallmodels.NewIntegration()
+		intergration1.Password = "intergration1"
+
+		dependencyMapView1 := squallmodels.NewDependencyMapView()
+		dependencyMapView1.Name = "dependencyMapView1"
+
+		Convey("Then we get an error", func() {
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceMappingPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NamespaceMappingPoliciesList)
+					*policies = append(*policies, namespaceMappingPolicy2, namespaceMappingPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NetworkAccessPoliciesList)
+					*policies = append(*policies, networksAccessPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.FileAccessPoliciesList)
+					*policies = append(*policies, fileAccessPolicy1, fileAccessPolicy2)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.EnforcerProfileMappingPolicyIdentity.Name {
+					policies := dest.(*squallmodels.EnforcerProfileMappingPoliciesList)
+					*policies = append(*policies, enforcerMappingPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					*namespaces = append(*namespaces, namespace1)
+					dest = namespaces
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.ExternalServiceIdentity.Name {
+					externalServices := dest.(*squallmodels.ExternalServicesList)
+					*externalServices = append(*externalServices, externalService1)
+					dest = externalServices
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FilePathIdentity.Name {
+					filePaths := dest.(*squallmodels.FilePathsList)
+					*filePaths = append(*filePaths, filePath1)
+					dest = filePaths
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.EnforcerProfileIdentity.Name {
+					enforcers := dest.(*squallmodels.EnforcerProfilesList)
+					*enforcers = append(*enforcers, enforcerProfile1)
+					dest = enforcers
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.DependencyMapViewIdentity.Name {
+					mapviews := dest.(*squallmodels.DependencyMapViewsList)
+					*mapviews = append(*mapviews, dependencyMapView1)
+					dest = mapviews
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.IntegrationIdentity.Name {
+					return elemental.NewError("Invalid Entity", "", "", 500)
+				}
+
+				return nil
+			})
+
+			content, err := ContentOfNamespace(manipulator, "/coucou", true)
+			So(content, ShouldBeNil)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Then we get data from the namespaces", func() {
+
+			var expectedNamespace string
+			var expectedRecursive bool
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				expectedNamespace = context.Namespace
+				expectedRecursive = context.Recursive
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceMappingPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NamespaceMappingPoliciesList)
+					*policies = append(*policies, namespaceMappingPolicy2, namespaceMappingPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NetworkAccessPoliciesList)
+					*policies = append(*policies, networksAccessPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.FileAccessPoliciesList)
+					*policies = append(*policies, fileAccessPolicy1, fileAccessPolicy2)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.EnforcerProfileMappingPolicyIdentity.Name {
+					policies := dest.(*squallmodels.EnforcerProfileMappingPoliciesList)
+					*policies = append(*policies, enforcerMappingPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					*namespaces = append(*namespaces, namespace1)
+					dest = namespaces
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.ExternalServiceIdentity.Name {
+					externalServices := dest.(*squallmodels.ExternalServicesList)
+					*externalServices = append(*externalServices, externalService1)
+					dest = externalServices
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FilePathIdentity.Name {
+					filePaths := dest.(*squallmodels.FilePathsList)
+					*filePaths = append(*filePaths, filePath1)
+					dest = filePaths
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.EnforcerProfileIdentity.Name {
+					enforcers := dest.(*squallmodels.EnforcerProfilesList)
+					*enforcers = append(*enforcers, enforcerProfile1)
+					dest = enforcers
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.DependencyMapViewIdentity.Name {
+					mapviews := dest.(*squallmodels.DependencyMapViewsList)
+					*mapviews = append(*mapviews, dependencyMapView1)
+					dest = mapviews
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.IntegrationIdentity.Name {
+					integrations := dest.(*squallmodels.IntegrationsList)
+					*integrations = append(*integrations, intergration1)
+					dest = integrations
+					_ = dest
+				}
+
+				return nil
+			})
+
+			content, err := ContentOfNamespace(manipulator, "/coucou", true)
+			So(err, ShouldBeNil)
+			So(len(content), ShouldEqual, 12)
+			So(content, ShouldContain, namespaceMappingPolicy1)
+			So(content, ShouldContain, namespaceMappingPolicy2)
+			So(content, ShouldContain, networksAccessPolicy1)
+			So(content, ShouldContain, fileAccessPolicy1)
+			So(content, ShouldContain, fileAccessPolicy2)
+			So(content, ShouldContain, enforcerMappingPolicy1)
+			So(content, ShouldContain, namespace1)
+			So(content, ShouldContain, externalService1)
+			So(content, ShouldContain, filePath1)
+			So(content, ShouldContain, enforcerProfile1)
+			So(content, ShouldContain, dependencyMapView1)
+			So(content, ShouldContain, intergration1)
+
+			So(expectedNamespace, ShouldEqual, "/coucou")
+			So(expectedRecursive, ShouldBeTrue)
 		})
 	})
 }

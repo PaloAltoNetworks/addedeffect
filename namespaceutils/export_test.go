@@ -97,7 +97,7 @@ func Test_TreeContentOfNamespace(t *testing.T) {
 }
 
 func Test_fillTreeNamespaceContent(t *testing.T) {
-	Convey("Given test data is prepared", t, func() {
+	Convey("Given test data is prepared with namespace /3", t, func() {
 		topNamespace := map[string]interface{}{"name": "3"}
 		namespaceContentRegistry := map[string][]map[string]map[string]interface{}{}
 
@@ -171,7 +171,82 @@ func Test_fillTreeNamespaceContent(t *testing.T) {
 			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"][0], ShouldResemble, filepath4)
 			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"][0], ShouldResemble, externalService4)
 		})
+	})
 
+	Convey("Given test data is prepared with namespace /", t, func() {
+		topNamespace := map[string]interface{}{"name": ""}
+		namespaceContentRegistry := map[string][]map[string]map[string]interface{}{}
+
+		namespace1 := map[string]interface{}{"name": "4"}
+		namespace2 := map[string]interface{}{"name": "4.1"}
+		namespace3 := map[string]interface{}{"name": "5"}
+
+		externalService1 := map[string]interface{}{"name": "externalService1"}
+		externalService2 := map[string]interface{}{"name": "externalService2"}
+		externalService3 := map[string]interface{}{"name": "externalService3"}
+		externalService4 := map[string]interface{}{"name": "externalService4"}
+
+		filepath1 := map[string]interface{}{"name": "filePath1"}
+		filepath2 := map[string]interface{}{"name": "filePath2"}
+		filepath3 := map[string]interface{}{"name": "filePath3"}
+		filepath4 := map[string]interface{}{"name": "filePath4"}
+
+		namespaceContentRegistry[""] = []map[string]map[string]interface{}{}
+		namespaceContentRegistry[""] = append(namespaceContentRegistry[""], map[string]map[string]interface{}{"namespaces": namespace1})
+		namespaceContentRegistry[""] = append(namespaceContentRegistry[""], map[string]map[string]interface{}{"namespaces": namespace2})
+		namespaceContentRegistry[""] = append(namespaceContentRegistry[""], map[string]map[string]interface{}{"externalservices": externalService1})
+		namespaceContentRegistry[""] = append(namespaceContentRegistry[""], map[string]map[string]interface{}{"externalservices": externalService2})
+		namespaceContentRegistry[""] = append(namespaceContentRegistry[""], map[string]map[string]interface{}{"filepaths": filepath1})
+
+		namespaceContentRegistry["4"] = []map[string]map[string]interface{}{}
+		namespaceContentRegistry["4"] = append(namespaceContentRegistry["4"], map[string]map[string]interface{}{"namespaces": namespace3})
+
+		namespaceContentRegistry["4.1"] = []map[string]map[string]interface{}{}
+		namespaceContentRegistry["4.1"] = append(namespaceContentRegistry["4.1"], map[string]map[string]interface{}{"externalservices": externalService4})
+		namespaceContentRegistry["4.1"] = append(namespaceContentRegistry["4.1"], map[string]map[string]interface{}{"filepaths": filepath4})
+
+		namespaceContentRegistry["4/5"] = []map[string]map[string]interface{}{}
+		namespaceContentRegistry["4/5"] = append(namespaceContentRegistry["4/5"], map[string]map[string]interface{}{"externalservices": externalService3})
+		namespaceContentRegistry["4/5"] = append(namespaceContentRegistry["4/5"], map[string]map[string]interface{}{"filepaths": filepath2})
+		namespaceContentRegistry["4/5"] = append(namespaceContentRegistry["4/5"], map[string]map[string]interface{}{"filepaths": filepath3})
+
+		Convey("Then I fill my top namespace with the data", func() {
+			fillTreeForNamespace("", topNamespace, namespaceContentRegistry)
+
+			So(topNamespace["name"], ShouldEqual, "")
+			So(len(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"]), ShouldEqual, 2)
+			So(len(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"]), ShouldEqual, 2)
+			So(len(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"]), ShouldEqual, 1)
+			So(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"][0], ShouldResemble, filepath1)
+			So(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"][0], ShouldResemble, namespace1)
+			So(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"][1], ShouldResemble, namespace2)
+			So(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"][0], ShouldResemble, externalService1)
+			So(topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"][1], ShouldResemble, externalService2)
+
+			// namespace1
+			ns := topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"][0]
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"]), ShouldEqual, 1)
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"]), ShouldEqual, 0)
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"]), ShouldEqual, 0)
+			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"][0], ShouldResemble, namespace3)
+
+			// namespace3
+			ns = ns[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"][0]
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"]), ShouldEqual, 0)
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"]), ShouldEqual, 1)
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"]), ShouldEqual, 2)
+			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"][0], ShouldResemble, filepath2)
+			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"][1], ShouldResemble, filepath3)
+			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"][0], ShouldResemble, externalService3)
+
+			// namespace2
+			ns = topNamespace[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"][1]
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["namespaces"]), ShouldEqual, 0)
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"]), ShouldEqual, 1)
+			So(len(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"]), ShouldEqual, 1)
+			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["filepaths"][0], ShouldResemble, filepath4)
+			So(ns[namespaceContentKey].(map[string][]map[string]interface{})["externalservices"][0], ShouldResemble, externalService4)
+		})
 	})
 }
 

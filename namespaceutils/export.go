@@ -99,7 +99,12 @@ func fillTreeForNamespace(namespace string, currentNamespace map[string]interfac
 		for identity, object := range objects {
 
 			if identity == squallmodels.NamespaceIdentity.Category {
-				fillTreeForNamespace(fullNamespaceName+"/", object, namespaceContentRegistry)
+				newNamespace := fullNamespaceName + "/"
+
+				if fullNamespaceName == "" {
+					newNamespace = ""
+				}
+				fillTreeForNamespace(newNamespace, object, namespaceContentRegistry)
 			}
 
 			currentNamespace[namespaceContentKey].(map[string][]map[string]interface{})[identity] = append(currentNamespace[namespaceContentKey].(map[string][]map[string]interface{})[identity], object)

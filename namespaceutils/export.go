@@ -13,14 +13,14 @@ import (
 
 const namespaceContentKey = "content"
 
-func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string) (elemental.IdentifiablesList, error) {
+func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string, recursive bool) (elemental.IdentifiablesList, error) {
 
 	identifiablesChannel := make(chan elemental.IdentifiablesList)
 	errorsChannel := make(chan error)
 	identifiables := elemental.IdentifiablesList{}
 
 	mctx := manipulate.NewContext()
-	mctx.Recursive = true
+	mctx.Recursive = recursive
 	mctx.Namespace = namespace
 
 	for _, identity := range exportNamespacesObjects {

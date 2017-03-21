@@ -24,6 +24,9 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 	previousContent := elemental.IdentifiablesList{}
 
 	for key, value := range content {
+
+		key = strings.ToLower(key)
+
 		if key != squallmodels.NamespaceIdentity.Category {
 			continue
 		}
@@ -140,6 +143,8 @@ func deleteNamespace(manipulator manipulate.Manipulator, namespaceSession string
 func createContent(manipulator manipulate.Manipulator, topNamespace string, namespace string, content map[string]interface{}) error {
 	for key, value := range content {
 
+		key = strings.ToLower(key)
+
 		if key == squallmodels.NamespaceIdentity.Category {
 			continue
 		}
@@ -174,7 +179,7 @@ func deleteContent(manipulator manipulate.Manipulator, namespace string, content
 		mctx.Namespace = namespace
 		mctx.OverrideProtection = true
 
-		if value.Identity().Name == squallmodels.NamespaceIdentity.Category {
+		if value.Identity().Name == squallmodels.NamespaceIdentity.Name {
 			continue
 		}
 

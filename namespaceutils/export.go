@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"strings"
 
-	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
-
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/manipulate"
+
+	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
 )
 
 const namespaceContentKey = "content"
@@ -50,6 +50,7 @@ func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string, re
 // The main object of the tree is the namespace, it will have the public keys of the namespace + the key content
 // content will contain the resources of the namespace
 func TreeContentOfNamespace(namespace string, identifiables elemental.IdentifiablesList) (map[string]interface{}, error) {
+
 	ns := &squallmodels.Namespace{}
 	ns.Name = namespace
 
@@ -117,6 +118,7 @@ func fillTreeForNamespace(namespace string, currentNamespace map[string]interfac
 }
 
 func exportComputeNamespace(namespace string, objectNamespace string) string {
+
 	if objectNamespace == namespace {
 		return namespace[strings.LastIndex(namespace, "/"):]
 	}
@@ -125,6 +127,7 @@ func exportComputeNamespace(namespace string, objectNamespace string) string {
 }
 
 func exportComputeNamespaceAttributes(namespace string, identityName string, object map[string]interface{}) {
+
 	if identityName == squallmodels.NamespaceIdentity.Category {
 		object["name"] = object["name"].(string)[strings.LastIndex(object["name"].(string), "/")+1:]
 	}

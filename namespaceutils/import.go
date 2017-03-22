@@ -11,12 +11,7 @@ import (
 )
 
 func Import(manipulator manipulate.Manipulator, namespace string, content map[string]interface{}, shouldClean bool) error {
-
-	if err := importNamespaceContent(manipulator, namespace, namespace, content, shouldClean); err != nil {
-		return err
-	}
-
-	return nil
+	return importNamespaceContent(manipulator, namespace, namespace, content, shouldClean)
 }
 
 func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace string, currentNamespace string, content map[string]interface{}, shouldClean bool) error {
@@ -46,7 +41,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				return err
 			}
 
-			isNsExist := true
+			isNamespaceExists := true
 
 			if namespace.Name != "" {
 				originalNamespaceName = namespace.Name
@@ -56,20 +51,20 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 					namespace.Name = currentNamespace + "/" + namespace.Name
 				}
 
-				isNsExist, err := isNamespaceExist(manipulator, currentNamespace, namespace)
+				isNamespaceExists, err = isNamespaceExist(manipulator, currentNamespace, namespace)
 
 				if err != nil {
 					return err
 				}
 
-				if shouldClean && isNsExist {
+				if shouldClean && isNamespaceExists {
 					if err := deleteNamespace(manipulator, currentNamespace, namespace); err != nil {
 						return err
 					}
 				}
 			}
 
-			if (isNsExist && !shouldClean) || (originalNamespaceName == "" && shouldClean) {
+			if (isNamespaceExists && !shouldClean) || (originalNamespaceName == "") {
 				previousContent, err = ContentOfNamespace(manipulator, currentNamespace, false)
 
 				if err != nil {
@@ -77,7 +72,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				}
 			}
 
-			if (shouldClean || !isNsExist) && originalNamespaceName != "" {
+			if (shouldClean || !isNamespaceExists) && originalNamespaceName != "" {
 				namespace := &squallmodels.Namespace{}
 				namespace.Name = originalNamespaceName
 				if err := createNamespace(manipulator, currentNamespace, namespace); err != nil {
@@ -95,7 +90,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 		return err
 	}
 
-	if !shouldClean || (originalNamespaceName == "" && shouldClean) {
+	if !shouldClean || (originalNamespaceName == "") {
 		if err := deleteContent(manipulator, currentNamespace, previousContent); err != nil {
 			return err
 		}

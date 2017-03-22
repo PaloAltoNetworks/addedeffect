@@ -330,3 +330,480 @@ func Test_createContent(t *testing.T) {
 		})
 	})
 }
+
+var c *testing.T
+
+func Test_importNamespaceContent(t *testing.T) {
+	Convey("Given test data is prepared", t, func() {
+		c = t
+		manipulator := maniptest.NewTestManipulator()
+
+		content := make(map[string]interface{})
+
+		topNamespace := make(map[string]interface{})
+		topNamespace["name"] = "apomux"
+
+		topNamespaceContent := make(map[string]interface{})
+
+		topNamespaceContent["externalservices"] = []interface{}{map[string]interface{}{"name": "externalService1"}, map[string]interface{}{"name": "externalService2"}}
+		topNamespaceContent["filepaths"] = []interface{}{map[string]interface{}{"name": "filepath1"}}
+		topNamespaceContent["apiauthorizationpolicies"] = []interface{}{map[string]interface{}{"name": "apiAuthorizationPolicy1", "authorizedNamespace": "/apomux/production", "subject": []interface{}{[]interface{}{"$namespace=/apomux/production"}}}}
+		topNamespaceContent["namespacemappingpolicies"] = []interface{}{map[string]interface{}{"mappedNamespace": "/apomux/test", "subject": []interface{}{[]interface{}{"$namespace=/apomux/production/aporeto"}, []interface{}{"$namespace=/apomux/test"}}}}
+
+		namespaceTest := map[string]interface{}{"name": "test", "content": make(map[string]interface{})}
+		namespaceProductionAporeto := map[string]interface{}{"name": "aporeto", "content": make(map[string]interface{})}
+
+		namespaceProductionContent := make(map[string]interface{})
+
+		namespaceProductionContent["namespaces"] = []interface{}{namespaceProductionAporeto}
+		namespaceProductionContent["filepaths"] = []interface{}{map[string]interface{}{"name": "filepath3"}}
+		namespaceProductionContent["namespacemappingpolicies"] = []interface{}{map[string]interface{}{"mappedNamespace": "/apomux/production/aporeto", "subject": []interface{}{[]interface{}{"$namespace=/apomux/production/aporeto"}}}}
+
+		namespaceProduction := map[string]interface{}{"name": "production", "content": namespaceProductionContent}
+		topNamespaceContent["namespaces"] = []interface{}{namespaceTest, namespaceProduction}
+
+		topNamespace["content"] = topNamespaceContent
+		content["namespaces"] = []interface{}{topNamespace}
+
+		Convey("Given importNamespaceContent is a success with the namespace /", func() {
+			namespacesCreated := squallmodels.NamespacesList{}
+			externalServicesCreated := squallmodels.ExternalServicesList{}
+			filePathscreated := squallmodels.FilePathsList{}
+			namespaceMappingPoliciesCreated := squallmodels.NamespaceMappingPoliciesList{}
+			apiAuthorizationPoliciesCreated := squallmodels.APIAuthorizationPoliciesList{}
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+				return nil
+			})
+
+			manipulator.MockCreate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+
+				if objects[0].Identity().Name == squallmodels.NamespaceIdentity.Name {
+					namespace := objects[0].(*squallmodels.Namespace)
+					if ctx.Namespace == "/" {
+						namespace.Name = "/" + namespace.Name
+					} else {
+						namespace.Name = ctx.Namespace + "/" + namespace.Name
+					}
+					namespace.Namespace = ctx.Namespace
+					namespacesCreated = append(namespacesCreated, namespace)
+				}
+
+				if objects[0].Identity().Name == squallmodels.ExternalServiceIdentity.Name {
+					externalService := objects[0].(*squallmodels.ExternalService)
+					externalService.Namespace = ctx.Namespace
+					externalServicesCreated = append(externalServicesCreated, externalService)
+				}
+
+				if objects[0].Identity().Name == squallmodels.FilePathIdentity.Name {
+					filePath := objects[0].(*squallmodels.FilePath)
+					filePath.Namespace = ctx.Namespace
+					filePathscreated = append(filePathscreated, filePath)
+				}
+
+				if objects[0].Identity().Name == squallmodels.NamespaceMappingPolicyIdentity.Name {
+					namespaceMappingPolicy := objects[0].(*squallmodels.NamespaceMappingPolicy)
+					namespaceMappingPolicy.Namespace = ctx.Namespace
+					namespaceMappingPoliciesCreated = append(namespaceMappingPoliciesCreated, namespaceMappingPolicy)
+				}
+
+				if objects[0].Identity().Name == squallmodels.APIAuthorizationPolicyIdentity.Name {
+					apiAuthorizationPolicy := objects[0].(*squallmodels.APIAuthorizationPolicy)
+					apiAuthorizationPolicy.Namespace = ctx.Namespace
+					apiAuthorizationPoliciesCreated = append(apiAuthorizationPoliciesCreated, apiAuthorizationPolicy)
+				}
+
+				return nil
+			})
+
+			err := Import(manipulator, "/", content, false)
+
+			So(err, ShouldBeNil)
+			So(len(namespacesCreated), ShouldEqual, 4)
+			So(len(externalServicesCreated), ShouldEqual, 2)
+			So(len(filePathscreated), ShouldEqual, 2)
+			So(len(apiAuthorizationPoliciesCreated), ShouldEqual, 1)
+			So(len(namespaceMappingPoliciesCreated), ShouldEqual, 2)
+
+			So(apiAuthorizationPoliciesCreated[0].Name, ShouldEqual, "apiAuthorizationPolicy1")
+			So(apiAuthorizationPoliciesCreated[0].AuthorizedNamespace, ShouldEqual, "/apomux/production")
+			So(apiAuthorizationPoliciesCreated[0].Namespace, ShouldEqual, "/apomux")
+			So(apiAuthorizationPoliciesCreated[0].Subject[0][0], ShouldEqual, "$namespace=/apomux/production")
+
+			So(namespacesCreated[0].Name, ShouldEqual, "/apomux")
+			So(namespacesCreated[0].Namespace, ShouldEqual, "/")
+
+			So(namespacesCreated[1].Name, ShouldEqual, "/apomux/test")
+			So(namespacesCreated[1].Namespace, ShouldEqual, "/apomux")
+
+			So(namespacesCreated[2].Name, ShouldEqual, "/apomux/production")
+			So(namespacesCreated[2].Namespace, ShouldEqual, "/apomux")
+
+			So(namespacesCreated[3].Name, ShouldEqual, "/apomux/production/aporeto")
+			So(namespacesCreated[3].Namespace, ShouldEqual, "/apomux/production")
+
+			So(externalServicesCreated[0].Name, ShouldEqual, "externalService1")
+			So(externalServicesCreated[0].Namespace, ShouldEqual, "/apomux")
+
+			So(externalServicesCreated[1].Name, ShouldEqual, "externalService2")
+			So(externalServicesCreated[1].Namespace, ShouldEqual, "/apomux")
+
+			So(filePathscreated[1].Name, ShouldEqual, "filepath1")
+			So(filePathscreated[1].Namespace, ShouldEqual, "/apomux")
+
+			So(filePathscreated[0].Name, ShouldEqual, "filepath3")
+			So(filePathscreated[0].Namespace, ShouldEqual, "/apomux/production")
+
+			So(namespaceMappingPoliciesCreated[0].MappedNamespace, ShouldEqual, "/apomux/production/aporeto")
+			So(namespaceMappingPoliciesCreated[0].Namespace, ShouldEqual, "/apomux/production")
+			So(namespaceMappingPoliciesCreated[0].Subject[0][0], ShouldEqual, "$namespace=/apomux/production/aporeto")
+
+			So(namespaceMappingPoliciesCreated[1].MappedNamespace, ShouldEqual, "/apomux/test")
+			So(namespaceMappingPoliciesCreated[1].Namespace, ShouldEqual, "/apomux")
+			So(namespaceMappingPoliciesCreated[1].Subject[0][0], ShouldEqual, "$namespace=/apomux/production/aporeto")
+			So(namespaceMappingPoliciesCreated[1].Subject[1][0], ShouldEqual, "$namespace=/apomux/test")
+		})
+
+		Convey("Given importNamespaceContent is a success with the namespace /level", func() {
+			namespacesCreated := squallmodels.NamespacesList{}
+			externalServicesCreated := squallmodels.ExternalServicesList{}
+			filePathscreated := squallmodels.FilePathsList{}
+			namespaceMappingPoliciesCreated := squallmodels.NamespaceMappingPoliciesList{}
+			apiAuthorizationPoliciesCreated := squallmodels.APIAuthorizationPoliciesList{}
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+				return nil
+			})
+
+			manipulator.MockCreate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+
+				if objects[0].Identity().Name == squallmodels.NamespaceIdentity.Name {
+					namespace := objects[0].(*squallmodels.Namespace)
+					if ctx.Namespace == "/" {
+						namespace.Name = "/" + namespace.Name
+					} else {
+						namespace.Name = ctx.Namespace + "/" + namespace.Name
+					}
+					namespace.Namespace = ctx.Namespace
+					namespacesCreated = append(namespacesCreated, namespace)
+				}
+
+				if objects[0].Identity().Name == squallmodels.ExternalServiceIdentity.Name {
+					externalService := objects[0].(*squallmodels.ExternalService)
+					externalService.Namespace = ctx.Namespace
+					externalServicesCreated = append(externalServicesCreated, externalService)
+				}
+
+				if objects[0].Identity().Name == squallmodels.FilePathIdentity.Name {
+					filePath := objects[0].(*squallmodels.FilePath)
+					filePath.Namespace = ctx.Namespace
+					filePathscreated = append(filePathscreated, filePath)
+				}
+
+				if objects[0].Identity().Name == squallmodels.NamespaceMappingPolicyIdentity.Name {
+					namespaceMappingPolicy := objects[0].(*squallmodels.NamespaceMappingPolicy)
+					namespaceMappingPolicy.Namespace = ctx.Namespace
+					namespaceMappingPoliciesCreated = append(namespaceMappingPoliciesCreated, namespaceMappingPolicy)
+				}
+
+				if objects[0].Identity().Name == squallmodels.APIAuthorizationPolicyIdentity.Name {
+					apiAuthorizationPolicy := objects[0].(*squallmodels.APIAuthorizationPolicy)
+					apiAuthorizationPolicy.Namespace = ctx.Namespace
+					apiAuthorizationPoliciesCreated = append(apiAuthorizationPoliciesCreated, apiAuthorizationPolicy)
+				}
+
+				return nil
+			})
+
+			err := Import(manipulator, "/level", content, false)
+
+			So(err, ShouldBeNil)
+			So(len(namespacesCreated), ShouldEqual, 4)
+			So(len(externalServicesCreated), ShouldEqual, 2)
+			So(len(filePathscreated), ShouldEqual, 2)
+			So(len(apiAuthorizationPoliciesCreated), ShouldEqual, 1)
+			So(len(namespaceMappingPoliciesCreated), ShouldEqual, 2)
+
+			So(apiAuthorizationPoliciesCreated[0].Name, ShouldEqual, "apiAuthorizationPolicy1")
+			So(apiAuthorizationPoliciesCreated[0].AuthorizedNamespace, ShouldEqual, "/level/apomux/production")
+			So(apiAuthorizationPoliciesCreated[0].Namespace, ShouldEqual, "/level/apomux")
+			So(apiAuthorizationPoliciesCreated[0].Subject[0][0], ShouldEqual, "$namespace=/level/apomux/production")
+
+			So(namespacesCreated[0].Name, ShouldEqual, "/level/apomux")
+			So(namespacesCreated[0].Namespace, ShouldEqual, "/level")
+
+			So(namespacesCreated[1].Name, ShouldEqual, "/level/apomux/test")
+			So(namespacesCreated[1].Namespace, ShouldEqual, "/level/apomux")
+
+			So(namespacesCreated[2].Name, ShouldEqual, "/level/apomux/production")
+			So(namespacesCreated[2].Namespace, ShouldEqual, "/level/apomux")
+
+			So(namespacesCreated[3].Name, ShouldEqual, "/level/apomux/production/aporeto")
+			So(namespacesCreated[3].Namespace, ShouldEqual, "/level/apomux/production")
+
+			So(externalServicesCreated[0].Name, ShouldEqual, "externalService1")
+			So(externalServicesCreated[0].Namespace, ShouldEqual, "/level/apomux")
+
+			So(externalServicesCreated[1].Name, ShouldEqual, "externalService2")
+			So(externalServicesCreated[1].Namespace, ShouldEqual, "/level/apomux")
+
+			So(filePathscreated[1].Name, ShouldEqual, "filepath1")
+			So(filePathscreated[1].Namespace, ShouldEqual, "/level/apomux")
+
+			So(filePathscreated[0].Name, ShouldEqual, "filepath3")
+			So(filePathscreated[0].Namespace, ShouldEqual, "/level/apomux/production")
+
+			So(namespaceMappingPoliciesCreated[0].MappedNamespace, ShouldEqual, "/level/apomux/production/aporeto")
+			So(namespaceMappingPoliciesCreated[0].Namespace, ShouldEqual, "/level/apomux/production")
+			So(namespaceMappingPoliciesCreated[0].Subject[0][0], ShouldEqual, "$namespace=/level/apomux/production/aporeto")
+
+			So(namespaceMappingPoliciesCreated[1].MappedNamespace, ShouldEqual, "/level/apomux/test")
+			So(namespaceMappingPoliciesCreated[1].Namespace, ShouldEqual, "/level/apomux")
+			So(namespaceMappingPoliciesCreated[1].Subject[0][0], ShouldEqual, "$namespace=/level/apomux/production/aporeto")
+			So(namespaceMappingPoliciesCreated[1].Subject[1][0], ShouldEqual, "$namespace=/level/apomux/test")
+		})
+
+		Convey("Given importNamespaceContent is a success and previous namespace is deleted with namespace /", func() {
+
+			namespacesDeleted := squallmodels.NamespacesList{}
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					namespace := squallmodels.NewNamespace()
+					namespace.Name = context.Filter.String()
+
+					*namespaces = append(*namespaces, namespace)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+				return nil
+			})
+
+			manipulator.MockCreate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+				return nil
+			})
+
+			manipulator.MockDelete(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+				if objects[0].Identity().Name == squallmodels.NamespaceIdentity.Name {
+					namespacesDeleted = append(namespacesDeleted, objects[0].(*squallmodels.Namespace))
+				}
+
+				return nil
+			})
+
+			err := Import(manipulator, "/", content, true)
+			So(err, ShouldBeNil)
+			So(len(namespacesDeleted), ShouldEqual, 4)
+		})
+
+		Convey("Given importNamespaceContent is a success and previous content is deleted with namespace /level", func() {
+
+			networksAccessPolicy1 := squallmodels.NewNetworkAccessPolicy()
+			networksAccessPolicy1.Name = "networksAccessPolicy1"
+
+			fileAccessPolicy1 := squallmodels.NewFileAccessPolicy()
+			fileAccessPolicy1.Name = "fileAccessPolicy1"
+
+			var expectedDeletedFileAccess *squallmodels.FileAccessPolicy
+			var expectedDeletedNetworkAccess *squallmodels.NetworkAccessPolicy
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					namespace := squallmodels.NewNamespace()
+					*namespaces = append(*namespaces, namespace)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NetworkAccessPoliciesList)
+					*policies = append(*policies, networksAccessPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.FileAccessPoliciesList)
+					*policies = append(*policies, fileAccessPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				return nil
+			})
+
+			manipulator.MockCreate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+				return nil
+			})
+
+			manipulator.MockDelete(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+
+				if objects[0].Identity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					expectedDeletedFileAccess = objects[0].(*squallmodels.FileAccessPolicy)
+				}
+				if objects[0].Identity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					expectedDeletedNetworkAccess = objects[0].(*squallmodels.NetworkAccessPolicy)
+				}
+				return nil
+			})
+
+			err := Import(manipulator, "/level", content, false)
+			So(err, ShouldBeNil)
+			So(expectedDeletedFileAccess.Name, ShouldEqual, "fileAccessPolicy1")
+			So(expectedDeletedNetworkAccess.Name, ShouldEqual, "networksAccessPolicy1")
+		})
+
+		Convey("Given importNamespaceContent is a failure and previous namespace is deleted with namespace /", func() {
+
+			namespacesDeleted := squallmodels.NamespacesList{}
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					namespace := squallmodels.NewNamespace()
+					namespace.Name = context.Filter.String()
+
+					*namespaces = append(*namespaces, namespace)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+				return nil
+			})
+
+			manipulator.MockDelete(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+				if objects[0].Identity().Name == squallmodels.NamespaceIdentity.Name {
+					namespacesDeleted = append(namespacesDeleted, objects[0].(*squallmodels.Namespace))
+				}
+
+				return elemental.NewError("Invalid Entity", "", "", 500)
+			})
+
+			err := Import(manipulator, "/", content, true)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Given importNamespaceContent is a failure when retrieving content with namespace /level", func() {
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					namespace := squallmodels.NewNamespace()
+					*namespaces = append(*namespaces, namespace)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NetworkAccessPoliciesList)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.FileAccessPoliciesList)
+					dest = policies
+					_ = dest
+					return elemental.NewError("Invalid Entity", "", "", 500)
+				}
+
+				return nil
+			})
+
+			err := Import(manipulator, "/level", content, false)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Given importNamespaceContent is a failure when deleting the previous content with namespace /level", func() {
+
+			networksAccessPolicy1 := squallmodels.NewNetworkAccessPolicy()
+			networksAccessPolicy1.Name = "networksAccessPolicy1"
+
+			fileAccessPolicy1 := squallmodels.NewFileAccessPolicy()
+			fileAccessPolicy1.Name = "fileAccessPolicy1"
+
+			var expectedDeletedFileAccess *squallmodels.FileAccessPolicy
+			var expectedDeletedNetworkAccess *squallmodels.NetworkAccessPolicy
+
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+
+				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
+					namespaces := dest.(*squallmodels.NamespacesList)
+					namespace := squallmodels.NewNamespace()
+					*namespaces = append(*namespaces, namespace)
+					dest = namespaces
+					_ = dest
+					return nil
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.NetworkAccessPoliciesList)
+					*policies = append(*policies, networksAccessPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				if dest.ContentIdentity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					policies := dest.(*squallmodels.FileAccessPoliciesList)
+					*policies = append(*policies, fileAccessPolicy1)
+					dest = policies
+					_ = dest
+				}
+
+				return nil
+			})
+
+			manipulator.MockCreate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+				return nil
+			})
+
+			manipulator.MockDelete(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+
+				if objects[0].Identity().Name == squallmodels.FileAccessPolicyIdentity.Name {
+					expectedDeletedFileAccess = objects[0].(*squallmodels.FileAccessPolicy)
+				}
+				if objects[0].Identity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
+					expectedDeletedNetworkAccess = objects[0].(*squallmodels.NetworkAccessPolicy)
+					return elemental.NewError("Invalid Entity", "", "", 500)
+				}
+				return nil
+			})
+
+			err := Import(manipulator, "/level", content, false)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Given importNamespaceContent got an error when retrieving a namespace", func() {
+			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
+				return elemental.NewError("Invalid Entity", "", "", 500)
+			})
+
+			err := Import(manipulator, "/level", content, false)
+
+			So(err, ShouldNotBeNil)
+		})
+	})
+}

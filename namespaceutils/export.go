@@ -90,7 +90,7 @@ func TreeContentOfNamespace(namespace string, identifiables elemental.Identifiab
 	}
 
 	fillTreeForNamespace("", root, namespaceContentRegistry)
-	return map[string]interface{}{squallmodels.NamespaceIdentity.Category: root}, nil
+	return map[string]interface{}{squallmodels.NamespaceIdentity.Category: []interface{}{root}}, nil
 }
 
 func fillTreeForNamespace(namespace string, currentNamespace map[string]interface{}, namespaceContentRegistry map[string][]map[string]map[string]interface{}) {

@@ -10,8 +10,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var coucou *testing.T
-
 func Test_TreeContentOfNamespace(t *testing.T) {
 	Convey("Given test data is prepared", t, func() {
 		namespace := "/3"
@@ -36,7 +34,6 @@ func Test_TreeContentOfNamespace(t *testing.T) {
 		identifiables := elemental.IdentifiablesList{namespace1, namespace2, namespace3, externalService1, externalService2, externalService3, externalService4, filepath1, filepath2, filepath3, filepath4, apiAuthorizationPolicy1, apiAuthorizationPolicy2}
 
 		Convey("Then I create my tree", func() {
-			coucou = t
 			tree, err := TreeContentOfNamespace(namespace, identifiables)
 			namespaceMap1 := map[string]interface{}{"name": "4"}
 			namespaceMap2 := map[string]interface{}{"name": "4.1"}

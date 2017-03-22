@@ -13,6 +13,7 @@ import (
 
 const namespaceContentKey = "content"
 
+// ContentOfNamespace returns the content of the given namespace, if recursive is set it will return the content of its child namespace
 func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string, recursive bool) (elemental.IdentifiablesList, error) {
 
 	identifiablesChannel := make(chan elemental.IdentifiablesList)
@@ -45,6 +46,9 @@ func ContentOfNamespace(manipulator manipulate.Manipulator, namespace string, re
 	return identifiables, nil
 }
 
+// TreeContentOfNamespace returns a tree of the given identifiables
+// The main object of the tree is the namespace, it will have the public keys of the namespace + the key content
+// content will contain the resources of the namespace
 func TreeContentOfNamespace(namespace string, identifiables elemental.IdentifiablesList) (map[string]interface{}, error) {
 	ns := &squallmodels.Namespace{}
 	ns.Name = namespace
@@ -115,9 +119,9 @@ func fillTreeForNamespace(namespace string, currentNamespace map[string]interfac
 func exportComputeNamespace(namespace string, objectNamespace string) string {
 	if objectNamespace == namespace {
 		return namespace[strings.LastIndex(namespace, "/"):]
-	} else {
-		return namespace[strings.LastIndex(namespace, "/"):] + strings.Replace(objectNamespace, namespace, "", 1)
 	}
+
+	return namespace[strings.LastIndex(namespace, "/"):] + strings.Replace(objectNamespace, namespace, "", 1)
 }
 
 func exportComputeNamespaceAttributes(namespace string, identityName string, object map[string]interface{}) {

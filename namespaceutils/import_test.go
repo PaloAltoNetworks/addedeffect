@@ -745,9 +745,6 @@ func Test_importNamespaceContent(t *testing.T) {
 			fileAccessPolicy1 := squallmodels.NewFileAccessPolicy()
 			fileAccessPolicy1.Name = "fileAccessPolicy1"
 
-			var expectedDeletedFileAccess *squallmodels.FileAccessPolicy
-			var expectedDeletedNetworkAccess *squallmodels.NetworkAccessPolicy
-
 			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
 
 				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
@@ -782,11 +779,7 @@ func Test_importNamespaceContent(t *testing.T) {
 
 			manipulator.MockDelete(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
 
-				if objects[0].Identity().Name == squallmodels.FileAccessPolicyIdentity.Name {
-					expectedDeletedFileAccess = objects[0].(*squallmodels.FileAccessPolicy)
-				}
 				if objects[0].Identity().Name == squallmodels.NetworkAccessPolicyIdentity.Name {
-					expectedDeletedNetworkAccess = objects[0].(*squallmodels.NetworkAccessPolicy)
 					return elemental.NewError("Invalid Entity", "", "", 500)
 				}
 				return nil

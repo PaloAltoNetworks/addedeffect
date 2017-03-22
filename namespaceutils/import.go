@@ -10,6 +10,9 @@ import (
 	"github.com/aporeto-inc/manipulate"
 )
 
+// Import the given content to the given namespace
+// If shouldClean is set, Import will clean previous namespaces if it overlapps with a new one
+// If shouldClean is not set, Import will clean the content of the namespace if it overlapps with a new one, just the namespace will remain
 func Import(manipulator manipulate.Manipulator, namespace string, content map[string]interface{}, shouldClean bool) error {
 	return importNamespaceContent(manipulator, namespace, namespace, content, shouldClean)
 }
@@ -37,7 +40,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				return err
 			}
 
-			if err := json.Unmarshal(jsonRaw, &namespace); err != nil {
+			if err = json.Unmarshal(jsonRaw, &namespace); err != nil {
 				return err
 			}
 
@@ -58,7 +61,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				}
 
 				if shouldClean && isNamespaceExists {
-					if err := deleteNamespace(manipulator, currentNamespace, namespace); err != nil {
+					if err = deleteNamespace(manipulator, currentNamespace, namespace); err != nil {
 						return err
 					}
 				}
@@ -73,9 +76,9 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 			}
 
 			if (shouldClean || !isNamespaceExists) && originalNamespaceName != "" {
-				namespace := &squallmodels.Namespace{}
-				namespace.Name = originalNamespaceName
-				if err := createNamespace(manipulator, currentNamespace, namespace); err != nil {
+				newNamespace := &squallmodels.Namespace{}
+				newNamespace.Name = originalNamespaceName
+				if err := createNamespace(manipulator, currentNamespace, newNamespace); err != nil {
 					return err
 				}
 			}

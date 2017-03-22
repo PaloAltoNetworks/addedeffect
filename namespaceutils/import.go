@@ -27,6 +27,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 
 	previousContent := elemental.IdentifiablesList{}
 	originalNamespaceName := ""
+	namespaceNameContent := ""
 
 	for key, value := range content {
 
@@ -73,8 +74,13 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				}
 			}
 
-			if (isNamespaceExists && !shouldClean) || (originalNamespaceName == "") || (currentNamespace == "/") {
-				previousContent, err = ContentOfNamespace(manipulator, currentNamespace, false)
+			if namespace.Name == "" {
+				namespace.Name = "/"
+			}
+
+			if isNamespaceExists && !shouldClean && currentNamespace != "" {
+				previousContent, err = ContentOfNamespace(manipulator, namespace.Name, false)
+				namespaceNameContent = namespace.Name
 
 				if err != nil {
 					return err
@@ -100,10 +106,8 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 		return err
 	}
 
-	if !shouldClean || (originalNamespaceName == "") || (currentNamespace == "/") {
-		if err := deleteContent(manipulator, currentNamespace, previousContent); err != nil {
-			return err
-		}
+	if err := deleteContent(manipulator, namespaceNameContent, previousContent); err != nil {
+		return err
 	}
 
 	return nil

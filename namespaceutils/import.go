@@ -2,6 +2,7 @@ package namespaceutils
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
@@ -165,6 +166,11 @@ func createContent(manipulator manipulate.Manipulator, topNamespace string, name
 
 		for _, object := range value.([]interface{}) {
 			dest := squallmodels.IdentifiableForCategory(key).(elemental.Identifiable)
+
+			if dest == nil {
+				return fmt.Errorf("The given key %s is not valid", key)
+			}
+
 			// For instance, values as /apomux needs to be /level/apomux when adding the content in /level/apomux
 			importComputeNamespace(topNamespace, key, object.(map[string]interface{}))
 			jsonRaw, err := json.Marshal(object)

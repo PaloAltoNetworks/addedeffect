@@ -17,6 +17,10 @@ func Import(manipulator manipulate.Manipulator, namespace string, content map[st
 	return importNamespaceContent(manipulator, namespace, namespace, content, shouldClean)
 }
 
+// importNamespaceContent is a recursive function
+// The function will create namespaces first and then content of them
+// It will first check if the namespace exists, if yes it will delete it if shouldClean is set, otherwise it will retrieve the content of it
+// Then we create the namesapce if needed, create the content and finally delete the previous content
 func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace string, currentNamespace string, content map[string]interface{}, shouldClean bool) error {
 
 	previousContent := elemental.IdentifiablesList{}
@@ -76,6 +80,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 			}
 
 			if (shouldClean || !isNamespaceExists) && originalNamespaceName != "" {
+				// When we create a namespace, we are not allowed to put some /
 				newNamespace := &squallmodels.Namespace{}
 				newNamespace.Name = originalNamespaceName
 				if err := createNamespace(manipulator, currentNamespace, newNamespace); err != nil {
@@ -160,6 +165,7 @@ func createContent(manipulator manipulate.Manipulator, topNamespace string, name
 
 		for _, object := range value.([]interface{}) {
 			dest := squallmodels.IdentifiableForCategory(key).(elemental.Identifiable)
+			// For instance, values as /apomux needs to be /level/apomux when adding the content in /level/apomux
 			importComputeNamespace(topNamespace, key, object.(map[string]interface{}))
 			jsonRaw, err := json.Marshal(object)
 

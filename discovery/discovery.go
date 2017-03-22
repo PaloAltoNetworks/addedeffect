@@ -13,6 +13,7 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
+	CidURL                string   `json:"cid,omitempty"`
 	CladURL               string   `json:"clad,omitempty"`
 	SquallURL             string   `json:"squall,omitempty"`
 	MidgardURL            string   `json:"midgard,omitempty"`
@@ -104,7 +105,8 @@ func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, e
 func (p *PlatformInfo) String() string {
 
 	return fmt.Sprintf(
-		"<platform: squall:%s midgard:%s zack:%s vince:%s graylog:%s logid:%s>",
+		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s graylog:%s logid:%s>",
+		p.CidURL,
 		p.SquallURL,
 		p.MidgardURL,
 		p.ZackURL,
@@ -117,6 +119,7 @@ func (p *PlatformInfo) String() string {
 // Fields returns ready to be dump logrus fields.
 func (p *PlatformInfo) Fields() logrus.Fields {
 	return logrus.Fields{
+		"cid":            p.CidURL,
 		"clad":           p.CladURL,
 		"squall":         p.SquallURL,
 		"midgard":        p.MidgardURL,
@@ -135,6 +138,7 @@ func (p *PlatformInfo) Fields() logrus.Fields {
 // PublicFields returns ready to be dump logrus fields.
 func (p *PlatformInfo) PublicFields() logrus.Fields {
 	return logrus.Fields{
+		"cid":            p.CidURL,
 		"clad":           p.CladURL,
 		"squall":         p.SquallURL,
 		"midgard":        p.MidgardURL,
@@ -209,6 +213,8 @@ func DiscoverPlatform(cidURL string) (*PlatformInfo, error) {
 	if err = json.NewDecoder(resp.Body).Decode(&info); err != nil {
 		return nil, fmt.Errorf("Unable to decode system info: %s", err)
 	}
+
+	info.CidURL = cidURL
 
 	return info, nil
 }

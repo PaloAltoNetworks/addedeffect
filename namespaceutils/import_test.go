@@ -586,7 +586,6 @@ func Test_importNamespaceContent(t *testing.T) {
 				if dest.ContentIdentity().Name == squallmodels.NamespaceIdentity.Name {
 					namespaces := dest.(*squallmodels.NamespacesList)
 					namespace := squallmodels.NewNamespace()
-					namespace.Name = context.Filter.String()
 
 					*namespaces = append(*namespaces, namespace)
 					dest = namespaces

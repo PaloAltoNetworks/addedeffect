@@ -11,7 +11,6 @@ const (
 	metaDataPath    = "http://169.254.169.254/latest/meta-data/"
 	dynamicDataPath = "http://169.254.169.254/latest/dynamic/instance-identity"
 	pkcs7Name       = "pkcs7"
-	documentName    = "document"
 	// AWSName is the key for the name of the instance
 	AWSName = "ami-id"
 	// AWSPublicHostName is the key for the public hostname of the instance

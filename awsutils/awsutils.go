@@ -27,9 +27,9 @@ func getValue(uri string) (string, error) {
 		return "", err
 	}
 
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 
-	body, err := ioutil.ReadAll(resp.Body) //nolint
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}

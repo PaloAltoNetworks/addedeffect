@@ -15,7 +15,7 @@ import (
 	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
 )
 
-// RegisterEnforcer registers a new agent server with given name, description and tags in Squall using the given Manipulator.
+// RegisterEnforcer registers a new enforcer server with given name, description and tags in Squall using the given Manipulator.
 func RegisterEnforcer(
 	manipulator manipulate.Manipulator,
 	namespace string,

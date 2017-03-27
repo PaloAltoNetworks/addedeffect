@@ -47,7 +47,7 @@ type PlatformInfo struct {
 	ApoctlLinuxURL        string   `json:"apoctlLinuxURL,omitempty"`
 	ApoctlWindowsURL      string   `json:"apoctlWindowsURL,omitempty"`
 	ApoctlDarwinURL       string   `json:"apoctlDarwinURL,omitempty"`
-	AgentURL              string   `json:"agentURL,omitempty"`
+	EnforcerdURL          string   `json:"enforcerdURL,omitempty"`
 }
 
 // ServicesKeyPair decodes the services certificates using the given password.

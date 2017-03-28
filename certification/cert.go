@@ -117,6 +117,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 
 		// KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage: []x509.ExtKeyUsage{
+			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
 		},
 

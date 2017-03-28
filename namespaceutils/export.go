@@ -86,7 +86,7 @@ func TreeContentOfNamespace(namespace string, identifiables elemental.Identifiab
 		if ns == identifiable {
 			root = object
 		} else {
-			namespaceContentRegistry[objectNamespace] = append(namespaceContentRegistry[strings.Replace(objectNamespace, namespace, "", 1)], map[string]map[string]interface{}{identifiable.Identity().Category: object})
+			namespaceContentRegistry[objectNamespace] = append(namespaceContentRegistry[objectNamespace], map[string]map[string]interface{}{identifiable.Identity().Category: object})
 		}
 	}
 

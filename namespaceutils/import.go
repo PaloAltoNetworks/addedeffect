@@ -120,11 +120,11 @@ func importComputeNamespace(namespace string, identityName string, object map[st
 	}
 
 	if identityName == squallmodels.APIAuthorizationPolicyIdentity.Category {
-		object["authorizedNamespace"] = namespace + object["authorizedNamespace"].(string)
+		object["authorizedNamespace"] = namespace + strings.Replace(object["authorizedNamespace"].(string), namespace, "", 1)
 	}
 
 	if identityName == squallmodels.NamespaceMappingPolicyIdentity.Category {
-		object["mappedNamespace"] = namespace + object["mappedNamespace"].(string)
+		object["mappedNamespace"] = namespace + strings.Replace(object["mappedNamespace"].(string), namespace, "", 1)
 	}
 
 	keys := []string{"subject", "object"}
@@ -136,7 +136,7 @@ func importComputeNamespace(namespace string, identityName string, object map[st
 					s := strings.SplitN(v.(string), "=", 2)
 
 					if s[0] == "$namespace" {
-						newNamespace := namespace + s[1]
+						newNamespace := namespace + strings.Replace(s[1], namespace, "", 1)
 						vs.([]interface{})[i] = s[0] + "=" + newNamespace
 					}
 				}

@@ -38,7 +38,7 @@ func RegisterEnforcer(
 
 	// Check if the server already exists
 	mctx := manipulate.NewContext()
-	mctx.Parameters.KeyValues["tag"] = "$name=" + server.Name
+	mctx.Parameters.KeyValues.Add("tag", "$name="+server.Name)
 
 	if n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity); err != nil || n > 0 {
 		if err != nil {

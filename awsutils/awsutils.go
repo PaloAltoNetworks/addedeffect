@@ -15,6 +15,8 @@ const (
 	AWSName = "ami-id"
 	// AWSPublicHostName is the key for the public hostname of the instance
 	AWSPublicHostName = "public-hostname"
+	// AWSLocalHostName is the key for the local hostname of the instance
+	AWSLocalHostName = "local-hostname"
 	// AWSPendingTime is the key for the pending time information
 	AWSPendingTime = "pendingTime"
 )

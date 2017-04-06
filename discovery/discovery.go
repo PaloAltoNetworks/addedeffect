@@ -25,8 +25,6 @@ type PlatformInfo struct {
 	MongoServices         []string `json:"mongo,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
 	ZipkinURL             string   `json:"zipkinURL,omitempty"`
-	GrayLogServer         string   `json:"graylog,omitempty"`
-	GrayLogID             string   `json:"graylogID,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`
 	CACertKey             string   `json:"CACertKey,omitempty"`
 	ServicesCert          string   `json:"servicesCert,omitempty"`
@@ -106,15 +104,13 @@ func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, e
 func (p *PlatformInfo) String() string {
 
 	return fmt.Sprintf(
-		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s traceCollector:%s graylog:%s logid:%s>",
+		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s traceCollector:%s>",
 		p.CidURL,
 		p.SquallURL,
 		p.MidgardURL,
 		p.ZackURL,
 		p.VinceURL,
 		p.ZipkinURL,
-		p.GrayLogServer,
-		p.GrayLogID,
 	)
 }
 
@@ -128,8 +124,6 @@ func (p *PlatformInfo) Fields() logrus.Fields {
 		"zack":           p.ZackURL,
 		"vince":          p.VinceURL,
 		"zipkin":         p.ZipkinURL,
-		"graylog":        p.GrayLogServer,
-		"graylog-id":     p.GrayLogID,
 		"mongo":          p.MongoServices,
 		"cassandra":      p.CassandraServices,
 		"kairos":         p.KairosDBURL,
@@ -147,8 +141,6 @@ func (p *PlatformInfo) PublicFields() logrus.Fields {
 		"midgard":        p.MidgardURL,
 		"zack":           p.ZackURL,
 		"vince":          p.VinceURL,
-		"graylog":        p.GrayLogServer,
-		"graylog-id":     p.GrayLogID,
 		"system-version": p.SystemVersion,
 	}
 }

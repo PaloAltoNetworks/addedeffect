@@ -24,7 +24,7 @@ type PlatformInfo struct {
 	CassandraServices     []string `json:"cassandra,omitempty"`
 	MongoServices         []string `json:"mongo,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
-	TraceCollectorServer  string   `json:"traceCollectorServer,omitempty"`
+	ZipkinURL             string   `json:"zipkinURL,omitempty"`
 	GrayLogServer         string   `json:"graylog,omitempty"`
 	GrayLogID             string   `json:"graylogID,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`
@@ -112,7 +112,7 @@ func (p *PlatformInfo) String() string {
 		p.MidgardURL,
 		p.ZackURL,
 		p.VinceURL,
-		p.TraceCollectorServer,
+		p.ZipkinURL,
 		p.GrayLogServer,
 		p.GrayLogID,
 	)
@@ -127,7 +127,7 @@ func (p *PlatformInfo) Fields() logrus.Fields {
 		"midgard":        p.MidgardURL,
 		"zack":           p.ZackURL,
 		"vince":          p.VinceURL,
-		"tracer":         p.TraceCollectorServer,
+		"zipkin":         p.ZipkinURL,
 		"graylog":        p.GrayLogServer,
 		"graylog-id":     p.GrayLogID,
 		"mongo":          p.MongoServices,

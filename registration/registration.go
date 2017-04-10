@@ -94,12 +94,16 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, 
 // SendEnforcerHeartBeat sends a heartbeat message for the given enforcer.
 func SendEnforcerHeartBeat(manipulator manipulate.Manipulator, enforcer *squallmodels.Enforcer, t time.Time) error {
 
-	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(nil, enforcer) }, nil, 10); err != nil {
+	mctx := manipulate.NewContext()
+	mctx.ExternalTrackingID = enforcer.ID
+	mctx.Namespace = enforcer.Namespace
+
+	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(mctx, enforcer) }, nil, 10); err != nil {
 		return err
 	}
 
 	enforcer.LastSyncTime = t
-	return manipulate.RetryManipulation(func() error { return manipulator.Update(nil, enforcer) }, nil, 10)
+	return manipulate.RetryManipulation(func() error { return manipulator.Update(mctx, enforcer) }, nil, 10)
 }
 
 // RetrieveEnforcerProfile retrieves the profile to use according to the given enforcerID.

@@ -91,43 +91,6 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, 
 	return enforcerID, namespace, nil
 }
 
-// SendEnforcerHeartBeat sends a heartbeat message for the given enforcer.
-func SendEnforcerHeartBeat(manipulator manipulate.Manipulator, enforcer *squallmodels.Enforcer, t time.Time) error {
-
-	mctx := manipulate.NewContext()
-	mctx.ExternalTrackingID = enforcer.ID
-	mctx.Namespace = enforcer.Namespace
-
-	if err := manipulate.RetryManipulation(func() error { return manipulator.Retrieve(mctx, enforcer) }, nil, 10); err != nil {
-		return err
-	}
-
-	enforcer.LastSyncTime = t
-	return manipulate.RetryManipulation(func() error { return manipulator.Update(mctx, enforcer) }, nil, 10)
-}
-
-// RetrieveEnforcerProfile retrieves the profile to use according to the given enforcerID.
-func RetrieveEnforcerProfile(manipulator manipulate.Manipulator, enforcerID string) (*squallmodels.EnforcerProfile, error) {
-
-	enforcer := squallmodels.NewEnforcer()
-	enforcer.ID = enforcerID
-
-	profiles := squallmodels.EnforcerProfilesList{}
-
-	ctx := manipulate.NewContext()
-	ctx.Parent = enforcer
-
-	if err := manipulator.RetrieveMany(ctx, &profiles); err != nil {
-		return nil, err
-	}
-
-	if len(profiles) == 0 {
-		return nil, fmt.Errorf("Could not find any enforcer profile")
-	}
-
-	return profiles[0], nil
-}
-
 func writeCertificate(folder, certName, keyName string, folderPerm os.FileMode, certPerm os.FileMode, certData, keyData []byte) error {
 
 	if err := os.MkdirAll(folder, folderPerm); err != nil {

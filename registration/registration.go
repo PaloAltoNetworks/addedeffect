@@ -19,47 +19,47 @@ import (
 func RegisterEnforcer(
 	manipulator manipulate.Manipulator,
 	namespace string,
-	serverName string,
-	serverFQDN string,
-	serverDescription string,
-	serverTags []string,
+	name string,
+	fqdn string,
+	description string,
+	tags []string,
 	folderPath string,
 	certificateName string,
 	keyName string,
 	certificateExpirationDate time.Time,
 ) (*squallmodels.Enforcer, error) {
 
-	server := squallmodels.NewEnforcer()
-	server.Name = serverName
-	server.FQDN = serverFQDN
-	server.Description = serverDescription
-	server.AssociatedTags = serverTags
-	server.LastSyncTime = time.Now()
+	enforcer := squallmodels.NewEnforcer()
+	enforcer.Name = name
+	enforcer.FQDN = fqdn
+	enforcer.Description = description
+	enforcer.AssociatedTags = tags
+	enforcer.LastSyncTime = time.Now().Add(-1 * time.Hour)
 
 	// Check if the server already exists
 	mctx := manipulate.NewContext()
-	mctx.Parameters.KeyValues.Add("tag", "$name="+server.Name)
+	mctx.Parameters.KeyValues.Add("tag", "$name="+enforcer.Name)
 
 	if n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity); err != nil || n > 0 {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
 		}
 
-		return nil, fmt.Errorf("A server with the name %s already exists", server.Name)
+		return nil, fmt.Errorf("A server with the name %s already exists", enforcer.Name)
 	}
 
-	if err := manipulator.Create(nil, server); err != nil {
+	if err := manipulator.Create(nil, enforcer); err != nil {
 		return nil, err
 	}
 
-	certData := []byte(fmt.Sprintf("%s\n", server.Certificate))
-	keyData := []byte(fmt.Sprintf("%s\n", server.CertificateKey))
+	certData := []byte(fmt.Sprintf("%s\n", enforcer.Certificate))
+	keyData := []byte(fmt.Sprintf("%s\n", enforcer.CertificateKey))
 
 	if err := writeCertificate(folderPath, certificateName, keyName, 0700, 0600, certData, keyData); err != nil {
 		return nil, err
 	}
 
-	return server, nil
+	return enforcer, nil
 }
 
 // ServerInfoFromCertificate retrieves and verifies the enforcerID and namespace stored in the

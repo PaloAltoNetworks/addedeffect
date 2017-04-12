@@ -15,15 +15,15 @@ import (
 // Import the given content to the given namespace
 // If shouldClean is set, Import will clean previous namespaces if it overlapps with a new one
 // If shouldClean is not set, Import will clean the content of the namespace if it overlapps with a new one, just the namespace will remain
-func Import(manipulator manipulate.Manipulator, namespace string, content map[string]interface{}, shouldClean bool) error {
-	return importNamespaceContent(manipulator, namespace, namespace, content, shouldClean)
+func Import(manipulator manipulate.Manipulator, namespace string, content map[string]interface{}, shouldClean bool, trackingID string) error {
+	return importNamespaceContent(manipulator, namespace, namespace, content, shouldClean, trackingID)
 }
 
 // importNamespaceContent is a recursive function
 // The function will create namespaces first and then content of them
 // It will first check if the namespace exists, if yes it will delete it if shouldClean is set, otherwise it will retrieve the content of it
 // Then we create the namesapce if needed, create the content and finally delete the previous content
-func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace string, currentNamespace string, content map[string]interface{}, shouldClean bool) error {
+func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace string, currentNamespace string, content map[string]interface{}, shouldClean bool, trackingID string) error {
 
 	previousContent := elemental.IdentifiablesList{}
 	originalNamespaceName := ""
@@ -61,14 +61,14 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 					namespace.Name = currentNamespace + "/" + namespace.Name
 				}
 
-				isNamespaceExists, err = isNamespaceExist(manipulator, currentNamespace, namespace)
+				isNamespaceExists, err = isNamespaceExist(manipulator, currentNamespace, namespace, trackingID)
 
 				if err != nil {
 					return err
 				}
 
 				if shouldClean && isNamespaceExists {
-					if err = deleteNamespace(manipulator, currentNamespace, namespace); err != nil {
+					if err = deleteNamespace(manipulator, currentNamespace, namespace, trackingID); err != nil {
 						return err
 					}
 				}
@@ -79,7 +79,7 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 			}
 
 			if isNamespaceExists && !shouldClean && currentNamespace != "" {
-				previousContent, err = ContentOfNamespace(manipulator, namespace.Name, false)
+				previousContent, err = ContentOfNamespace(manipulator, namespace.Name, false, trackingID)
 				namespaceNameContent = namespace.Name
 
 				if err != nil {
@@ -91,22 +91,22 @@ func importNamespaceContent(manipulator manipulate.Manipulator, topNamespace str
 				// When we create a namespace, we are not allowed to put some /
 				newNamespace := &squallmodels.Namespace{}
 				newNamespace.Name = originalNamespaceName
-				if err := createNamespace(manipulator, currentNamespace, newNamespace); err != nil {
+				if err := createNamespace(manipulator, currentNamespace, newNamespace, trackingID); err != nil {
 					return err
 				}
 			}
 
-			if err := importNamespaceContent(manipulator, topNamespace, namespace.Name, namespaceContent, shouldClean); err != nil {
+			if err := importNamespaceContent(manipulator, topNamespace, namespace.Name, namespaceContent, shouldClean, trackingID); err != nil {
 				return err
 			}
 		}
 	}
 
-	if err := createContent(manipulator, topNamespace, currentNamespace, content); err != nil {
+	if err := createContent(manipulator, topNamespace, currentNamespace, content, trackingID); err != nil {
 		return err
 	}
 
-	if err := deleteContent(manipulator, namespaceNameContent, previousContent); err != nil {
+	if err := deleteContent(manipulator, namespaceNameContent, previousContent, trackingID); err != nil {
 		return err
 	}
 
@@ -145,22 +145,26 @@ func importComputeNamespace(namespace string, identityName string, object map[st
 	}
 }
 
-func createNamespace(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace) error {
+func createNamespace(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace, trackingID string) error {
 	mctx := manipulate.NewContext()
 	mctx.Namespace = namespaceSession
+	mctx.ExternalTrackingID = trackingID
+	mctx.ExternalTrackingType = "addedeffect.namespaceutils.import.createnamespace"
 
 	return manipulator.Create(mctx, namespace)
 }
 
-func deleteNamespace(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace) error {
+func deleteNamespace(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace, trackingID string) error {
 	mctx := manipulate.NewContext()
 	mctx.Namespace = namespaceSession
 	mctx.OverrideProtection = true
+	mctx.ExternalTrackingID = trackingID
+	mctx.ExternalTrackingType = "addedeffect.namespaceutils.import.deletenamespace"
 
 	return manipulator.Delete(mctx, namespace)
 }
 
-func createContent(manipulator manipulate.Manipulator, topNamespace string, namespace string, content map[string]interface{}) error {
+func createContent(manipulator manipulate.Manipulator, topNamespace string, namespace string, content map[string]interface{}, trackingID string) error {
 	for key, value := range content {
 
 		key = strings.ToLower(key)
@@ -192,6 +196,8 @@ func createContent(manipulator manipulate.Manipulator, topNamespace string, name
 
 			mctx := manipulate.NewContext()
 			mctx.Namespace = namespace
+			mctx.ExternalTrackingID = trackingID
+			mctx.ExternalTrackingType = "addedeffect.namespaceutils.import.createcontent"
 
 			if err := manipulator.Create(mctx, dest); err != nil {
 				return err
@@ -201,11 +207,13 @@ func createContent(manipulator manipulate.Manipulator, topNamespace string, name
 	return nil
 }
 
-func deleteContent(manipulator manipulate.Manipulator, namespace string, content elemental.IdentifiablesList) error {
+func deleteContent(manipulator manipulate.Manipulator, namespace string, content elemental.IdentifiablesList, trackingID string) error {
 	for _, value := range content {
 		mctx := manipulate.NewContext()
 		mctx.Namespace = namespace
 		mctx.OverrideProtection = true
+		mctx.ExternalTrackingID = trackingID
+		mctx.ExternalTrackingType = "addedeffect.namespaceutils.import.deletecontent"
 
 		if value.Identity().Name == squallmodels.NamespaceIdentity.Name {
 			continue
@@ -219,10 +227,12 @@ func deleteContent(manipulator manipulate.Manipulator, namespace string, content
 	return nil
 }
 
-func isNamespaceExist(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace) (bool, error) {
+func isNamespaceExist(manipulator manipulate.Manipulator, namespaceSession string, namespace *squallmodels.Namespace, trackingID string) (bool, error) {
 	mctx := manipulate.NewContext()
 	mctx.Namespace = namespaceSession
 	mctx.Filter = manipulate.NewFilterComposer().WithKey("name").Equals(namespace.Name).Done()
+	mctx.ExternalTrackingID = trackingID
+	mctx.ExternalTrackingType = "addedeffect.namespaceutils.import.isnamespaceexist"
 
 	dest := squallmodels.NamespacesList{}
 

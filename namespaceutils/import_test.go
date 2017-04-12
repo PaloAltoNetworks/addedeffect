@@ -98,7 +98,7 @@ func Test_createNamespace(t *testing.T) {
 				return nil
 			})
 
-			err := createNamespace(manipulator, "/2", namespace)
+			err := createNamespace(manipulator, "/2", namespace, "")
 			So(err, ShouldBeNil)
 			So(expectedNamespace, ShouldEqual, namespace)
 			So(expectedNamespaceSession, ShouldEqual, "/2")
@@ -109,7 +109,7 @@ func Test_createNamespace(t *testing.T) {
 				return elemental.NewError("Invalid Entity", "", "", 500)
 			})
 
-			err := createNamespace(manipulator, "/2", namespace)
+			err := createNamespace(manipulator, "/2", namespace, "")
 			So(err, ShouldNotBeNil)
 		})
 	})
@@ -132,7 +132,7 @@ func Test_deleteNamespace(t *testing.T) {
 				return nil
 			})
 
-			err := deleteNamespace(manipulator, "/2", namespace)
+			err := deleteNamespace(manipulator, "/2", namespace, "")
 			So(err, ShouldBeNil)
 			So(expectedNamespace, ShouldEqual, namespace)
 			So(expectedNamespaceSession, ShouldEqual, "/2")
@@ -143,7 +143,7 @@ func Test_deleteNamespace(t *testing.T) {
 				return elemental.NewError("Invalid Entity", "", "", 500)
 			})
 
-			err := deleteNamespace(manipulator, "/2", namespace)
+			err := deleteNamespace(manipulator, "/2", namespace, "")
 			So(err, ShouldNotBeNil)
 		})
 	})
@@ -173,7 +173,7 @@ func Test_deleteContent(t *testing.T) {
 				return nil
 			})
 
-			err := deleteContent(manipulator, "/2", content)
+			err := deleteContent(manipulator, "/2", content, "")
 			So(err, ShouldBeNil)
 			So(len(expectedContent), ShouldEqual, 3)
 			So(expectedContent, ShouldContain, externalService1)
@@ -187,7 +187,7 @@ func Test_deleteContent(t *testing.T) {
 				return elemental.NewError("Invalid Entity", "", "", 500)
 			})
 
-			err := deleteContent(manipulator, "/2", elemental.IdentifiablesList{externalService1})
+			err := deleteContent(manipulator, "/2", elemental.IdentifiablesList{externalService1}, "")
 			So(err, ShouldNotBeNil)
 		})
 	})
@@ -211,7 +211,7 @@ func Test_isNamespaceExist(t *testing.T) {
 				return nil
 			})
 
-			result, err := isNamespaceExist(manipulator, "/", namespace)
+			result, err := isNamespaceExist(manipulator, "/", namespace, "")
 			So(err, ShouldBeNil)
 			So(result, ShouldBeTrue)
 		})
@@ -228,7 +228,7 @@ func Test_isNamespaceExist(t *testing.T) {
 				return nil
 			})
 
-			result, err := isNamespaceExist(manipulator, "/", namespace)
+			result, err := isNamespaceExist(manipulator, "/", namespace, "")
 			So(err, ShouldBeNil)
 			So(result, ShouldBeFalse)
 		})
@@ -242,7 +242,7 @@ func Test_isNamespaceExist(t *testing.T) {
 				return elemental.NewError("Invalid Entity", "", "", 500)
 			})
 
-			result, err := isNamespaceExist(manipulator, "/", namespace)
+			result, err := isNamespaceExist(manipulator, "/", namespace, "")
 			So(err, ShouldNotBeNil)
 			So(result, ShouldBeFalse)
 		})
@@ -302,7 +302,7 @@ func Test_createContent(t *testing.T) {
 				return nil
 			})
 
-			err := createContent(manipulator, topNamespace, namespace, content)
+			err := createContent(manipulator, topNamespace, namespace, content, "")
 			So(err, ShouldBeNil)
 			So(expectedNamespaceSession, ShouldEqual, "/coucou/java")
 			So(len(expectedContent), ShouldEqual, 4)
@@ -325,7 +325,7 @@ func Test_createContent(t *testing.T) {
 				return nil
 			})
 
-			err := createContent(manipulator, topNamespace, namespace, content)
+			err := createContent(manipulator, topNamespace, namespace, content, "")
 			So(err, ShouldNotBeNil)
 		})
 	})
@@ -423,7 +423,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return nil
 			})
 
-			err := Import(manipulator, "/", content, false)
+			err := Import(manipulator, "/", content, false, "")
 
 			So(err, ShouldBeNil)
 			So(len(namespacesCreated), ShouldEqual, 4)
@@ -529,7 +529,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return nil
 			})
 
-			err := Import(manipulator, "/level", content, false)
+			err := Import(manipulator, "/level", content, false, "")
 
 			So(err, ShouldBeNil)
 			So(len(namespacesCreated), ShouldEqual, 4)
@@ -607,7 +607,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return nil
 			})
 
-			err := Import(manipulator, "/", content, true)
+			err := Import(manipulator, "/", content, true, "")
 			So(err, ShouldBeNil)
 			So(len(namespacesDeleted), ShouldEqual, 4)
 		})
@@ -666,7 +666,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return nil
 			})
 
-			err := Import(manipulator, "/level", content, false)
+			err := Import(manipulator, "/level", content, false, "")
 			So(err, ShouldBeNil)
 			So(expectedDeletedFileAccess.Name, ShouldEqual, "fileAccessPolicy1")
 			So(expectedDeletedNetworkAccess.Name, ShouldEqual, "networksAccessPolicy1")
@@ -699,7 +699,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return elemental.NewError("Invalid Entity", "", "", 500)
 			})
 
-			err := Import(manipulator, "/", content, true)
+			err := Import(manipulator, "/", content, true, "")
 			So(err, ShouldNotBeNil)
 		})
 
@@ -732,7 +732,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return nil
 			})
 
-			err := Import(manipulator, "/level", content, false)
+			err := Import(manipulator, "/level", content, false, "")
 			So(err, ShouldNotBeNil)
 		})
 
@@ -784,7 +784,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return nil
 			})
 
-			err := Import(manipulator, "/level", content, false)
+			err := Import(manipulator, "/level", content, false, "")
 			So(err, ShouldNotBeNil)
 		})
 
@@ -793,7 +793,7 @@ func Test_importNamespaceContent(t *testing.T) {
 				return elemental.NewError("Invalid Entity", "", "", 500)
 			})
 
-			err := Import(manipulator, "/level", content, false)
+			err := Import(manipulator, "/level", content, false, "")
 
 			So(err, ShouldNotBeNil)
 		})

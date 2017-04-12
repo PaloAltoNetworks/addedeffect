@@ -34,7 +34,7 @@ func Test_TreeContentOfNamespace(t *testing.T) {
 		identifiables := elemental.IdentifiablesList{namespace1, namespace2, namespace3, externalService1, externalService2, externalService3, externalService4, filepath1, filepath2, filepath3, filepath4, apiAuthorizationPolicy1, apiAuthorizationPolicy2}
 
 		Convey("Then I create my tree", func() {
-			tree, err := TreeContentOfNamespace(namespace, identifiables)
+			tree, err := TreeContentOfNamespace(namespace, identifiables, "")
 			namespaceMap1 := map[string]interface{}{"name": "4"}
 			namespaceMap2 := map[string]interface{}{"name": "4.1"}
 			namespaceMap3 := map[string]interface{}{"name": "5"}
@@ -415,7 +415,7 @@ func Test_ContentOfNamespace(t *testing.T) {
 				return nil
 			})
 
-			content, err := ContentOfNamespace(manipulator, "/coucou", true)
+			content, err := ContentOfNamespace(manipulator, "/coucou", true, "")
 			So(content, ShouldBeNil)
 			So(err, ShouldNotBeNil)
 		})
@@ -503,7 +503,7 @@ func Test_ContentOfNamespace(t *testing.T) {
 				return nil
 			})
 
-			content, err := ContentOfNamespace(manipulator, "/coucou", true)
+			content, err := ContentOfNamespace(manipulator, "/coucou", true, "")
 			So(err, ShouldBeNil)
 			So(len(content), ShouldEqual, 12)
 			So(content, ShouldContain, namespaceMappingPolicy1)

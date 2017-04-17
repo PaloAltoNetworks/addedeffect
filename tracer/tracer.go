@@ -13,7 +13,7 @@ import (
 )
 
 // ConfigureTracer configure the tracer for opentracing with the given platform and cert pool
-func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool) {
+func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serviceName string) {
 
 	if pf.ZipkinURL == "" {
 		return
@@ -38,7 +38,7 @@ func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool) {
 			"service": pf.ZipkinURL,
 		}).Fatal("Unable to connect to zipkin server")
 	}
-	recorder := zipkin.NewRecorder(collector, false, "0.0.0.0:0", "zack")
+	recorder := zipkin.NewRecorder(collector, false, "0.0.0.0:0", serviceName)
 	tracer, e := zipkin.NewTracer(recorder, zipkin.ClientServerSameSpan(true), zipkin.TraceID128Bit(true))
 
 	if e != nil {

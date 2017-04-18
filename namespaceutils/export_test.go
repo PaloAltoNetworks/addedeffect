@@ -338,9 +338,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 		intergration1 := squallmodels.NewIntegration()
 		intergration1.Password = "intergration1"
 
-		dependencyMapView1 := squallmodels.NewDependencyMapView()
-		dependencyMapView1.Name = "dependencyMapView1"
-
 		Convey("Then we get an error", func() {
 
 			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
@@ -398,13 +395,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 					enforcers := dest.(*squallmodels.EnforcerProfilesList)
 					*enforcers = append(*enforcers, enforcerProfile1)
 					dest = enforcers
-					_ = dest
-				}
-
-				if dest.ContentIdentity().Name == squallmodels.DependencyMapViewIdentity.Name {
-					mapviews := dest.(*squallmodels.DependencyMapViewsList)
-					*mapviews = append(*mapviews, dependencyMapView1)
-					dest = mapviews
 					_ = dest
 				}
 
@@ -486,13 +476,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 					_ = dest
 				}
 
-				if dest.ContentIdentity().Name == squallmodels.DependencyMapViewIdentity.Name {
-					mapviews := dest.(*squallmodels.DependencyMapViewsList)
-					*mapviews = append(*mapviews, dependencyMapView1)
-					dest = mapviews
-					_ = dest
-				}
-
 				if dest.ContentIdentity().Name == squallmodels.IntegrationIdentity.Name {
 					integrations := dest.(*squallmodels.IntegrationsList)
 					*integrations = append(*integrations, intergration1)
@@ -505,7 +488,7 @@ func Test_ContentOfNamespace(t *testing.T) {
 
 			content, err := ContentOfNamespace(manipulator, "/coucou", true, "")
 			So(err, ShouldBeNil)
-			So(len(content), ShouldEqual, 12)
+			So(len(content), ShouldEqual, 11)
 			So(content, ShouldContain, namespaceMappingPolicy1)
 			So(content, ShouldContain, namespaceMappingPolicy2)
 			So(content, ShouldContain, networksAccessPolicy1)
@@ -516,7 +499,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 			So(content, ShouldContain, externalService1)
 			So(content, ShouldContain, filePath1)
 			So(content, ShouldContain, enforcerProfile1)
-			So(content, ShouldContain, dependencyMapView1)
 			So(content, ShouldContain, intergration1)
 
 			So(expectedNamespace, ShouldEqual, "/coucou")

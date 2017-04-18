@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"net/http"
+	"time"
 
 	"github.com/aporeto-inc/addedeffect/discovery"
 	"github.com/opentracing/opentracing-go"
@@ -22,7 +23,9 @@ func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serv
 	}
 
 	httpClientOption := zipkin.HTTPClient(&http.Client{
+		Timeout: 5 * time.Second,
 		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 100,
 			TLSClientConfig: &tls.Config{
 				RootCAs: rootCAPool,
 			},

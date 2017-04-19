@@ -27,6 +27,7 @@ func RegisterEnforcer(
 	certificateName string,
 	keyName string,
 	certificateExpirationDate time.Time,
+	deleteIfExist bool,
 ) (*squallmodels.Enforcer, error) {
 
 	enforcer := squallmodels.NewEnforcer()
@@ -36,16 +37,23 @@ func RegisterEnforcer(
 	enforcer.AssociatedTags = tags
 	enforcer.LastSyncTime = time.Now().Add(-1 * time.Hour)
 
-	// Check if the server already exists
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues.Add("tag", "$name="+enforcer.Name)
 
-	if n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity); err != nil || n > 0 {
-		if err != nil {
-			return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
+	n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
+	}
+
+	// Check if the server already exists and delete if deleteIFExist flag set
+	if n > 0 {
+		if !deleteIfExist {
+			return nil, fmt.Errorf("A server with the name %s already exists", enforcer.Name)
 		}
 
-		return nil, fmt.Errorf("A server with the name %s already exists", enforcer.Name)
+		if err := manipulator.Delete(mctx, enforcer); err != nil {
+			return nil, fmt.Errorf("Unable to delete enforcer %s that already exists", enforcer.Name)
+		}
 	}
 
 	if err := manipulator.Create(nil, enforcer); err != nil {

@@ -43,7 +43,6 @@ func RegisterEnforcer(
 	n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
-
 	}
 
 	// Check if the server already exists and delete if deleteIFExist flag set

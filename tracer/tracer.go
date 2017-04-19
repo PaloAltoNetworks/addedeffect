@@ -16,7 +16,7 @@ import (
 type CloseRecorderHandler func()
 
 // ConfigureTracer configure the tracer for opentracing with the given platform and cert pool
-func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serviceName string) (CloseRecorderHandler, opentracing.Tracer, error) {
+func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serviceName string, insecureSkipVerify bool) (CloseRecorderHandler, opentracing.Tracer, error) {
 
 	if pf.ZipkinURL == "" {
 		return nil, nil, nil
@@ -27,7 +27,8 @@ func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serv
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost: 100,
 			TLSClientConfig: &tls.Config{
-				RootCAs: rootCAPool,
+				RootCAs:            rootCAPool,
+				InsecureSkipVerify: insecureSkipVerify,
 			},
 		},
 	})

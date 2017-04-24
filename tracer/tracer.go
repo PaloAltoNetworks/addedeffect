@@ -47,7 +47,7 @@ func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serv
 	}
 
 	closer := func() {
-		collector.Close()
+		collector.Close() // nolint: errcheck
 	}
 
 	opentracing.InitGlobalTracer(tracer)

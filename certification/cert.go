@@ -15,7 +15,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"go.uber.org/zap"
+
 	"github.com/aporeto-inc/elemental"
 )
 
@@ -36,8 +37,7 @@ func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error
 	// Load CA.pem.
 	cacert, err := loadCertificateBundle(CACertData)
 	if err != nil {
-		logrus.WithField("error", err.Error()).Error("Failed to load ca certificate.")
-
+		zap.L().Error("Failed to load ca certificate", zap.Error(err))
 		return nil, elemental.NewError("Invalid CA certificate", "Failed to load the ca certificate", "certification", http.StatusUnprocessableEntity)
 	}
 
@@ -90,7 +90,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	}
 
 	if err != nil {
-		logrus.WithField("error", err.Error()).Error("Failed to generate private key.")
+		zap.L().Error("Failed to generate private key", zap.Error(err))
 		return "", "", "", elemental.NewError("Certificate generation failed", "Failed to generate private key", "certification", http.StatusInternalServerError)
 	}
 
@@ -98,7 +98,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		logrus.WithField("error", err.Error()).Error("Failed to generate serial number for the certificate.")
+		zap.L().Error("Failed to generate serial number for the certificate", zap.Error(err))
 		return "", "", "", elemental.NewError("Certificate generation failed", "Failed to generate serial number for the certificate", "certification", http.StatusInternalServerError)
 	}
 
@@ -133,7 +133,7 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	}
 
 	if err != nil {
-		logrus.WithField("error", err.Error()).Error("Failed to create certificate.")
+		zap.L().Error("Failed to create certificate", zap.Error(err))
 		return "", "", "", elemental.NewError("Failed to Create Certificate", err.Error(), "certification", http.StatusInternalServerError)
 	}
 

@@ -8,7 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // A PlatformInfo describes the Aporeto platform services.
@@ -114,34 +115,34 @@ func (p *PlatformInfo) String() string {
 	)
 }
 
-// Fields returns ready to be dump logrus fields.
-func (p *PlatformInfo) Fields() logrus.Fields {
-	return logrus.Fields{
-		"cid":            p.CidURL,
-		"clad":           p.CladURL,
-		"squall":         p.SquallURL,
-		"midgard":        p.MidgardURL,
-		"zack":           p.ZackURL,
-		"vince":          p.VinceURL,
-		"zipkin":         p.ZipkinURL,
-		"mongo":          p.MongoServices,
-		"cassandra":      p.CassandraServices,
-		"kairos":         p.KairosDBURL,
-		"nats":           p.PubSubServices,
-		"system-version": p.SystemVersion,
+// Fields returns ready to be dump zap Fields fields.
+func (p *PlatformInfo) Fields() []zapcore.Field {
+	return []zapcore.Field{
+		zap.String("cid", p.CidURL),
+		zap.String("clad", p.CladURL),
+		zap.String("squall", p.SquallURL),
+		zap.String("midgard", p.MidgardURL),
+		zap.String("zack", p.ZackURL),
+		zap.String("vince", p.VinceURL),
+		zap.String("zipkin", p.ZipkinURL),
+		zap.Strings("mongo", p.MongoServices),
+		zap.Strings("cassandra", p.CassandraServices),
+		zap.String("kairos", p.KairosDBURL),
+		zap.Strings("nats", p.PubSubServices),
+		zap.String("system-version", p.SystemVersion),
 	}
 }
 
-// PublicFields returns ready to be dump logrus fields.
-func (p *PlatformInfo) PublicFields() logrus.Fields {
-	return logrus.Fields{
-		"cid":            p.CidURL,
-		"clad":           p.CladURL,
-		"squall":         p.SquallURL,
-		"midgard":        p.MidgardURL,
-		"zack":           p.ZackURL,
-		"vince":          p.VinceURL,
-		"system-version": p.SystemVersion,
+// PublicFields returns ready to be dump zap fields.
+func (p *PlatformInfo) PublicFields() []zapcore.Field {
+	return []zapcore.Field{
+		zap.String("cid", p.CidURL),
+		zap.String("clad", p.CladURL),
+		zap.String("squall", p.SquallURL),
+		zap.String("midgard", p.MidgardURL),
+		zap.String("zack", p.ZackURL),
+		zap.String("vince", p.VinceURL),
+		zap.String("system-version", p.SystemVersion),
 	}
 }
 

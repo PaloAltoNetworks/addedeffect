@@ -16,8 +16,10 @@ func Configure(level string, format string) {
 	switch format {
 	case "json":
 		config = zap.NewProductionConfig()
+		config.DisableStacktrace = true
 	default:
 		config = zap.NewDevelopmentConfig()
+		config.DisableStacktrace = true
 	}
 
 	// Set the logger

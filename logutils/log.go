@@ -9,7 +9,7 @@ import (
 )
 
 // Configure configures the shared default logger.
-func Configure(level string, format string) {
+func Configure(level string, format string) zap.Config {
 
 	var config zap.Config
 
@@ -20,6 +20,7 @@ func Configure(level string, format string) {
 	default:
 		config = zap.NewDevelopmentConfig()
 		config.DisableStacktrace = true
+		config.DisableCaller = true
 	}
 
 	// Set the logger
@@ -67,4 +68,6 @@ func Configure(level string, format string) {
 			}
 		}
 	}(config)
+
+	return config
 }

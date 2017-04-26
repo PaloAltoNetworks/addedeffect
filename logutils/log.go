@@ -4,8 +4,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Configure configures the shared default logger.
@@ -21,6 +23,8 @@ func Configure(level string, format string) zap.Config {
 		config = zap.NewDevelopmentConfig()
 		config.DisableStacktrace = true
 		config.DisableCaller = true
+		config.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {}
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
 	// Set the logger

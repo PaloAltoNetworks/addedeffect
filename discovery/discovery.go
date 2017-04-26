@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"go.uber.org/zap"
@@ -188,13 +190,21 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 	try := 0
 	var resp *http.Response
 
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
 	for {
 		resp, err = client.Do(req)
 		if err == nil {
 			break
 		}
 
-		<-time.After(3 * time.Second)
+		select {
+		case <-time.After(3 * time.Second):
+		case <-c:
+			return nil, fmt.Errorf("Discovery aborted per os signal")
+		}
+
 		try++
 		if try > 20 {
 			return nil, fmt.Errorf("Unable retrieve platform info after 1m. Aborting. error: %s", err)

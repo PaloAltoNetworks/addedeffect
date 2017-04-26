@@ -50,7 +50,7 @@ func Configure(level string, format string) zap.Config {
 
 	zap.ReplaceGlobals(logger)
 
-	go func(config zap.Config) {
+	go func() {
 
 		defaultLevel := config.Level
 		var elevated bool
@@ -65,13 +65,17 @@ func Configure(level string, format string) zap.Config {
 
 			if elevated {
 				config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+				l, _ := config.Build()
+				zap.ReplaceGlobals(l)
 				zap.L().Info("Log level elevated to debug")
 			} else {
 				zap.L().Info("Log level restored to original configuration", zap.String("level", level))
 				config.Level = defaultLevel
+				l, _ := config.Build()
+				zap.ReplaceGlobals(l)
 			}
 		}
-	}(config)
+	}()
 
 	return config
 }

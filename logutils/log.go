@@ -1,9 +1,6 @@
 package logutils
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"go.uber.org/zap"
@@ -50,32 +47,7 @@ func Configure(level string, format string) zap.Config {
 
 	zap.ReplaceGlobals(logger)
 
-	go func() {
-
-		defaultLevel := config.Level
-		var elevated bool
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, syscall.SIGUSR1)
-		for s := range c {
-			if s == syscall.SIGINT {
-				return
-			}
-			elevated = !elevated
-
-			if elevated {
-				config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-				l, _ := config.Build()
-				zap.ReplaceGlobals(l)
-				zap.L().Info("Log level elevated to debug")
-			} else {
-				zap.L().Info("Log level restored to original configuration", zap.String("level", level))
-				config.Level = defaultLevel
-				l, _ := config.Build()
-				zap.ReplaceGlobals(l)
-			}
-		}
-	}()
+	go handleElevationSignal(config)
 
 	return config
 }

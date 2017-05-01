@@ -35,7 +35,7 @@ func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error
 	var c Signer
 
 	// Load CA.pem.
-	cacert, err := loadCertificateBundle(CACertData)
+	cacert, err := LoadCertificateBundle(CACertData)
 	if err != nil {
 		zap.L().Error("Failed to load ca certificate", zap.Error(err))
 		return nil, elemental.NewError("Invalid CA certificate", "Failed to load the ca certificate", "certification", http.StatusUnprocessableEntity)

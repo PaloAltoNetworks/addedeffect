@@ -145,3 +145,8 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 
 	return keyPem, certificatePem, serialNumber.String(), nil
 }
+
+// Secrets returns the current secrets used by the signer
+func (s *Signer) Secrets() (crypto.PrivateKey, []*x509.Certificate) {
+	return s.key, s.cacert
+}

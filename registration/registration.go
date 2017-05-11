@@ -40,7 +40,12 @@ func RegisterEnforcer(
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues.Add("tag", "$name="+enforcer.Name)
 
-	n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity)
+	n := 0
+	err := manipulate.RetryManipulation(func() error {
+		var err error
+		n, err = manipulator.Count(mctx, squallmodels.EnforcerIdentity)
+		return err
+	}, nil, 15)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
 	}

@@ -38,7 +38,7 @@ func RegisterEnforcer(
 	enforcer.FQDN = fqdn
 	enforcer.Description = description
 	enforcer.AssociatedTags = tags
-	enforcer.LastSyncTime = time.Time{}
+	enforcer.LastSyncTime = time.Now().Add(1 - time.Hour)
 
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues.Add("tag", "$name="+enforcer.Name)

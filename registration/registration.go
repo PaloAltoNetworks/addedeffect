@@ -15,6 +15,10 @@ import (
 	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
 )
 
+const (
+	registrationRetries = 5
+)
+
 // RegisterEnforcer registers a new enforcer server with given name, description and tags in Squall using the given Manipulator.
 func RegisterEnforcer(
 	manipulator manipulate.Manipulator,
@@ -45,7 +49,7 @@ func RegisterEnforcer(
 		var err error
 		n, err = manipulator.Count(mctx, squallmodels.EnforcerIdentity)
 		return err
-	}, nil, 15)
+	}, nil, registrationRetries)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
 	}

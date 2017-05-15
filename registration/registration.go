@@ -52,7 +52,7 @@ func RegisterEnforcer(
 		}
 
 		var existingEnforcers squallmodels.EnforcersList
-		if err := manipulator.RetrieveMany(mctx, existingEnforcers); err != nil {
+		if err := manipulator.RetrieveMany(mctx, &existingEnforcers); err != nil {
 			return nil, fmt.Errorf("Unable to get list of all enforcers %s that already exists: %s", enforcer.Name, err)
 		}
 

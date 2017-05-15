@@ -1,23 +1,27 @@
 package logutils
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
+	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Configure configures the shared default logger.
-func Configure(level string, format string) {
+func Configure(level string, format string) zap.Config {
 
 	var config zap.Config
 
 	switch format {
 	case "json":
 		config = zap.NewProductionConfig()
+		config.DisableStacktrace = true
 	default:
 		config = zap.NewDevelopmentConfig()
+		config.DisableStacktrace = true
+		config.DisableCaller = true
+		config.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {}
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
 	// Set the logger
@@ -43,26 +47,7 @@ func Configure(level string, format string) {
 
 	zap.ReplaceGlobals(logger)
 
-	go func(config zap.Config) {
+	go handleElevationSignal(config)
 
-		defaultLevel := config.Level
-		var elevated bool
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, syscall.SIGUSR1)
-		for s := range c {
-			if s == syscall.SIGINT {
-				return
-			}
-			elevated = !elevated
-
-			if elevated {
-				config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-				zap.L().Info("Log level elevated to debug")
-			} else {
-				zap.L().Info("Log level restored to original configuration", zap.String("level", level))
-				config.Level = defaultLevel
-			}
-		}
-	}(config)
+	return config
 }

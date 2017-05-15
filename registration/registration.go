@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"path"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/aporeto-inc/manipulate"
 	"github.com/aporeto-inc/trireme/crypto"
@@ -35,25 +38,47 @@ func RegisterEnforcer(
 	enforcer.FQDN = fqdn
 	enforcer.Description = description
 	enforcer.AssociatedTags = tags
-	enforcer.LastSyncTime = time.Now().Add(-1 * time.Hour)
+	enforcer.LastSyncTime = time.Now().Add(1 - time.Hour)
 
 	mctx := manipulate.NewContext()
 	mctx.Parameters.KeyValues.Add("tag", "$name="+enforcer.Name)
 
-	n, err := manipulator.Count(mctx, squallmodels.EnforcerIdentity)
+	var err error
+	enforcers := squallmodels.EnforcersList{}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	for i := 0; i < 12; i++ {
+
+		err = manipulate.RetryManipulation(func() error { return manipulator.RetrieveMany(mctx, &enforcers) }, nil, 5)
+
+		if err == nil {
+			break
+		}
+
+		zap.L().Warn("Unable to register. Retrying in 5s", zap.Error(err))
+
+		select {
+		case <-time.After(5 * time.Second):
+		case <-c:
+			return nil, manipulate.NewErrDisconnected("Disconnected per signal")
+		}
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("Unable to access servers list. Does the namespace exist? Do you have the correct permissions?")
+		return nil, fmt.Errorf("Unable to access servers list: %s", err)
 	}
 
 	// Check if the server already exists and delete if deleteIFExist flag set
-	if n > 0 {
+	if len(enforcers) > 0 {
 		if !deleteIfExist {
 			return nil, fmt.Errorf("A server with the name %s already exists", enforcer.Name)
 		}
-
 		var existingEnforcers squallmodels.EnforcersList
-		if err := manipulator.RetrieveMany(mctx, &existingEnforcers); err != nil {
-			return nil, fmt.Errorf("Unable to get list of all enforcers %s that already exists: %s", enforcer.Name, err)
+
+		if err := manipulate.RetryManipulation(func() error { return manipulator.Delete(mctx, enforcer) }, nil, 5); err != nil {
+			return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
 		}
 
 		for _, existingEnforcer := range existingEnforcers {
@@ -64,7 +89,7 @@ func RegisterEnforcer(
 
 	}
 
-	if err := manipulator.Create(nil, enforcer); err != nil {
+	if err := manipulate.RetryManipulation(func() error { return manipulator.Create(nil, enforcer) }, nil, 5); err != nil {
 		return nil, err
 	}
 

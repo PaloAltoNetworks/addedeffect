@@ -35,7 +35,7 @@ func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error
 	var c Signer
 
 	// Load CA.pem.
-	cacert, err := loadCertificateBundle(CACertData)
+	cacert, err := LoadCertificateBundle(CACertData)
 	if err != nil {
 		zap.L().Error("Failed to load ca certificate", zap.Error(err))
 		return nil, elemental.NewError("Invalid CA certificate", "Failed to load the ca certificate", "certification", http.StatusUnprocessableEntity)
@@ -144,4 +144,9 @@ func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email s
 	keyPem := string(bytes.TrimSpace(clientKeyCertificate))
 
 	return keyPem, certificatePem, serialNumber.String(), nil
+}
+
+// Secrets returns the current secrets used by the signer
+func (s *Signer) Secrets() (crypto.PrivateKey, []*x509.Certificate) {
+	return s.key, s.cacert
 }

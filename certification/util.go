@@ -32,7 +32,8 @@ func pemBlockForKey(priv interface{}) *pem.Block {
 	}
 }
 
-func loadCertificateBundle(b []byte) ([]*x509.Certificate, error) {
+// LoadCertificateBundle loads a certificate bundle and returns an array of certificates
+func LoadCertificateBundle(b []byte) ([]*x509.Certificate, error) {
 
 	certificates := []*x509.Certificate{}
 	var block *pem.Block

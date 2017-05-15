@@ -52,7 +52,7 @@ func RegisterEnforcer(
 		}
 
 		if err := manipulator.Delete(mctx, enforcer); err != nil {
-			return nil, fmt.Errorf("Unable to delete enforcer %s that already exists", enforcer.Name)
+			return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
 		}
 	}
 

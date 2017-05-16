@@ -76,9 +76,8 @@ func RegisterEnforcer(
 			return nil, fmt.Errorf("A server with the name %s already exists", enforcer.Name)
 		}
 		var existingEnforcers squallmodels.EnforcersList
-
-		if err := manipulate.RetryManipulation(func() error { return manipulator.Delete(mctx, enforcer) }, nil, 5); err != nil {
-			return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
+		if err := manipulator.RetrieveMany(mctx, &existingEnforcers); err != nil {
+			return nil, fmt.Errorf("Unable to get list of all enforcers %s that already exists: %s", enforcer.Name, err)
 		}
 
 		for _, existingEnforcer := range existingEnforcers {

@@ -76,8 +76,10 @@ func RegisterEnforcer(
 			return nil, fmt.Errorf("A server with the name %s already exists", enforcer.Name)
 		}
 
-		if err := manipulate.RetryManipulation(func() error { return manipulator.Delete(mctx, enforcer) }, nil, 5); err != nil {
-			return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
+		for _, existingEnforcer := range enforcers {
+			if err := manipulate.RetryManipulation(func() error { return manipulator.Delete(mctx, existingEnforcer) }, nil, 5); err != nil {
+				return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
+			}
 		}
 	}
 

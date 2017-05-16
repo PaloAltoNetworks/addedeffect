@@ -77,11 +77,10 @@ func RegisterEnforcer(
 		}
 
 		for _, existingEnforcer := range enforcers {
-			if err := manipulator.Delete(mctx, existingEnforcer); err != nil {
+			if err := manipulate.RetryManipulation(func() error { return manipulator.Delete(mctx, existingEnforcer) }, nil, 5); err != nil {
 				return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
 			}
 		}
-
 	}
 
 	if err := manipulate.RetryManipulation(func() error { return manipulator.Create(nil, enforcer) }, nil, 5); err != nil {

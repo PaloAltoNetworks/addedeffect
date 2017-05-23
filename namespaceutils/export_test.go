@@ -395,10 +395,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 					_ = dest
 				}
 
-				if dest.ContentIdentity().Name == squallmodels.IntegrationIdentity.Name {
-					return elemental.NewError("Invalid Entity", "", "", 500)
-				}
-
 				return nil
 			})
 

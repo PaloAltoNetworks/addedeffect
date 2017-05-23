@@ -335,9 +335,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 		enforcerProfile1 := squallmodels.NewEnforcerProfile()
 		enforcerProfile1.Name = "enforcerProfile1"
 
-		intergration1 := squallmodels.NewIntegration()
-		intergration1.Password = "intergration1"
-
 		Convey("Then we get an error", func() {
 
 			manipulator.MockRetrieveMany(t, func(context *manipulate.Context, dest elemental.ContentIdentifiable) error {
@@ -476,13 +473,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 					_ = dest
 				}
 
-				if dest.ContentIdentity().Name == squallmodels.IntegrationIdentity.Name {
-					integrations := dest.(*squallmodels.IntegrationsList)
-					*integrations = append(*integrations, intergration1)
-					dest = integrations
-					_ = dest
-				}
-
 				return nil
 			})
 
@@ -499,7 +489,6 @@ func Test_ContentOfNamespace(t *testing.T) {
 			So(content, ShouldContain, externalService1)
 			So(content, ShouldContain, filePath1)
 			So(content, ShouldContain, enforcerProfile1)
-			So(content, ShouldContain, intergration1)
 
 			So(expectedNamespace, ShouldEqual, "/coucou")
 			So(expectedRecursive, ShouldBeTrue)

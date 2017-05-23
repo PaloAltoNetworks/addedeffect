@@ -174,6 +174,7 @@ func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*PlatformInfo, error) {
 
 	client := &http.Client{
+		Timeout: 3 * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				RootCAs:            rootCAPool,

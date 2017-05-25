@@ -57,12 +57,6 @@ func (p *PlatformInfo) ServicesKeyPair(password string) ([]tls.Certificate, erro
 
 	ret := []tls.Certificate{}
 
-	internalKeyPair, err := loadCertificates([]byte(p.ServicesCert), []byte(p.ServicesCertKey), password)
-	if err != nil {
-		return nil, err
-	}
-	ret = append(ret, internalKeyPair)
-
 	if p.PublicServicesCert != "" && p.PublicServicesCertKey != "" {
 		externalKeyPair, err := loadCertificates([]byte(p.PublicServicesCert), []byte(p.PublicServicesCertKey), password)
 		if err != nil {
@@ -70,6 +64,12 @@ func (p *PlatformInfo) ServicesKeyPair(password string) ([]tls.Certificate, erro
 		}
 		ret = append(ret, externalKeyPair)
 	}
+
+	internalKeyPair, err := loadCertificates([]byte(p.ServicesCert), []byte(p.ServicesCertKey), password)
+	if err != nil {
+		return nil, err
+	}
+	ret = append(ret, internalKeyPair)
 
 	return ret, nil
 }

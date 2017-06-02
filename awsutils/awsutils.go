@@ -19,6 +19,8 @@ const (
 	AWSLocalHostName = "local-hostname"
 	// AWSPendingTime is the key for the pending time information
 	AWSPendingTime = "pendingTime"
+	// AWSInstanceID is the key for the instance id
+	AWSInstanceID = "instanceId"
 )
 
 // getValue retrieves the value from a metadata URI - just single value

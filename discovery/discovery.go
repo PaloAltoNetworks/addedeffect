@@ -22,7 +22,6 @@ type PlatformInfo struct {
 	MidgardURL            string   `json:"midgard,omitempty"`
 	ZackURL               string   `json:"zack,omitempty"`
 	VinceURL              string   `json:"vince,omitempty"`
-	KairosDBURL           string   `json:"kairosdb,omitempty"`
 	InfluxDBURL           string   `json:"influxdb,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
@@ -130,7 +129,6 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("zipkin", p.ZipkinURL),
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),
-		zap.String("kairosdb", p.KairosDBURL),
 		zap.String("influxdb", p.InfluxDBURL),
 		zap.Strings("nats", p.PubSubServices),
 		zap.String("system-version", p.SystemVersion),

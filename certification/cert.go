@@ -78,6 +78,12 @@ func NewSigner(CACertData, CACertKeyData []byte, keyPass string) (*Signer, error
 // It will return the private key in a PEM formatted string, the certificate or an error.
 func (s *Signer) IssueClientCertificate(expiration time.Time, cn string, email string, org []string, units []string, dnsNames []string) (string, string, string, error) {
 
+	for _, o := range org {
+		if o == "system" {
+			return "", "", "", fmt.Errorf("System organization is reserved")
+		}
+	}
+
 	var key crypto.PrivateKey
 	var err error
 

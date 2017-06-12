@@ -49,6 +49,8 @@ type PlatformInfo struct {
 	ApoctlLinuxURL        string   `json:"apoctlLinuxURL,omitempty"`
 	ApoctlWindowsURL      string   `json:"apoctlWindowsURL,omitempty"`
 	ApoctlDarwinURL       string   `json:"apoctlDarwinURL,omitempty"`
+	EnforcerdDockerImage  string   `json:"enforcerdDockerImage,omitempty"`
+	KubesquallDockerImage string   `json:"kubesquallDockerImage,omitempty"`
 	EnforcerdURL          string   `json:"enforcerdURL,omitempty"`
 }
 

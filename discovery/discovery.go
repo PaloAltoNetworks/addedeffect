@@ -26,6 +26,7 @@ type PlatformInfo struct {
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
 	MongoServices         []string `json:"mongo,omitempty"`
+	InfluxDBURL           string   `json:"influxdb,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
 	ZipkinURL             string   `json:"zipkinURL,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`

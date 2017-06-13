@@ -22,6 +22,7 @@ type PlatformInfo struct {
 	MidgardURL            string   `json:"midgard,omitempty"`
 	ZackURL               string   `json:"zack,omitempty"`
 	VinceURL              string   `json:"vince,omitempty"`
+	JunonURL              string   `json:"junon,omitempty"`
 	KairosDBURL           string   `json:"kairosdb,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
@@ -109,12 +110,13 @@ func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, e
 func (p *PlatformInfo) String() string {
 
 	return fmt.Sprintf(
-		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s traceCollector:%s>",
+		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s junon: %s traceCollector:%s>",
 		p.CidURL,
 		p.SquallURL,
 		p.MidgardURL,
 		p.ZackURL,
 		p.VinceURL,
+		p.JunonURL,
 		p.ZipkinURL,
 	)
 }
@@ -128,6 +130,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("midgard", p.MidgardURL),
 		zap.String("zack", p.ZackURL),
 		zap.String("vince", p.VinceURL),
+		zap.String("junon", p.JunonURL),
 		zap.String("zipkin", p.ZipkinURL),
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),
@@ -146,6 +149,7 @@ func (p *PlatformInfo) PublicFields() []zapcore.Field {
 		zap.String("midgard", p.MidgardURL),
 		zap.String("zack", p.ZackURL),
 		zap.String("vince", p.VinceURL),
+		zap.String("junon", p.JunonURL),
 		zap.String("system-version", p.SystemVersion),
 	}
 }

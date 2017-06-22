@@ -47,6 +47,7 @@ type PlatformInfo struct {
 	MidgardClientCertKey  string   `json:"midgardClientCertKey,omitempty"`
 	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
 	SystemVersion         string   `json:"systemVersion,omitempty"`
+	DownloadManifestURL   string   `json:"downloadManifestURL,omitempty"`
 	ApoctlLinuxURL        string   `json:"apoctlLinuxURL,omitempty"`
 	ApoctlWindowsURL      string   `json:"apoctlWindowsURL,omitempty"`
 	ApoctlDarwinURL       string   `json:"apoctlDarwinURL,omitempty"`

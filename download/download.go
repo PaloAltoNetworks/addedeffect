@@ -1,6 +1,7 @@
 package download
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -56,7 +57,7 @@ func RetrieveManifest(url string) (Manifest, error) {
 }
 
 // Binary downloads and saves the binary at the given url to the given dest with the given mode.
-func Binary(url string, dest string, mode os.FileMode) error {
+func Binary(url string, dest string, mode os.FileMode, signature string) error {
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -68,12 +69,24 @@ func Binary(url string, dest string, mode os.FileMode) error {
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
-	bytes, err := ioutil.ReadAll(resp.Body)
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(dest, bytes, mode)
+	if signature != "" {
+
+		h := sha1.New()
+		if _, err = h.Write(data); err != nil {
+			return err
+		}
+
+		if fmt.Sprintf("%x", h.Sum(nil)) != signature {
+			return fmt.Errorf("Inavlid signature")
+		}
+	}
+
+	return ioutil.WriteFile(dest, data, mode)
 }
 
 // IsOutdated checks if the given current is outdated relatively to the second using semver.

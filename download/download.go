@@ -16,25 +16,6 @@ import (
 // A Manifest represents a Download Manifest
 type Manifest map[string]Component
 
-// A Component represents a downloadable component.
-type Component struct {
-	Latest   string             `json:"latest"`
-	Versions map[string]Version `json:"versions"`
-}
-
-// A Version represents a particular version of a Component.
-type Version struct {
-	Version   string             `json:"version"`
-	ChangeLog string             `json:"changelog"`
-	Variants  map[string]Variant `json:"variants"`
-}
-
-// A Variant represents a variant of a Version.
-type Variant struct {
-	URL       string `json:"url"`
-	Signature string `json:"signature"`
-}
-
 // RetrieveManifest fetch the manifest at the given URL.
 func RetrieveManifest(url string) (Manifest, error) {
 
@@ -54,6 +35,50 @@ func RetrieveManifest(url string) (Manifest, error) {
 	}
 
 	return manifest, nil
+}
+
+// A Component represents a downloadable component.
+type Component struct {
+	Latest   string             `json:"latest"`
+	Versions map[string]Version `json:"versions"`
+}
+
+// NewComponent returns a new Component.
+func NewComponent(latest string) Component {
+	return Component{
+		Latest:   latest,
+		Versions: map[string]Version{},
+	}
+}
+
+// A Version represents a particular version of a Component.
+type Version struct {
+	Version   string             `json:"version"`
+	ChangeLog string             `json:"changelog"`
+	Variants  map[string]Variant `json:"variants"`
+}
+
+// NewVersion returns a new Version.
+func NewVersion(version, changelog string) Version {
+	return Version{
+		Version:   version,
+		ChangeLog: changelog,
+		Variants:  map[string]Variant{},
+	}
+}
+
+// A Variant represents a variant of a Version.
+type Variant struct {
+	URL       string `json:"url"`
+	Signature string `json:"signature"`
+}
+
+// NewVariant returns a new Variant.
+func NewVariant(url, signature string) Variant {
+	return Variant{
+		URL:       url,
+		Signature: signature,
+	}
 }
 
 // Binary downloads and saves the binary at the given url to the given dest with the given mode.

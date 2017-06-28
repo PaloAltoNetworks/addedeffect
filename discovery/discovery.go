@@ -24,6 +24,7 @@ type PlatformInfo struct {
 	VinceURL              string   `json:"vince,omitempty"`
 	JunonURL              string   `json:"junon,omitempty"`
 	KairosDBURL           string   `json:"kairosdb,omitempty"`
+	YuffieURL             string   `json:"yuffie,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
 	MongoServices         []string `json:"mongo,omitempty"`
@@ -45,6 +46,8 @@ type PlatformInfo struct {
 	TidusClientCertKey    string   `json:"tidusClientCertKey,omitempty"`
 	MidgardClientCert     string   `json:"midgardClientCert,omitempty"`
 	MidgardClientCertKey  string   `json:"midgardClientCertKey,omitempty"`
+	YuffieClientCert      string   `json:"yuffieClientCert,omitempty"`
+	YuffieClientCertKey   string   `json:"yuffieClientCertKey,omitempty"`
 	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
 	SystemVersion         string   `json:"systemVersion,omitempty"`
 	DownloadManifestURL   string   `json:"downloadManifestURL,omitempty"`
@@ -108,16 +111,23 @@ func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, e
 	return loadCertificates([]byte(p.MidgardClientCert), []byte(p.MidgardClientCertKey), password)
 }
 
+// YuffieClientKeyPair decodes the yuffie client certificates using the given password.
+func (p *PlatformInfo) YuffieClientKeyPair(password string) (tls.Certificate, error) {
+
+	return loadCertificates([]byte(p.YuffieClientCert), []byte(p.YuffieClientCertKey), password)
+}
+
 func (p *PlatformInfo) String() string {
 
 	return fmt.Sprintf(
-		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s junon: %s traceCollector:%s>",
+		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s junon:%s yuffie:%s traceCollector:%s>",
 		p.CidURL,
 		p.SquallURL,
 		p.MidgardURL,
 		p.ZackURL,
 		p.VinceURL,
 		p.JunonURL,
+		p.YuffieURL,
 		p.ZipkinURL,
 	)
 }
@@ -132,6 +142,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("zack", p.ZackURL),
 		zap.String("vince", p.VinceURL),
 		zap.String("junon", p.JunonURL),
+		zap.String("yuffie", p.YuffieURL),
 		zap.String("zipkin", p.ZipkinURL),
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),

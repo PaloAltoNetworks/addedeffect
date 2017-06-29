@@ -46,8 +46,6 @@ type PlatformInfo struct {
 	TidusClientCertKey    string   `json:"tidusClientCertKey,omitempty"`
 	MidgardClientCert     string   `json:"midgardClientCert,omitempty"`
 	MidgardClientCertKey  string   `json:"midgardClientCertKey,omitempty"`
-	YuffieClientCert      string   `json:"yuffieClientCert,omitempty"`
-	YuffieClientCertKey   string   `json:"yuffieClientCertKey,omitempty"`
 	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
 	SystemVersion         string   `json:"systemVersion,omitempty"`
 	DownloadManifestURL   string   `json:"downloadManifestURL,omitempty"`
@@ -109,12 +107,6 @@ func (p *PlatformInfo) TidusClientKeyPair(password string) (tls.Certificate, err
 func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, error) {
 
 	return loadCertificates([]byte(p.MidgardClientCert), []byte(p.MidgardClientCertKey), password)
-}
-
-// YuffieClientKeyPair decodes the yuffie client certificates using the given password.
-func (p *PlatformInfo) YuffieClientKeyPair(password string) (tls.Certificate, error) {
-
-	return loadCertificates([]byte(p.YuffieClientCert), []byte(p.YuffieClientCertKey), password)
 }
 
 func (p *PlatformInfo) String() string {

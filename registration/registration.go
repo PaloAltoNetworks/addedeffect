@@ -51,7 +51,7 @@ func RegisterEnforcer(
 
 	for i := 0; i < 12; i++ {
 
-		err = manipulate.RetryManipulation(func() error { return manipulator.RetrieveMany(mctx, &enforcers) }, nil, 5)
+		err = manipulate.Retry(func() error { return manipulator.RetrieveMany(mctx, &enforcers) }, nil, 5)
 
 		if err == nil {
 			break
@@ -77,13 +77,13 @@ func RegisterEnforcer(
 		}
 
 		for _, existingEnforcer := range enforcers {
-			if err := manipulate.RetryManipulation(func() error { return manipulator.Delete(mctx, existingEnforcer) }, nil, 5); err != nil {
+			if err := manipulate.Retry(func() error { return manipulator.Delete(mctx, existingEnforcer) }, nil, 5); err != nil {
 				return nil, fmt.Errorf("Unable to delete enforcer %s that already exists: %s", enforcer.Name, err)
 			}
 		}
 	}
 
-	if err := manipulate.RetryManipulation(func() error { return manipulator.Create(nil, enforcer) }, nil, 5); err != nil {
+	if err := manipulate.Retry(func() error { return manipulator.Create(nil, enforcer) }, nil, 5); err != nil {
 		return nil, err
 	}
 

@@ -140,6 +140,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),
 		zap.String("influxdb", p.InfluxDBURL),
+		zap.String("geoio", p.GeoIPURL),
 		zap.Strings("nats", p.PubSubServices),
 		zap.String("system-version", p.SystemVersion),
 	}

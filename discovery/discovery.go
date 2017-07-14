@@ -30,6 +30,7 @@ type PlatformInfo struct {
 	InfluxDBURL           string   `json:"influxdb,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
 	ZipkinURL             string   `json:"zipkinURL,omitempty"`
+	GeoIPURL              string   `json:"geoipURL,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`
 	CACertKey             string   `json:"CACertKey,omitempty"`
 	ServicesCert          string   `json:"servicesCert,omitempty"`

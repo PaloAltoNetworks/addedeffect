@@ -10,12 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/zap"
-
+	"github.com/aporeto-inc/gaia/squallmodels/v1/golang"
 	"github.com/aporeto-inc/manipulate"
 	"github.com/aporeto-inc/trireme/crypto"
-
-	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
+	"go.uber.org/zap"
 )
 
 // RegisterEnforcer registers a new enforcer server with given name, description and tags in Squall using the given Manipulator.

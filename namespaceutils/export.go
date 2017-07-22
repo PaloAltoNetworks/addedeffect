@@ -6,9 +6,8 @@ import (
 	"strings"
 
 	"github.com/aporeto-inc/elemental"
+	"github.com/aporeto-inc/gaia/squallmodels/v1/golang"
 	"github.com/aporeto-inc/manipulate"
-
-	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
 )
 
 const namespaceContentKey = "content"

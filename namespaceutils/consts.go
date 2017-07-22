@@ -2,7 +2,7 @@ package namespaceutils
 
 import (
 	"github.com/aporeto-inc/elemental"
-	squallmodels "github.com/aporeto-inc/gaia/squallmodels/current/golang"
+	"github.com/aporeto-inc/gaia/squallmodels/v1/golang"
 )
 
 var exportNamespacesObjects = map[string]elemental.Identity{
@@ -14,8 +14,8 @@ var exportNamespacesObjects = map[string]elemental.Identity{
 	"enforcerProfileMappingPolicies": squallmodels.EnforcerProfileMappingPolicyIdentity,
 
 	// Others
-	"namespaces":            squallmodels.NamespaceIdentity,
-	"externalServices":      squallmodels.ExternalServiceIdentity,
-	"filePaths":             squallmodels.FilePathIdentity,
-	"enforcerProfiles":      squallmodels.EnforcerProfileIdentity,
+	"namespaces":       squallmodels.NamespaceIdentity,
+	"externalServices": squallmodels.ExternalServiceIdentity,
+	"filePaths":        squallmodels.FilePathIdentity,
+	"enforcerProfiles": squallmodels.EnforcerProfileIdentity,
 }

@@ -21,7 +21,7 @@ type PlatformInfo struct {
 	CladURL               string   `json:"clad,omitempty"`
 	CladPublicURL         string   `json:"cladPublic,omitempty"`
 	SquallURL             string   `json:"squall,omitempty"`
-	SquallPublicURL       string   `json:"squallPublicURL,omitempty"`
+	SquallPublicURL       string   `json:"squallPublic,omitempty"`
 	MidgardURL            string   `json:"midgard,omitempty"`
 	MidgardPublicURL      string   `json:"midgardPublic,omitempty"`
 	ZackURL               string   `json:"zack,omitempty"`

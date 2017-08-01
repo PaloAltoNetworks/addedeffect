@@ -17,12 +17,19 @@ import (
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
 	CidURL                string   `json:"cid,omitempty"`
+	CidPublicURL          string   `json:"cidPublic,omitempty"`
 	CladURL               string   `json:"clad,omitempty"`
+	CladPublicURL         string   `json:"cladPublic,omitempty"`
 	SquallURL             string   `json:"squall,omitempty"`
+	SquallPublicURL       string   `json:"squallPublic,omitempty"`
 	MidgardURL            string   `json:"midgard,omitempty"`
+	MidgardPublicURL      string   `json:"midgardPublic,omitempty"`
 	ZackURL               string   `json:"zack,omitempty"`
+	ZackPublicURL         string   `json:"zackPublic,omitempty"`
 	VinceURL              string   `json:"vince,omitempty"`
+	VincePublicURL        string   `json:"vincePublic,omitempty"`
 	JunonURL              string   `json:"junon,omitempty"`
+	JunonPublicURL        string   `json:"junonPublic,omitempty"`
 	KairosDBURL           string   `json:"kairosdb,omitempty"`
 	YuffieURL             string   `json:"yuffie,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
@@ -128,12 +135,19 @@ func (p *PlatformInfo) String() string {
 func (p *PlatformInfo) Fields() []zapcore.Field {
 	return []zapcore.Field{
 		zap.String("cid", p.CidURL),
+		zap.String("cidPublic", p.CidPublicURL),
 		zap.String("clad", p.CladURL),
+		zap.String("cladPublic", p.CladPublicURL),
 		zap.String("squall", p.SquallURL),
+		zap.String("squallPublic", p.SquallPublicURL),
 		zap.String("midgard", p.MidgardURL),
+		zap.String("midgardPublic", p.MidgardPublicURL),
 		zap.String("zack", p.ZackURL),
+		zap.String("zackPublic", p.ZackPublicURL),
 		zap.String("vince", p.VinceURL),
+		zap.String("vincePublic", p.VincePublicURL),
 		zap.String("junon", p.JunonURL),
+		zap.String("junonPublic", p.JunonPublicURL),
 		zap.String("yuffie", p.YuffieURL),
 		zap.String("zipkin", p.ZipkinURL),
 		zap.Strings("mongo", p.MongoServices),

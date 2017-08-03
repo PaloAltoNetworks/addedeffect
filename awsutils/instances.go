@@ -38,6 +38,7 @@ func NewAWSInstance(
 	tags map[string]string,
 	ports []string,
 ) *AWSInstance {
+
 	return &AWSInstance{
 		ID:           id,
 		InstanceType: instanceType,
@@ -54,6 +55,18 @@ func NewAWSInstance(
 
 // String returns a string representation of the instance
 func (i *AWSInstance) String() string {
+
+	// Order the tags...
+	keys := []string{}
+	orderedTags := make(map[string]string, len(i.Tags))
+	for k := range i.Tags {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		orderedTags[k] = i.Tags[k]
+	}
+
 	return fmt.Sprintf("<instance id=%s instancetype=%s name=%s privateDNS=%s privateIP=%s publicDNS=%s publicIP=%s state=%s tags=%s ports=%s",
 		i.ID,
 		i.InstanceType,
@@ -63,7 +76,7 @@ func (i *AWSInstance) String() string {
 		i.PublicDNS,
 		i.PublicIP,
 		i.State,
-		i.Tags,
+		orderedTags,
 		i.Ports,
 	)
 }

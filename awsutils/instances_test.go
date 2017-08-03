@@ -31,14 +31,14 @@ func (m mockEC2) DescribeSecurityGroups(*ec2.DescribeSecurityGroupsInput) (*ec2.
 	return m.SecurityGroups, nil
 }
 
-func Test_DiscoverInstances(t *testing.T) {
-	Convey("Given a real aws instance", t, func() {
-		instances, err := DiscoverInstances("us-east-1")
-
-		So(err, ShouldBeNil)
-		So(len(instances), ShouldEqual, 1)
-	})
-}
+// func Test_DiscoverInstances(t *testing.T) {
+// 	Convey("Given a real aws instance", t, func() {
+// 		instances, err := DiscoverInstances("us-east-1")
+//
+// 		So(err, ShouldBeNil)
+// 		So(len(instances), ShouldEqual, 1)
+// 	})
+// }
 
 func Test_discoverInstances(t *testing.T) {
 

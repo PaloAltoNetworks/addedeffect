@@ -2,6 +2,8 @@ package awsutils
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -20,6 +22,7 @@ type AWSInstance struct {
 	PublicIP     string
 	State        string
 	Tags         map[string]string
+	Ports        []string
 }
 
 // NewAWSInstance creates a new instance from an ec2 instance
@@ -33,6 +36,7 @@ func NewAWSInstance(
 	publicIP string,
 	state string,
 	tags map[string]string,
+	ports []string,
 ) *AWSInstance {
 	return &AWSInstance{
 		ID:           id,
@@ -44,12 +48,13 @@ func NewAWSInstance(
 		PublicIP:     publicIP,
 		State:        state,
 		Tags:         tags,
+		Ports:        ports,
 	}
 }
 
 // String returns a string representation of the instance
 func (i *AWSInstance) String() string {
-	return fmt.Sprintf("<instance id=%s instancetype=%s name=%s privateDNS=%s privateIP=%s publicDNS=%s publicIP=%s state=%s tags=%s",
+	return fmt.Sprintf("<instance id=%s instancetype=%s name=%s privateDNS=%s privateIP=%s publicDNS=%s publicIP=%s state=%s tags=%s ports=%s",
 		i.ID,
 		i.InstanceType,
 		i.Name,
@@ -59,6 +64,7 @@ func (i *AWSInstance) String() string {
 		i.PublicIP,
 		i.State,
 		i.Tags,
+		i.Ports,
 	)
 }
 
@@ -89,6 +95,25 @@ func discoverInstances(s ec2iface.EC2API, input *ec2.DescribeInstancesInput) ([]
 			// Organize tags
 			tags := convertTags(instance.Tags)
 
+			// Discover ports
+			var ports []string
+			groupIDs := make([]string, len(instance.SecurityGroups))
+			if len(groupIDs) > 0 {
+				for _, sg := range instance.SecurityGroups {
+					groupIDs = append(groupIDs, *sg.GroupId)
+				}
+
+				input := &ec2.DescribeSecurityGroupsInput{
+					GroupIds: aws.StringSlice(groupIDs),
+				}
+
+				ports, err = discoverPorts(s, input)
+
+				if err != nil {
+					return nil, err
+				}
+			}
+
 			// Convert instance
 			i := NewAWSInstance(
 				*instance.InstanceId,
@@ -100,9 +125,8 @@ func discoverInstances(s ec2iface.EC2API, input *ec2.DescribeInstancesInput) ([]
 				*instance.PublicIpAddress,
 				*instance.State.Name,
 				tags,
+				ports,
 			)
-
-			// TODO: Get the port to the instance. They are stored in the Security Groups
 
 			instances = append(instances, i)
 		}
@@ -110,10 +134,46 @@ func discoverInstances(s ec2iface.EC2API, input *ec2.DescribeInstancesInput) ([]
 	return instances, nil
 }
 
-func convertTags(tags []*ec2.Tag) map[string]string {
-	ts := make(map[string]string, len(tags))
-	for _, kv := range tags {
-		ts[*kv.Key] = *kv.Value
+func discoverPorts(s ec2iface.EC2API, input *ec2.DescribeSecurityGroupsInput) ([]string, error) {
+
+	result, err := s.DescribeSecurityGroups(input)
+
+	if err != nil {
+		return nil, err
 	}
+
+	var ports []string
+	for _, sg := range result.SecurityGroups {
+		for _, p := range sg.IpPermissions {
+			if p.ToPort != nil {
+				ports = append(ports, strconv.FormatInt(*p.ToPort, 10))
+			}
+		}
+	}
+
+	// Order ports for testing purposes
+	sort.Strings(ports)
+
+	return ports, nil
+}
+
+// convertTags transforms a list of ec2.Tag to a map[string]string always alphabetically ordered.
+// Order makes it easier to test.
+func convertTags(tags []*ec2.Tag) map[string]string {
+	cache := make(map[string]string, len(tags))
+	ts := make(map[string]string, len(tags))
+	keys := make([]string, len(tags))
+
+	for _, kv := range tags {
+		keys = append(keys, *kv.Key)
+		cache[*kv.Key] = *kv.Value
+	}
+
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		ts[k] = cache[k]
+	}
+
 	return ts
 }

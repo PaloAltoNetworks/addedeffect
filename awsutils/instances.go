@@ -75,14 +75,19 @@ func DiscoverInstances(region string) ([]*AWSInstance, error) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	}
 
-	s := ec2.New(session.New(config))
+	session, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
+
+	service := ec2.New(session)
 	input := &ec2.DescribeInstancesInput{}
 
-	return discoverInstances(s, input)
+	return discoverInstances(service, input)
 }
 
-func discoverInstances(s ec2iface.EC2API, input *ec2.DescribeInstancesInput) ([]*AWSInstance, error) {
-	result, err := s.DescribeInstances(input)
+func discoverInstances(service ec2iface.EC2API, input *ec2.DescribeInstancesInput) ([]*AWSInstance, error) {
+	result, err := service.DescribeInstances(input)
 
 	if err != nil {
 		return nil, err
@@ -107,7 +112,7 @@ func discoverInstances(s ec2iface.EC2API, input *ec2.DescribeInstancesInput) ([]
 					GroupIds: aws.StringSlice(groupIDs),
 				}
 
-				ports, err = discoverPorts(s, input)
+				ports, err = discoverPorts(service, input)
 
 				if err != nil {
 					return nil, err

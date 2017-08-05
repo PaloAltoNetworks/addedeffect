@@ -1,7 +1,3 @@
-> Platform: onprem? console?
-> Version: ?
-> Customer: ?
-
 #### Actual behavior
 *Description of the actual behavior.*
 
@@ -13,3 +9,11 @@
 
 #### Solution proposal
 *Description of what you thingk would need to be done.*
+
+#### Installation type
+- [ ] console.aporeto.com
+- [ ] on-prem
+- [ ] dev
+
+> Version: ?
+> Customer: ?

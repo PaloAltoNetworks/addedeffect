@@ -177,11 +177,11 @@ func Test_discoverPorts(t *testing.T) {
 func Test_AWSInstance_String(t *testing.T) {
 
 	Convey("Given an AWS Instance", t, func() {
-		instance := NewAWSInstance("i-xxxxx", "VM", "VM Test", "private.dns.com", "192.168.0.1", "public.dns.com", "10.0.0.1", "running", map[string]string{
-			"tag1": "value1",
-			"tag2": "value2",
+		instance := NewAWSInstance("i-xxxxx", "VM", "VM Test", "private.dns.com", "192.168.0.1", "public.dns.com", "10.0.0.1", "running", []string{
+			"tag1=value1",
+			"tag2=value2",
 		}, []string{"80", "443"})
-		expectedString := "<instance id=i-xxxxx instancetype=VM name=VM Test privateDNS=private.dns.com privateIP=192.168.0.1 publicDNS=public.dns.com publicIP=10.0.0.1 state=running tags=map[tag1:value1 tag2:value2] ports=[80 443]"
+		expectedString := "<instance id=i-xxxxx instancetype=VM name=VM Test privateDNS=private.dns.com privateIP=192.168.0.1 publicDNS=public.dns.com publicIP=10.0.0.1 state=running tags=[tag1=value1 tag2=value2] ports=[80 443]"
 		So(instance.String(), ShouldEqual, expectedString)
 	})
 }

@@ -21,7 +21,7 @@ type AWSInstance struct {
 	PublicDNS    string
 	PublicIP     string
 	State        string
-	Tags         map[string]string
+	Tags         []string
 	Ports        []string
 }
 
@@ -35,9 +35,12 @@ func NewAWSInstance(
 	publicDNS string,
 	publicIP string,
 	state string,
-	tags map[string]string,
+	tags []string,
 	ports []string,
 ) *AWSInstance {
+
+	// Order the tags...
+	sort.Strings(tags)
 
 	return &AWSInstance{
 		ID:           id,
@@ -56,17 +59,6 @@ func NewAWSInstance(
 // String returns a string representation of the instance
 func (i *AWSInstance) String() string {
 
-	// Order the tags...
-	keys := []string{}
-	orderedTags := make(map[string]string, len(i.Tags))
-	for k := range i.Tags {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		orderedTags[k] = i.Tags[k]
-	}
-
 	return fmt.Sprintf("<instance id=%s instancetype=%s name=%s privateDNS=%s privateIP=%s publicDNS=%s publicIP=%s state=%s tags=%s ports=%s",
 		i.ID,
 		i.InstanceType,
@@ -76,7 +68,7 @@ func (i *AWSInstance) String() string {
 		i.PublicDNS,
 		i.PublicIP,
 		i.State,
-		orderedTags,
+		i.Tags,
 		i.Ports,
 	)
 }
@@ -175,23 +167,14 @@ func discoverPorts(s ec2iface.EC2API, input *ec2.DescribeSecurityGroupsInput) ([
 	return ports, nil
 }
 
-// convertTags transforms a list of ec2.Tag to a map[string]string always alphabetically ordered.
-// Order makes it easier to test.
-func convertTags(tags []*ec2.Tag) map[string]string {
-	cache := make(map[string]string, len(tags))
-	ts := make(map[string]string, len(tags))
-	keys := make([]string, len(tags))
+// convertTags transforms a list of ec2.Tag to a []string
+func convertTags(tags []*ec2.Tag) []string {
+	ts := []string{}
 
 	for _, kv := range tags {
-		keys = append(keys, *kv.Key)
-		cache[*kv.Key] = *kv.Value
+		ts = append(ts, fmt.Sprintf("%s=%s", *kv.Key, *kv.Value))
 	}
 
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		ts[k] = cache[k]
-	}
-
+	sort.Strings(ts)
 	return ts
 }

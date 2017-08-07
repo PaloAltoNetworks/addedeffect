@@ -1,17 +1,20 @@
-## Expected behavior
-
-*Description of the expected behavior.*
-
-## Actual behavior
-
+#### Actual behavior
 *Description of the actual behavior.*
 
-## Steps to reproduce
+#### Expected behavior
+*Description of the expected behavior.*
 
+#### Steps to reproduce
 *Description of the various steps required to reproduce the error.*
 
-## Solution proposal
+#### Solution proposal
+*Description of what you thingk would need to be done.*
 
-[What needs to be done to address it.]
+#### Installation type
+- [ ] console.aporeto.com
+- [ ] on-prem
+- [ ] dev
 
-Time Estimate:
+> Version: ?
+> Customer: ?
+> ETA: ?

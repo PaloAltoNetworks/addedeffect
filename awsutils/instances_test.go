@@ -31,15 +31,6 @@ func (m mockEC2) DescribeSecurityGroups(*ec2.DescribeSecurityGroupsInput) (*ec2.
 	return m.SecurityGroups, nil
 }
 
-// func Test_DiscoverInstances(t *testing.T) {
-// 	Convey("Given a real aws instance", t, func() {
-// 		instances, err := DiscoverInstances("us-east-1")
-//
-// 		So(err, ShouldBeNil)
-// 		So(len(instances), ShouldEqual, 1)
-// 	})
-// }
-
 func Test_discoverInstances(t *testing.T) {
 
 	Convey("Given an instance running", t, func() {
@@ -110,7 +101,7 @@ func Test_discoverInstances(t *testing.T) {
 
 				So(discoveredInstance.ID, ShouldEqual, *expectedInstance.InstanceId)
 				So(discoveredInstance.InstanceType, ShouldEqual, *expectedInstance.InstanceType)
-				So(discoveredInstance.Name, ShouldEqual, *expectedInstance.KeyName)
+				So(discoveredInstance.Name, ShouldContainSubstring, *expectedInstance.InstanceId)
 				So(discoveredInstance.PrivateDNS, ShouldEqual, *expectedInstance.PrivateDnsName)
 				So(discoveredInstance.PrivateIP, ShouldEqual, *expectedInstance.PrivateIpAddress)
 				So(discoveredInstance.PublicDNS, ShouldEqual, *expectedInstance.PublicDnsName)
@@ -177,11 +168,11 @@ func Test_discoverPorts(t *testing.T) {
 func Test_AWSInstance_String(t *testing.T) {
 
 	Convey("Given an AWS Instance", t, func() {
-		instance := NewAWSInstance("i-xxxxx", "VM", "VM Test", "private.dns.com", "192.168.0.1", "public.dns.com", "10.0.0.1", "running", []string{
+		instance := NewAWSInstance("i-xxxxx", "acc-yyyyy", "VM", "VM Test", "private.dns.com", "192.168.0.1", "public.dns.com", "10.0.0.1", "running", []string{
 			"tag1=value1",
 			"tag2=value2",
 		}, []string{"80", "443"})
-		expectedString := "<instance id=i-xxxxx instancetype=VM name=VM Test privateDNS=private.dns.com privateIP=192.168.0.1 publicDNS=public.dns.com publicIP=10.0.0.1 state=running tags=[tag1=value1 tag2=value2] ports=[80 443]"
+		expectedString := "<instance id=i-xxxxx accountID=acc-yyyyy instancetype=VM name=VM Test privateDNS=private.dns.com privateIP=192.168.0.1 publicDNS=public.dns.com publicIP=10.0.0.1 state=running tags=[tag1=value1 tag2=value2] ports=[80 443]"
 		So(instance.String(), ShouldEqual, expectedString)
 	})
 }

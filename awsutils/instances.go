@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
@@ -23,11 +25,14 @@ type AWSInstance struct {
 	State        string
 	Tags         []string
 	Ports        []string
+	Namespace    string
+	AccountID    string
 }
 
 // NewAWSInstance creates a new instance from an ec2 instance
 func NewAWSInstance(
 	id string,
+	accountID string,
 	instanceType string,
 	name string,
 	privateDNS string,
@@ -42,8 +47,11 @@ func NewAWSInstance(
 	// Order the tags...
 	sort.Strings(tags)
 
+	namespace := extractNamespaceFromTags(tags)
+
 	return &AWSInstance{
 		ID:           id,
+		AccountID:    accountID,
 		InstanceType: instanceType,
 		Name:         name,
 		PrivateDNS:   privateDNS,
@@ -53,14 +61,16 @@ func NewAWSInstance(
 		State:        state,
 		Tags:         tags,
 		Ports:        ports,
+		Namespace:    namespace,
 	}
 }
 
 // String returns a string representation of the instance
 func (i *AWSInstance) String() string {
 
-	return fmt.Sprintf("<instance id=%s instancetype=%s name=%s privateDNS=%s privateIP=%s publicDNS=%s publicIP=%s state=%s tags=%s ports=%s",
+	return fmt.Sprintf("<instance id=%s accountID=%s instancetype=%s name=%s privateDNS=%s privateIP=%s publicDNS=%s publicIP=%s state=%s tags=%s ports=%s",
 		i.ID,
+		i.AccountID,
 		i.InstanceType,
 		i.Name,
 		i.PrivateDNS,
@@ -74,10 +84,11 @@ func (i *AWSInstance) String() string {
 }
 
 // DiscoverInstances discovers all AWS instances
-func DiscoverInstances(region string) ([]*AWSInstance, error) {
+func DiscoverInstances(accessKey string, secretKey string, region string) ([]*AWSInstance, error) {
 	config := &aws.Config{
 		Region: aws.String(region),
 		CredentialsChainVerboseErrors: aws.Bool(true),
+		Credentials:                   credentials.NewStaticCredentials(accessKey, secretKey, ""),
 	}
 
 	session, err := session.NewSession(config)
@@ -102,6 +113,10 @@ func discoverInstances(service ec2iface.EC2API, input *ec2.DescribeInstancesInpu
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
 
+			if !shouldManageInstance(instance) {
+				continue
+			}
+
 			// Organize tags
 			tags := convertTags(instance.Tags)
 
@@ -123,16 +138,37 @@ func discoverInstances(service ec2iface.EC2API, input *ec2.DescribeInstancesInpu
 					return nil, err
 				}
 			}
+			accountID := ""
+			if instance.IamInstanceProfile != nil {
+				accountID = *instance.IamInstanceProfile.Id
+			}
+			publicIP := ""
+			if instance.PublicIpAddress != nil {
+				publicIP = *instance.PublicIpAddress
+			}
+			publicDNS := ""
+			if instance.PublicDnsName != nil {
+				publicDNS = *instance.PublicDnsName
+			}
+			privateIP := ""
+			if instance.PrivateIpAddress != nil {
+				privateIP = *instance.PrivateIpAddress
+			}
+			privateDNS := ""
+			if instance.PrivateDnsName != nil {
+				privateDNS = *instance.PrivateDnsName
+			}
 
 			// Convert instance
 			i := NewAWSInstance(
 				*instance.InstanceId,
+				accountID,
 				*instance.InstanceType,
-				*instance.KeyName,
-				*instance.PrivateDnsName,
-				*instance.PrivateIpAddress,
-				*instance.PublicDnsName,
-				*instance.PublicIpAddress,
+				fmt.Sprintf("aws-%s", *instance.InstanceId),
+				privateDNS,
+				privateIP,
+				publicDNS,
+				publicIP,
 				*instance.State.Name,
 				tags,
 				ports,
@@ -142,6 +178,23 @@ func discoverInstances(service ec2iface.EC2API, input *ec2.DescribeInstancesInpu
 		}
 	}
 	return instances, nil
+}
+
+func shouldManageInstance(instance *ec2.Instance) bool {
+	if instance.State == nil {
+		return false
+	}
+
+	state := *instance.State.Name
+	if state == ec2.InstanceStateNameTerminated || state == ec2.InstanceStateNameStopped {
+		return false
+	}
+
+	if instance.PublicIpAddress == nil {
+		return false
+	}
+
+	return true
 }
 
 func discoverPorts(s ec2iface.EC2API, input *ec2.DescribeSecurityGroupsInput) ([]string, error) {
@@ -177,4 +230,19 @@ func convertTags(tags []*ec2.Tag) []string {
 
 	sort.Strings(ts)
 	return ts
+}
+
+func extractNamespaceFromTags(tags []string) string {
+
+	for _, s := range tags {
+		if strings.HasPrefix(s, "namespace") {
+			infos := strings.SplitN(s, "=", 2)
+
+			if len(infos) == 2 {
+				return infos[1]
+			}
+		}
+	}
+
+	return ""
 }

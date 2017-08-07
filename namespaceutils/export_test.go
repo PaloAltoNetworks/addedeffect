@@ -49,8 +49,8 @@ func Test_TreeContentOfNamespace(t *testing.T) {
 			filepathMap3 := map[string]interface{}{"name": "filePath3"}
 			filepathMap4 := map[string]interface{}{"name": "filePath4"}
 
-			apiAuthorizationPolicyMap1 := map[string]interface{}{"name": "api1", "authorizedNamespace": "/3/4/5", "subject": []interface{}{[]interface{}{"$namespace=/3/4/5"}}}
-			apiAuthorizationPolicyMap2 := map[string]interface{}{"name": "api2", "authorizedNamespace": "/3/4/5"}
+			apiAuthorizationPolicyMap1 := map[string]interface{}{"activeSchedule": "", "name": "api1", "authorizedNamespace": "/3/4/5", "subject": []interface{}{[]interface{}{"$namespace=/3/4/5"}}}
+			apiAuthorizationPolicyMap2 := map[string]interface{}{"activeSchedule": "", "name": "api2", "authorizedNamespace": "/3/4/5"}
 			topNamespace := tree["namespaces"].([]interface{})[0].(map[string]interface{})
 
 			So(err, ShouldBeNil)

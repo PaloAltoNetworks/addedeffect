@@ -30,13 +30,14 @@ type PlatformInfo struct {
 	VincePublicURL        string   `json:"vincePublic,omitempty"`
 	JunonURL              string   `json:"junon,omitempty"`
 	JunonPublicURL        string   `json:"junonPublic,omitempty"`
-	KairosDBURL           string   `json:"kairosdb,omitempty"`
 	YuffieURL             string   `json:"yuffie,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
 	MongoServices         []string `json:"mongo,omitempty"`
+	InfluxDBURL           string   `json:"influxdb,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
 	ZipkinURL             string   `json:"zipkinURL,omitempty"`
+	GeoIPURL              string   `json:"geoipURL,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`
 	CACertKey             string   `json:"CACertKey,omitempty"`
 	ServicesCert          string   `json:"servicesCert,omitempty"`
@@ -152,7 +153,8 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("zipkin", p.ZipkinURL),
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),
-		zap.String("kairos", p.KairosDBURL),
+		zap.String("influxdb", p.InfluxDBURL),
+		zap.String("geoip", p.GeoIPURL),
 		zap.Strings("nats", p.PubSubServices),
 		zap.String("system-version", p.SystemVersion),
 	}

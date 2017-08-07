@@ -126,7 +126,7 @@ func TestCaching_NewGenericCacheWithDefaultExpiration(t *testing.T) {
 				Convey("When I wait for another 1 second", func() {
 					<-time.After(1000 * time.Millisecond)
 					Convey("Then the item should be gone", func() {
-						So(c.Get("id-default"), ShouldEqual, nil)
+						So(c.Get("id-default"), ShouldBeNil)
 					})
 				})
 			})

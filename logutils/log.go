@@ -16,6 +16,27 @@ func Configure(level string, format string) zap.Config {
 	case "json":
 		config = zap.NewProductionConfig()
 		config.DisableStacktrace = true
+	case "stackdriver":
+		config = zap.NewProductionConfig()
+		config.EncoderConfig.LevelKey = "severity"
+		config.EncoderConfig.EncodeLevel = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+			switch l {
+			case zapcore.DebugLevel:
+				enc.AppendString("DEBUG")
+			case zapcore.InfoLevel:
+				enc.AppendString("INFO")
+			case zapcore.WarnLevel:
+				enc.AppendString("WARNING")
+			case zapcore.ErrorLevel:
+				enc.AppendString("ERROR")
+			case zapcore.DPanicLevel:
+				enc.AppendString("CRITICAL")
+			case zapcore.PanicLevel:
+				enc.AppendString("ALERT")
+			case zapcore.FatalLevel:
+				enc.AppendString("EMERGENCY")
+			}
+		}
 	default:
 		config = zap.NewDevelopmentConfig()
 		config.DisableStacktrace = true

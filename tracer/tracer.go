@@ -10,6 +10,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 
 	zipkin "github.com/openzipkin/zipkin-go-opentracing"
+	jaeger "github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
 )
 
 // CloseRecorderHandler is the type of recorder closer handler
@@ -48,6 +50,34 @@ func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serv
 
 	closer := func() {
 		collector.Close() // nolint: errcheck
+	}
+
+	opentracing.InitGlobalTracer(tracer)
+	return closer, tracer, nil
+}
+
+// ConfigureJaegerTracer returns a jaeger backed opentracing tracer.
+func ConfigureJaegerTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecorderHandler, opentracing.Tracer, error) {
+
+	cfg := jaegercfg.Configuration{
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:            true,
+			BufferFlushInterval: 1 * time.Second,
+			LocalAgentHostPort:  pf.JaegerService,
+		},
+	}
+
+	tracer, close, err := cfg.New(serviceName, jaegercfg.Logger(jaeger.NullLogger))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	closer := func() {
+		close.Close() // nolint: errcheck
 	}
 
 	opentracing.InitGlobalTracer(tracer)

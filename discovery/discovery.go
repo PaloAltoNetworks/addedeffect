@@ -37,6 +37,7 @@ type PlatformInfo struct {
 	InfluxDBURL           string   `json:"influxdb,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
 	ZipkinURL             string   `json:"zipkinURL,omitempty"`
+	JaegerService         string   `json:"jaegerService,omitempty"`
 	GeoIPURL              string   `json:"geoipURL,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`
 	CACertKey             string   `json:"CACertKey,omitempty"`
@@ -120,7 +121,7 @@ func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, e
 func (p *PlatformInfo) String() string {
 
 	return fmt.Sprintf(
-		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s junon:%s yuffie:%s traceCollector:%s>",
+		"<platform: cid:%s squall:%s midgard:%s zack:%s vince:%s junon:%s yuffie:%s zipkin:%s jaeger:%s>",
 		p.CidURL,
 		p.SquallURL,
 		p.MidgardURL,
@@ -129,6 +130,7 @@ func (p *PlatformInfo) String() string {
 		p.JunonURL,
 		p.YuffieURL,
 		p.ZipkinURL,
+		p.JaegerService,
 	)
 }
 
@@ -151,6 +153,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("junonPublic", p.JunonPublicURL),
 		zap.String("yuffie", p.YuffieURL),
 		zap.String("zipkin", p.ZipkinURL),
+		zap.String("jaeger", p.JaegerService),
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),
 		zap.String("influxdb", p.InfluxDBURL),

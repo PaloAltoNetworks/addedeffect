@@ -39,10 +39,10 @@ func Test_TreeContentOfNamespace(t *testing.T) {
 			namespaceMap2 := map[string]interface{}{"name": "4.1"}
 			namespaceMap3 := map[string]interface{}{"name": "5"}
 
-			externalServiceMap1 := map[string]interface{}{"name": "externalService1"}
-			externalServiceMap2 := map[string]interface{}{"name": "externalService2"}
-			externalServiceMap3 := map[string]interface{}{"name": "externalService3"}
-			externalServiceMap4 := map[string]interface{}{"name": "externalService4"}
+			externalServiceMap1 := map[string]interface{}{"name": "externalService1", "type": ""}
+			externalServiceMap2 := map[string]interface{}{"name": "externalService2", "type": ""}
+			externalServiceMap3 := map[string]interface{}{"name": "externalService3", "type": ""}
+			externalServiceMap4 := map[string]interface{}{"name": "externalService4", "type": ""}
 
 			filepathMap1 := map[string]interface{}{"name": "filePath1"}
 			filepathMap2 := map[string]interface{}{"name": "filePath2"}

@@ -1,7 +1,6 @@
 package tracer
 
 import (
-	"crypto/x509"
 	"time"
 
 	"github.com/aporeto-inc/addedeffect/discovery"
@@ -14,13 +13,12 @@ import (
 // CloseRecorderHandler is the type of recorder closer handler
 type CloseRecorderHandler func()
 
-// ConfigureTracer configure the tracer for opentracing with the given platform and cert pool
-func ConfigureTracer(pf *discovery.PlatformInfo, rootCAPool *x509.CertPool, serviceName string, insecureSkipVerify bool) (CloseRecorderHandler, opentracing.Tracer, error) {
-	return func() {}, nil, nil
-}
+// ConfigureTracer returns a jaeger backed opentracing tracer.
+func ConfigureTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecorderHandler, error) {
 
-// ConfigureJaegerTracer returns a jaeger backed opentracing tracer.
-func ConfigureJaegerTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecorderHandler, opentracing.Tracer, error) {
+	if pf.JaegerService == "" {
+		return nil, nil
+	}
 
 	cfg := jaegercfg.Configuration{
 		Sampler: &jaegercfg.SamplerConfig{
@@ -36,13 +34,10 @@ func ConfigureJaegerTracer(pf *discovery.PlatformInfo, serviceName string) (Clos
 
 	tracer, close, err := cfg.New(serviceName, jaegercfg.Logger(jaeger.NullLogger))
 	if err != nil {
-		return nil, nil, err
-	}
-
-	closer := func() {
-		close.Close() // nolint: errcheck
+		return nil, err
 	}
 
 	opentracing.InitGlobalTracer(tracer)
-	return closer, tracer, nil
+
+	return func() { close.Close() }, nil // nolint: errcheck
 }

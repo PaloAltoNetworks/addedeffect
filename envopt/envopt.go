@@ -43,10 +43,13 @@ func Parse(prefix string, doc string) error {
 			if isAlreadySet(option) {
 				continue
 			}
-			if hasValue {
-				os.Args = append(os.Args, option+`=`+e)
-			} else {
-				os.Args = append(os.Args, option)
+
+			for _, v := range strings.Split(e, ",") {
+				if hasValue {
+					os.Args = append(os.Args, option+`=`+v)
+				} else {
+					os.Args = append(os.Args, option)
+				}
 			}
 		}
 	}

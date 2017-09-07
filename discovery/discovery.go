@@ -52,6 +52,8 @@ type PlatformInfo struct {
 	SquallClientCertKey   string   `json:"squallClientCertKey,omitempty"`
 	TidusClientCert       string   `json:"tidusClientCert,omitempty"`
 	TidusClientCertKey    string   `json:"tidusClientCertKey,omitempty"`
+	MarleneClientCert     string   `json:"marleneClientCert,omitempty"`
+	MarleneClientCertKey  string   `json:"marleneClientCertKey,omitempty"`
 	MidgardClientCert     string   `json:"midgardClientCert,omitempty"`
 	MidgardClientCertKey  string   `json:"midgardClientCertKey,omitempty"`
 	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
@@ -115,6 +117,12 @@ func (p *PlatformInfo) TidusClientKeyPair(password string) (tls.Certificate, err
 func (p *PlatformInfo) MidgardClientKeyPair(password string) (tls.Certificate, error) {
 
 	return loadCertificates([]byte(p.MidgardClientCert), []byte(p.MidgardClientCertKey), password)
+}
+
+// MarleneClientKeyPair decodes the marlene client certificates using the given password.
+func (p *PlatformInfo) MarleneClientKeyPair(password string) (tls.Certificate, error) {
+
+	return loadCertificates([]byte(p.MarleneClientCert), []byte(p.MarleneClientCertKey), password)
 }
 
 func (p *PlatformInfo) String() string {

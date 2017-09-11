@@ -31,6 +31,7 @@ type PlatformInfo struct {
 	JunonURL              string   `json:"junon,omitempty"`
 	JunonPublicURL        string   `json:"junonPublic,omitempty"`
 	YuffieURL             string   `json:"yuffie,omitempty"`
+	BarretURL             string   `json:"barret,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
 	MongoServices         []string `json:"mongo,omitempty"`
@@ -166,6 +167,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("junon", p.JunonURL),
 		zap.String("junonPublic", p.JunonPublicURL),
 		zap.String("yuffie", p.YuffieURL),
+		zap.String("barret", p.BarretURL),
 		zap.String("opentracing", p.OpenTracingService),
 		zap.Strings("mongo", p.MongoServices),
 		zap.Strings("cassandra", p.CassandraServices),

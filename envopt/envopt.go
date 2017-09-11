@@ -48,6 +48,9 @@ func Parse(prefix string, doc string) error {
 				if hasValue {
 					os.Args = append(os.Args, option+`=`+v)
 				} else {
+					if e == "false" {
+						continue
+					}
 					os.Args = append(os.Args, option)
 				}
 			}

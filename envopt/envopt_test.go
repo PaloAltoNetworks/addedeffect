@@ -15,6 +15,8 @@ Usage: test -h | --help
         --option-b
         [--option-c=<value>]
         [--option-d]
+        [--option-i]
+        [--option-j]
        test init --option-e=<value> --option-f [--option-g=<value>] [--option-h]
 `
 
@@ -50,10 +52,13 @@ func TestCommon_ProcessCreate(t *testing.T) {
 			_ = os.Setenv("TEST_OPTION_G", "value2")
 			_ = os.Setenv("TEST_OPTION_H", "2")
 
+			_ = os.Setenv("TEST_OPTION_I", "false")
+			_ = os.Setenv("TEST_OPTION_J", "true")
+
 			_ = Parse("TEST", usage)
 
 			Convey("Then os.Args should not be empty", func() {
-				So(len(os.Args), ShouldEqual, 8)
+				So(len(os.Args), ShouldEqual, 9)
 			})
 
 			Convey("Then os.Args should have the correct flag for option-a", func() {
@@ -86,6 +91,14 @@ func TestCommon_ProcessCreate(t *testing.T) {
 
 			Convey("Then os.Args should have the correct flag for option-h", func() {
 				So(os.Args, ShouldContain, "--option-h")
+			})
+
+			Convey("Then os.Args should have the correct flag for option-i", func() {
+				So(os.Args, ShouldNotContain, "--option-i")
+			})
+
+			Convey("Then os.Args should have the correct flag for option-j", func() {
+				So(os.Args, ShouldContain, "--option-j")
 			})
 		})
 	})

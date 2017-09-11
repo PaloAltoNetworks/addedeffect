@@ -15,8 +15,8 @@ Usage: test -h | --help
         --option-b
         [--option-c=<value>]
         [--option-d]
-				[--option-i]
-				[--option-j]
+        [--option-i]
+        [--option-j]
        test init --option-e=<value> --option-f [--option-g=<value>] [--option-h]
 `
 

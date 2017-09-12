@@ -2,6 +2,7 @@ package registration
 
 import (
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/aporeto-inc/gaia/squallmodels/v1/golang"
 	"github.com/aporeto-inc/manipulate"
-	"github.com/aporeto-inc/trireme/crypto"
 	"go.uber.org/zap"
 )
 
@@ -99,12 +99,34 @@ func RegisterEnforcer(
 // certificate at the given path using the given x509.CertPool.
 func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, string, error) {
 
-	certificate, err := ioutil.ReadFile(certPath)
+	b, err := ioutil.ReadFile(certPath)
 	if err != nil {
 		return "", "", err
 	}
 
-	cert, err := crypto.LoadAndVerifyCertificate(certificate, CAPool)
+	var cert *x509.Certificate
+	intermediates := x509.NewCertPool()
+	block, rest := pem.Decode(b)
+
+	for ; block != nil; block, rest = pem.Decode(rest) {
+		if block.Type == "CERTIFICATE" {
+			crt, e := x509.ParseCertificate(block.Bytes)
+			if e != nil {
+				return "", "", e
+			}
+			if !crt.IsCA {
+				cert = crt
+				continue
+			}
+			if len(rest) != 0 {
+				intermediates.AddCert(crt)
+			}
+		} else {
+			return "", "", fmt.Errorf("Invalid pem block type: %s", block.Type)
+		}
+	}
+
+	_, err = cert.Verify(x509.VerifyOptions{Roots: CAPool, Intermediates: intermediates})
 	if err != nil {
 		return "", "", err
 	}

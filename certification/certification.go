@@ -20,6 +20,16 @@ import (
 	"github.com/aporeto-inc/manipulate"
 )
 
+// KeyUsage is the type of key usage.
+type KeyUsage int
+
+// Various possible KeyUsage values
+const (
+	KeyUsageClient KeyUsage = iota + 1
+	KeyUsageServer
+	KeyUsageClientServer
+)
+
 // GenerateBase64PKCS12 generates a full PKCS certificate based on the input keys.
 func GenerateBase64PKCS12(cert []byte, key []byte, ca []byte, passphrase string) (string, error) {
 
@@ -144,21 +154,47 @@ func GenerateSimpleCSR(orgs []string, units []string, commonName string, emails 
 	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrDerBytes}), nil
 }
 
-// IssueClientCert asks and returns an new certificate using the given barret Manipulator and given CSR.
+// IssueCert asks and returns an new certificate using the given barret Manipulator and given CSR.
 // You can generate easily a CSR using GenerateSimpleCSR.
-func IssueClientCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time) (cert []byte, serialNumber string, exp time.Time, err error) {
+func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, usage KeyUsage) (cert []byte, serialNumber string, exp time.Time, err error) {
 
-	apicert := barretmodels.NewAPICert()
-	apicert.ExpirationDate = expiration
-	apicert.CSR = string(csrPEM)
+	request := barretmodels.NewCertificate()
+	request.ExpirationDate = expiration
+	request.CSR = string(csrPEM)
+	request.Usage = convertKeyUsage(usage)
 
-	if err = m.Create(nil, apicert); err != nil {
+	if err = m.Create(nil, request); err != nil {
 		return
 	}
 
-	cert = []byte(apicert.Certificate)
-	serialNumber = apicert.ID
-	exp = apicert.ExpirationDate
+	cert = []byte(request.Certificate)
+	serialNumber = request.ID
+	exp = request.ExpirationDate
 
 	return
+}
+
+// IssueEncryptionToken asks and return a token from the given certificate using the given barret manipulator.
+func IssueEncryptionToken(m manipulate.Manipulator, cert []byte) (token string, err error) {
+
+	request := barretmodels.NewToken()
+	request.Certificate = string(cert)
+
+	if err = m.Create(nil, request); err != nil {
+		return
+	}
+
+	token = request.Token
+	return
+}
+
+func convertKeyUsage(usage KeyUsage) barretmodels.CertificateUsageValue {
+	switch usage {
+	case KeyUsageServer:
+		return barretmodels.CertificateUsageServer
+	case KeyUsageClientServer:
+		return barretmodels.CertificateUsageServerclient
+	default:
+		return barretmodels.CertificateUsageClient
+	}
 }

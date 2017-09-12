@@ -97,42 +97,47 @@ func RegisterEnforcer(
 
 // ServerInfoFromCertificate retrieves and verifies the enforcerID and namespace stored in the
 // certificate at the given path using the given x509.CertPool.
-func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, string, error) {
+func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, string, []byte, error) {
 
 	b, err := ioutil.ReadFile(certPath)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 
 	var cert *x509.Certificate
 	intermediates := x509.NewCertPool()
 	block, rest := pem.Decode(b)
 
+	var caChain []byte
+
 	for ; block != nil; block, rest = pem.Decode(rest) {
 		if block.Type == "CERTIFICATE" {
 			crt, e := x509.ParseCertificate(block.Bytes)
 			if e != nil {
-				return "", "", e
+				return "", "", nil, e
 			}
 			if !crt.IsCA {
 				cert = crt
+				if caChain == nil {
+					caChain = rest
+				}
 				continue
 			}
 			if len(rest) != 0 {
 				intermediates.AddCert(crt)
 			}
 		} else {
-			return "", "", fmt.Errorf("Invalid pem block type: %s", block.Type)
+			return "", "", nil, fmt.Errorf("Invalid pem block type: %s", block.Type)
 		}
 	}
 
 	_, err = cert.Verify(x509.VerifyOptions{Roots: CAPool, Intermediates: intermediates})
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 
 	if len(cert.Subject.OrganizationalUnit) == 0 {
-		return "", "", fmt.Errorf("Missing Organizational Unit field")
+		return "", "", nil, fmt.Errorf("Missing Organizational Unit field")
 	}
 
 	parts := strings.SplitN(cert.Subject.CommonName, "@", 2)
@@ -140,10 +145,10 @@ func ServerInfoFromCertificate(certPath string, CAPool *x509.CertPool) (string, 
 	namespace := parts[1]
 
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 
-	return enforcerID, namespace, nil
+	return enforcerID, namespace, caChain, nil
 }
 
 func writeCertificate(folder, certName, keyName string, folderPerm os.FileMode, certPerm os.FileMode, certData, keyData []byte) error {

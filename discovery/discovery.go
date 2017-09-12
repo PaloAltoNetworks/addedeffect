@@ -40,7 +40,6 @@ type PlatformInfo struct {
 	OpenTracingService    string   `json:"openTracingService,omitempty"`
 	GeoIPURL              string   `json:"geoipURL,omitempty"`
 	CACert                string   `json:"CACert,omitempty"`
-	CACertKey             string   `json:"CACertKey,omitempty"`
 	ServicesCert          string   `json:"servicesCert,omitempty"`
 	ServicesCertKey       string   `json:"servicesCertKey,omitempty"`
 	PublicServicesCert    string   `json:"publicServicesCert,omitempty"`

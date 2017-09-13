@@ -214,6 +214,25 @@ func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, us
 	return
 }
 
+// RevokeCert sets the revocation status of the given certificate identified by its serial number.
+func RevokeCert(m manipulate.Manipulator, serialNumber string, revoked bool) (err error) {
+
+	request := barretmodels.NewRevocation()
+	request.Revoked = revoked
+	request.ID = serialNumber
+
+	return manipulate.Retry(func() error { return m.Update(nil, request) }, nil, 10)
+}
+
+// CheckRevocation checks if the given certificate serial number is revoked.
+func CheckRevocation(m manipulate.Manipulator, serialNumber string) (err error) {
+
+	request := barretmodels.NewCheck()
+	request.ID = serialNumber
+
+	return manipulate.Retry(func() error { return m.Retrieve(nil, request) }, nil, 10)
+}
+
 // IssueEncryptionToken asks and return a token from the given certificate using the given barret manipulator.
 func IssueEncryptionToken(m manipulate.Manipulator, cert []byte) (token string, err error) {
 

@@ -13,10 +13,10 @@ import (
 // CloseRecorderHandler is the type of recorder closer handler
 type CloseRecorderHandler func()
 
-// ConfigureTracer returns a jaeger backed opentracing tracer.
-func ConfigureTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecorderHandler, error) {
+// ConfigureTracerWithURL returns a jaeger backed opentracing tracer from an URL.
+func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorderHandler, error) {
 
-	if pf.OpenTracingService == "" {
+	if tracerURL == "" {
 		return nil, nil
 	}
 
@@ -28,7 +28,7 @@ func ConfigureTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecor
 		Reporter: &jaegercfg.ReporterConfig{
 			LogSpans:            true,
 			BufferFlushInterval: 1 * time.Second,
-			LocalAgentHostPort:  pf.OpenTracingService,
+			LocalAgentHostPort:  tracerURL,
 		},
 	}
 
@@ -40,4 +40,10 @@ func ConfigureTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecor
 	opentracing.InitGlobalTracer(tracer)
 
 	return func() { close.Close() }, nil // nolint: errcheck
+}
+
+// ConfigureTracer returns a jaeger backed opentracing tracer.
+func ConfigureTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecorderHandler, error) {
+
+	return ConfigureTracerWithURL(pf.OpenTracingService, serviceName)
 }

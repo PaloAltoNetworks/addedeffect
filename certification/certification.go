@@ -203,7 +203,7 @@ func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, us
 	request.CSR = string(csrPEM)
 	request.Usage = convertKeyUsage(usage)
 
-	if err = m.Create(nil, request); err != nil {
+	if err = manipulate.Retry(func() error { return m.Create(nil, request) }, nil, 10); err != nil {
 		return
 	}
 
@@ -220,7 +220,7 @@ func IssueEncryptionToken(m manipulate.Manipulator, cert []byte) (token string, 
 	request := barretmodels.NewToken()
 	request.Certificate = string(cert)
 
-	if err = m.Create(nil, request); err != nil {
+	if err = manipulate.Retry(func() error { return m.Create(nil, request) }, nil, 10); err != nil {
 		return
 	}
 

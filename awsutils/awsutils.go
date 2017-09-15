@@ -1,7 +1,6 @@
 package awsutils
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -83,22 +82,6 @@ func getMetaData() (map[string]string, error) {
 	return metadata, nil
 }
 
-// getDocument gets the Identity Document
-func getDocument() (map[string]string, error) {
-	document := map[string]string{}
-
-	doc, err := getValue(dynamicDataPath + "/document")
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal([]byte(doc), &document); err != nil {
-		return nil, err
-	}
-
-	return document, nil
-}
-
 // getIdentity gets the PKCS7 identity document of an instance
 func getIdentity() (string, error) {
 
@@ -117,15 +100,6 @@ func InstanceMetadata() (string, map[string]string, error) {
 	id, err := getIdentity()
 	if err != nil {
 		return "", nil, err
-	}
-
-	document, err := getDocument()
-	if err != nil {
-		return "", nil, err
-	}
-
-	for k, v := range document {
-		metadata[k] = v
 	}
 
 	return id, metadata, nil

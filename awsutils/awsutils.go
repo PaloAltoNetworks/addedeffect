@@ -17,10 +17,18 @@ const (
 	AWSPublicHostName = "public-hostname"
 	// AWSLocalHostName is the key for the local hostname of the instance
 	AWSLocalHostName = "local-hostname"
+	// AWSPrivateIP is the key for the local private ip
+	AWSPrivateIP = "privateIp"
 	// AWSPendingTime is the key for the pending time information
 	AWSPendingTime = "pendingTime"
 	// AWSInstanceID is the key for the instance id
 	AWSInstanceID = "instanceId"
+	// AWSInstanceType is the key for the instance type
+	AWSInstanceType = "instanceType"
+	// AWSAccountID is the key for the account id
+	AWSAccountID = "accountId"
+	// AWSSecurityGroups is the key for security groups
+	AWSSecurityGroups = "security-groups"
 )
 
 // getValue retrieves the value from a metadata URI - just single value

@@ -17,22 +17,19 @@ const (
 	AWSPublicHostName = "public-hostname"
 	// AWSLocalHostName is the key for the local hostname of the instance
 	AWSLocalHostName = "local-hostname"
+<<<<<<< HEAD
 	// AWSLocalIP is the key for the local ipv4
 	AWSLocalIP = "local-ipv4"
 	// AWSPublicIP is the key for the public ipv4
 	AWSPublicIP = "public-ipv4"
 	// AWSPrivateIP is the key for the local private ip
 	AWSPrivateIP = "privateIp"
+=======
+>>>>>>> parent of cccd514... Added new AWS constants
 	// AWSPendingTime is the key for the pending time information
 	AWSPendingTime = "pendingTime"
 	// AWSInstanceID is the key for the instance id
 	AWSInstanceID = "instanceId"
-	// AWSInstanceType is the key for the instance type
-	AWSInstanceType = "instanceType"
-	// AWSAccountID is the key for the account id
-	AWSAccountID = "accountId"
-	// AWSSecurityGroups is the key for security groups
-	AWSSecurityGroups = "security-groups"
 )
 
 // getValue retrieves the value from a metadata URI - just single value

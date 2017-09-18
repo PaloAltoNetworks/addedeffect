@@ -17,19 +17,22 @@ const (
 	AWSPublicHostName = "public-hostname"
 	// AWSLocalHostName is the key for the local hostname of the instance
 	AWSLocalHostName = "local-hostname"
-<<<<<<< HEAD
 	// AWSLocalIP is the key for the local ipv4
 	AWSLocalIP = "local-ipv4"
 	// AWSPublicIP is the key for the public ipv4
 	AWSPublicIP = "public-ipv4"
 	// AWSPrivateIP is the key for the local private ip
 	AWSPrivateIP = "privateIp"
-=======
->>>>>>> parent of cccd514... Added new AWS constants
 	// AWSPendingTime is the key for the pending time information
 	AWSPendingTime = "pendingTime"
 	// AWSInstanceID is the key for the instance id
 	AWSInstanceID = "instanceId"
+	// AWSInstanceType is the key for the instance type
+	AWSInstanceType = "instanceType"
+	// AWSAccountID is the key for the account id
+	AWSAccountID = "accountId"
+	// AWSSecurityGroups is the key for security groups
+	AWSSecurityGroups = "security-groups"
 )
 
 // getValue retrieves the value from a metadata URI - just single value
@@ -71,8 +74,8 @@ func getMetadataKeys() ([]string, error) {
 	return valueKeys, nil
 }
 
-// InstanceMetadata creates a Metadata map based on the available keys
-func InstanceMetadata() (map[string]string, error) {
+// InstanceMetadataOnly creates a Metadata map based on the available keys
+func InstanceMetadataOnly() (map[string]string, error) {
 
 	metadata := map[string]string{}
 
@@ -121,4 +124,20 @@ func getDocument() (map[string]string, error) {
 func InstanceIdentity() (string, error) {
 
 	return getValue(dynamicDataPath + "/" + pkcs7Name)
+}
+
+// InstanceMetadata is a temporary method to make things backward compatible with the enforcer
+// TODO: Remove this method when https://github.com/aporeto-inc/enforcerd/pull/242 is merged
+func InstanceMetadata() (string, map[string]string, error) {
+	identity, err := InstanceIdentity()
+	if err != nil {
+		return "", nil, err
+	}
+
+	metadata, err := InstanceMetadataOnly()
+	if err != nil {
+		return "", nil, err
+	}
+
+	return identity, metadata, nil
 }

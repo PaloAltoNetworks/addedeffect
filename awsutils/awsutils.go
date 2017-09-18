@@ -17,6 +17,10 @@ const (
 	AWSPublicHostName = "public-hostname"
 	// AWSLocalHostName is the key for the local hostname of the instance
 	AWSLocalHostName = "local-hostname"
+	// AWSLocalIP is the key for the local ipv4
+	AWSLocalIP = "local-ipv4"
+	// AWSPublicIP is the key for the public ipv4
+	AWSPublicIP = "public-ipv4"
 	// AWSPrivateIP is the key for the local private ip
 	AWSPrivateIP = "privateIp"
 	// AWSPendingTime is the key for the pending time information
@@ -70,8 +74,8 @@ func getMetadataKeys() ([]string, error) {
 	return valueKeys, nil
 }
 
-// getMetaData creates a Metadata map based on the available keys
-func getMetaData() (map[string]string, error) {
+// InstanceMetadata creates a Metadata map based on the available keys
+func InstanceMetadata() (map[string]string, error) {
 
 	metadata := map[string]string{}
 
@@ -81,11 +85,20 @@ func getMetaData() (map[string]string, error) {
 	}
 
 	for _, key := range keys {
-		value, err := getValue(metaDataPath + key)
+		value, err := getValue(metaDataPath + key) // nolint
 		if err != nil {
 			continue
 		}
 		metadata[key] = value
+	}
+
+	document, err := getDocument()
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range document {
+		metadata[k] = v
 	}
 
 	return metadata, nil
@@ -107,34 +120,8 @@ func getDocument() (map[string]string, error) {
 	return document, nil
 }
 
-// getIdentity gets the PKCS7 identity document of an instance
-func getIdentity() (string, error) {
+// InstanceIdentity gets the PKCS7 identity document of an instance
+func InstanceIdentity() (string, error) {
 
 	return getValue(dynamicDataPath + "/" + pkcs7Name)
-}
-
-// InstanceMetadata retrieves all the instance metadata in a map
-// It returns the PKCS7 ID, a map of the meta-data and error
-func InstanceMetadata() (string, map[string]string, error) {
-
-	metadata, err := getMetaData()
-	if err != nil {
-		return "", nil, err
-	}
-
-	id, err := getIdentity()
-	if err != nil {
-		return "", nil, err
-	}
-
-	document, err := getDocument()
-	if err != nil {
-		return "", nil, err
-	}
-
-	for k, v := range document {
-		metadata[k] = v
-	}
-
-	return id, metadata, nil
 }

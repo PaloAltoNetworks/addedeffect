@@ -74,8 +74,8 @@ func getMetadataKeys() ([]string, error) {
 	return valueKeys, nil
 }
 
-// InstanceMetadata creates a Metadata map based on the available keys
-func InstanceMetadata() (map[string]string, error) {
+// InstanceMetadataOnly creates a Metadata map based on the available keys
+func InstanceMetadataOnly() (map[string]string, error) {
 
 	metadata := map[string]string{}
 
@@ -124,4 +124,20 @@ func getDocument() (map[string]string, error) {
 func InstanceIdentity() (string, error) {
 
 	return getValue(dynamicDataPath + "/" + pkcs7Name)
+}
+
+// InstanceMetadata is a temporary method to make things backward compatible with the enforcer
+// TODO: Remove this method when https://github.com/aporeto-inc/enforcerd/pull/242 is merged
+func InstanceMetadata() (string, map[string]string, error) {
+	identity, err := InstanceIdentity()
+	if err != nil {
+		return "", nil, err
+	}
+
+	metadata, err := InstanceMetadataOnly()
+	if err != nil {
+		return "", nil, err
+	}
+
+	return identity, metadata, nil
 }

@@ -101,6 +101,8 @@ func InstanceMetadataOnly() (map[string]string, error) {
 		metadata[k] = v
 	}
 
+	metadata["type"] = "ec2"
+
 	return metadata, nil
 }
 

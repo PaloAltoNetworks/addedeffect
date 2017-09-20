@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
@@ -38,7 +39,13 @@ const (
 // getValue retrieves the value from a metadata URI - just single value
 func getValue(uri string) (string, error) {
 
-	resp, err := http.Get(uri)
+	// Set timeout to 1sec as it's a local machine
+	timeout := time.Duration(1 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+
+	resp, err := client.Get(uri)
 	if err != nil {
 		return "", err
 	}

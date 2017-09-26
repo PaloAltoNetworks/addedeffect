@@ -44,7 +44,7 @@ func Parse(prefix string, doc string) error {
 				continue
 			}
 
-			for _, v := range strings.Split(e, ",") {
+			for _, v := range strings.Split(e, ";;") {
 				if hasValue {
 					os.Args = append(os.Args, option+`=`+v)
 				} else {

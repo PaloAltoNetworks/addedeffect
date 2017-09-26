@@ -34,7 +34,7 @@ type PlatformInfo struct {
 	BarretURL             string   `json:"barret,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
-	MongoServices         []string `json:"mongo,omitempty"`
+	MongoURL              string   `json:"mongo,omitempty"`
 	InfluxDBURL           string   `json:"influxdb,omitempty"`
 	GoogleClientID        string   `json:"googleClientID,omitempty"`
 	OpenTracingService    string   `json:"openTracingService,omitempty"`
@@ -176,7 +176,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("yuffie", p.YuffieURL),
 		zap.String("barret", p.BarretURL),
 		zap.String("opentracing", p.OpenTracingService),
-		zap.Strings("mongo", p.MongoServices),
+		zap.String("mongo", p.MongoURL),
 		zap.Strings("cassandra", p.CassandraServices),
 		zap.String("influxdb", p.InfluxDBURL),
 		zap.String("geoip", p.GeoIPURL),

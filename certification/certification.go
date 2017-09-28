@@ -18,6 +18,7 @@ import (
 
 	"github.com/aporeto-inc/gaia/barretmodels/v1/golang"
 	"github.com/aporeto-inc/manipulate"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 // KeyUsage is the type of key usage.
@@ -196,14 +197,25 @@ func SplitChainPEM(certData []byte) ([]byte, []byte) {
 
 // IssueCert asks and returns an new certificate using the given barret Manipulator and given CSR.
 // You can generate easily a CSR using GenerateSimpleCSR.
-func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, usage KeyUsage) (cert []byte, serialNumber string, exp time.Time, err error) {
+func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, usage KeyUsage, span opentracing.Span) (cert []byte, serialNumber string, exp time.Time, err error) {
+
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("addedeffect.certification.issuecert", opentracing.ChildOf(span.Context()))
+	} else {
+		sp = opentracing.StartSpan("addedeffect.certification.issuecert")
+	}
+	defer sp.Finish()
 
 	request := barretmodels.NewCertificate()
 	request.ExpirationDate = expiration
 	request.CSR = string(csrPEM)
 	request.Usage = convertKeyUsage(usage)
 
-	if err = manipulate.Retry(func() error { return m.Create(nil, request) }, nil, 10); err != nil {
+	mctx := manipulate.NewContext()
+	mctx.TrackingSpan = sp
+
+	if err = manipulate.Retry(func() error { return m.Create(mctx, request) }, nil, 10); err != nil {
 		return
 	}
 
@@ -215,31 +227,64 @@ func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, us
 }
 
 // RevokeCert sets the revocation status of the given certificate identified by its serial number.
-func RevokeCert(m manipulate.Manipulator, serialNumber string, revoked bool) (err error) {
+func RevokeCert(m manipulate.Manipulator, serialNumber string, revoked bool, span opentracing.Span) (err error) {
+
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("addedeffect.certification.revokecert", opentracing.ChildOf(span.Context()))
+	} else {
+		sp = opentracing.StartSpan("addedeffect.certification.revokecert")
+	}
+	defer sp.Finish()
 
 	request := barretmodels.NewRevocation()
 	request.Revoked = revoked
 	request.ID = serialNumber
 
-	return manipulate.Retry(func() error { return m.Update(nil, request) }, nil, 10)
+	mctx := manipulate.NewContext()
+	mctx.TrackingSpan = sp
+
+	return manipulate.Retry(func() error { return m.Update(mctx, request) }, nil, 10)
 }
 
 // CheckRevocation checks if the given certificate serial number is revoked.
-func CheckRevocation(m manipulate.Manipulator, serialNumber string) (err error) {
+func CheckRevocation(m manipulate.Manipulator, serialNumber string, span opentracing.Span) (err error) {
+
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("addedeffect.certification.checkrevocation", opentracing.ChildOf(span.Context()))
+	} else {
+		sp = opentracing.StartSpan("addedeffect.certification.checkrevocation")
+	}
+	defer sp.Finish()
 
 	request := barretmodels.NewCheck()
 	request.ID = serialNumber
 
-	return manipulate.Retry(func() error { return m.Retrieve(nil, request) }, nil, 10)
+	mctx := manipulate.NewContext()
+	mctx.TrackingSpan = sp
+
+	return manipulate.Retry(func() error { return m.Retrieve(mctx, request) }, nil, 10)
 }
 
 // IssueEncryptionToken asks and return a token from the given certificate using the given barret manipulator.
-func IssueEncryptionToken(m manipulate.Manipulator, cert []byte) (token string, err error) {
+func IssueEncryptionToken(m manipulate.Manipulator, cert []byte, span opentracing.Span) (token string, err error) {
+
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("addedeffect.certification.issueencryptiontoken", opentracing.ChildOf(span.Context()))
+	} else {
+		sp = opentracing.StartSpan("addedeffect.certification.issueencryptiontoken")
+	}
+	defer sp.Finish()
 
 	request := barretmodels.NewToken()
 	request.Certificate = string(cert)
 
-	if err = manipulate.Retry(func() error { return m.Create(nil, request) }, nil, 10); err != nil {
+	mctx := manipulate.NewContext()
+	mctx.TrackingSpan = sp
+
+	if err = manipulate.Retry(func() error { return m.Create(mctx, request) }, nil, 10); err != nil {
 		return
 	}
 

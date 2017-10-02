@@ -31,6 +31,42 @@ const (
 	KeyUsageClientServer
 )
 
+// Verify verifies the given certificate is signed by the given other certificate, and that
+// the other certificate has the correct required key usage.
+func Verify(signingCertPEMData []byte, certPEMData []byte, keyUsages []x509.ExtKeyUsage) error {
+
+	roots := x509.NewCertPool()
+	ok := roots.AppendCertsFromPEM([]byte(signingCertPEMData))
+	if !ok {
+		return fmt.Errorf("Unable to parse signing certificate")
+	}
+
+	block, rest := pem.Decode(certPEMData)
+	if block == nil || len(rest) != 0 {
+		return fmt.Errorf("Invalid child certificate")
+	}
+
+	x509Cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return fmt.Errorf("Unable to parse child certificate: %s", err)
+	}
+
+	if keyUsages == nil {
+		keyUsages = []x509.ExtKeyUsage{x509.ExtKeyUsageAny}
+	}
+
+	if _, err := x509Cert.Verify(
+		x509.VerifyOptions{
+			Roots:     roots,
+			KeyUsages: keyUsages,
+		},
+	); err != nil {
+		return fmt.Errorf("Unable to verify child certificate: %s", err)
+	}
+
+	return nil
+}
+
 // GenerateBase64PKCS12 generates a full PKCS certificate based on the input keys.
 func GenerateBase64PKCS12(cert []byte, key []byte, ca []byte, passphrase string) (string, error) {
 

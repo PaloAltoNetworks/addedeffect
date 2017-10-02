@@ -69,6 +69,7 @@ type PlatformInfo struct {
 	EnforcerdDockerImage  string   `json:"enforcerdDockerImage,omitempty"`
 	KubesquallDockerImage string   `json:"kubesquallDockerImage,omitempty"`
 	EnforcerdURL          string   `json:"enforcerdURL,omitempty"`
+	License               string   `json:"license,omitempty"`
 }
 
 // ServicesKeyPair decodes the services certificates using the given password.

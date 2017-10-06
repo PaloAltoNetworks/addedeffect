@@ -16,60 +16,62 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
-	CidURL                string   `json:"cid,omitempty"`
-	CidPublicURL          string   `json:"cidPublic,omitempty"`
-	CladURL               string   `json:"clad,omitempty"`
-	CladPublicURL         string   `json:"cladPublic,omitempty"`
-	SquallURL             string   `json:"squall,omitempty"`
-	SquallPublicURL       string   `json:"squallPublic,omitempty"`
-	MidgardURL            string   `json:"midgard,omitempty"`
-	MidgardPublicURL      string   `json:"midgardPublic,omitempty"`
-	ZackURL               string   `json:"zack,omitempty"`
-	ZackPublicURL         string   `json:"zackPublic,omitempty"`
-	VinceURL              string   `json:"vince,omitempty"`
-	VincePublicURL        string   `json:"vincePublic,omitempty"`
-	JunonURL              string   `json:"junon,omitempty"`
-	JunonPublicURL        string   `json:"junonPublic,omitempty"`
-	YuffieURL             string   `json:"yuffie,omitempty"`
-	BarretURL             string   `json:"barret,omitempty"`
-	PubSubServices        []string `json:"pubsub,omitempty"`
-	CassandraServices     []string `json:"cassandra,omitempty"`
-	MongoURL              string   `json:"mongo,omitempty"`
-	InfluxDBURL           string   `json:"influxdb,omitempty"`
-	GoogleClientID        string   `json:"googleClientID,omitempty"`
-	OpenTracingService    string   `json:"openTracingService,omitempty"`
-	GeoIPURL              string   `json:"geoipURL,omitempty"`
-	CACert                string   `json:"CACert,omitempty"`
-	ServicesCert          string   `json:"servicesCert,omitempty"`
-	ServicesCertKey       string   `json:"servicesCertKey,omitempty"`
-	PublicServicesCert    string   `json:"publicServicesCert,omitempty"`
-	PublicServicesCertKey string   `json:"publicServicesCertKey,omitempty"`
-	ZackClientCert        string   `json:"zackClientCert,omitempty"`
-	ZackClientCertKey     string   `json:"zackClientCertKey,omitempty"`
-	VinceClientCert       string   `json:"vinceClientCert,omitempty"`
-	VinceClientCertKey    string   `json:"vinceClientCertKey,omitempty"`
-	SquallClientCert      string   `json:"squallClientCert,omitempty"`
-	SquallClientCertKey   string   `json:"squallClientCertKey,omitempty"`
-	TidusClientCert       string   `json:"tidusClientCert,omitempty"`
-	TidusClientCertKey    string   `json:"tidusClientCertKey,omitempty"`
-	MarleneClientCert     string   `json:"marleneClientCert,omitempty"`
-	MarleneClientCertKey  string   `json:"marleneClientCertKey,omitempty"`
-	TifaClientCert        string   `json:"tifaClientCert,omitempty"`
-	TifaClientCertKey     string   `json:"tifaClientCertKey,omitempty"`
-	BarretClientCert      string   `json:"barretClientCert,omitempty"`
-	BarretClientCertKey   string   `json:"barretClientCertKey,omitempty"`
-	MidgardClientCert     string   `json:"midgardClientCert,omitempty"`
-	MidgardClientCertKey  string   `json:"midgardClientCertKey,omitempty"`
-	GaiaVersion           string   `json:"gaiaVersion,omitempty"`
-	SystemVersion         string   `json:"systemVersion,omitempty"`
-	DownloadManifestURL   string   `json:"downloadManifestURL,omitempty"`
-	ApoctlLinuxURL        string   `json:"apoctlLinuxURL,omitempty"`
-	ApoctlWindowsURL      string   `json:"apoctlWindowsURL,omitempty"`
-	ApoctlDarwinURL       string   `json:"apoctlDarwinURL,omitempty"`
-	EnforcerdDockerImage  string   `json:"enforcerdDockerImage,omitempty"`
-	KubesquallDockerImage string   `json:"kubesquallDockerImage,omitempty"`
-	EnforcerdURL          string   `json:"enforcerdURL,omitempty"`
-	License               string   `json:"license,omitempty"`
+	CidURL                       string   `json:"cid,omitempty"`
+	CidPublicURL                 string   `json:"cidPublic,omitempty"`
+	CladURL                      string   `json:"clad,omitempty"`
+	CladPublicURL                string   `json:"cladPublic,omitempty"`
+	SquallURL                    string   `json:"squall,omitempty"`
+	SquallPublicURL              string   `json:"squallPublic,omitempty"`
+	MidgardURL                   string   `json:"midgard,omitempty"`
+	MidgardPublicURL             string   `json:"midgardPublic,omitempty"`
+	ZackURL                      string   `json:"zack,omitempty"`
+	ZackPublicURL                string   `json:"zackPublic,omitempty"`
+	VinceURL                     string   `json:"vince,omitempty"`
+	VincePublicURL               string   `json:"vincePublic,omitempty"`
+	JunonURL                     string   `json:"junon,omitempty"`
+	JunonPublicURL               string   `json:"junonPublic,omitempty"`
+	YuffieURL                    string   `json:"yuffie,omitempty"`
+	BarretURL                    string   `json:"barret,omitempty"`
+	PubSubServices               []string `json:"pubsub,omitempty"`
+	CassandraServices            []string `json:"cassandra,omitempty"`
+	MongoURL                     string   `json:"mongo,omitempty"`
+	InfluxDBURL                  string   `json:"influxdb,omitempty"`
+	GoogleClientID               string   `json:"googleClientID,omitempty"`
+	OpenTracingService           string   `json:"openTracingService,omitempty"`
+	GeoIPURL                     string   `json:"geoipURL,omitempty"`
+	CACert                       string   `json:"CACert,omitempty"`
+	ServicesCert                 string   `json:"servicesCert,omitempty"`
+	ServicesCertKey              string   `json:"servicesCertKey,omitempty"`
+	PublicServicesCert           string   `json:"publicServicesCert,omitempty"`
+	PublicServicesCertKey        string   `json:"publicServicesCertKey,omitempty"`
+	ZackClientCert               string   `json:"zackClientCert,omitempty"`
+	ZackClientCertKey            string   `json:"zackClientCertKey,omitempty"`
+	VinceClientCert              string   `json:"vinceClientCert,omitempty"`
+	VinceClientCertKey           string   `json:"vinceClientCertKey,omitempty"`
+	SquallClientCert             string   `json:"squallClientCert,omitempty"`
+	SquallClientCertKey          string   `json:"squallClientCertKey,omitempty"`
+	TidusClientCert              string   `json:"tidusClientCert,omitempty"`
+	TidusClientCertKey           string   `json:"tidusClientCertKey,omitempty"`
+	MarleneClientCert            string   `json:"marleneClientCert,omitempty"`
+	MarleneClientCertKey         string   `json:"marleneClientCertKey,omitempty"`
+	ServiceLauncherClientCert    string   `json:"servicelauncherClientCert,omitempty"`
+	ServiceLauncherClientCertKey string   `json:"servicelauncherClientCertKey,omitempty"`
+	TifaClientCert               string   `json:"tifaClientCert,omitempty"`
+	TifaClientCertKey            string   `json:"tifaClientCertKey,omitempty"`
+	BarretClientCert             string   `json:"barretClientCert,omitempty"`
+	BarretClientCertKey          string   `json:"barretClientCertKey,omitempty"`
+	MidgardClientCert            string   `json:"midgardClientCert,omitempty"`
+	MidgardClientCertKey         string   `json:"midgardClientCertKey,omitempty"`
+	GaiaVersion                  string   `json:"gaiaVersion,omitempty"`
+	SystemVersion                string   `json:"systemVersion,omitempty"`
+	DownloadManifestURL          string   `json:"downloadManifestURL,omitempty"`
+	ApoctlLinuxURL               string   `json:"apoctlLinuxURL,omitempty"`
+	ApoctlWindowsURL             string   `json:"apoctlWindowsURL,omitempty"`
+	ApoctlDarwinURL              string   `json:"apoctlDarwinURL,omitempty"`
+	EnforcerdDockerImage         string   `json:"enforcerdDockerImage,omitempty"`
+	KubesquallDockerImage        string   `json:"kubesquallDockerImage,omitempty"`
+	EnforcerdURL                 string   `json:"enforcerdURL,omitempty"`
+	License                      string   `json:"license,omitempty"`
 }
 
 // ServicesKeyPair decodes the services certificates using the given password.
@@ -136,10 +138,16 @@ func (p *PlatformInfo) MarleneClientKeyPair(password string) (tls.Certificate, e
 	return loadCertificates([]byte(p.MarleneClientCert), []byte(p.MarleneClientCertKey), password)
 }
 
-// BarretClientKeyPair decodes the marlene client certificates using the given password.
+// BarretClientKeyPair decodes the barret client certificates using the given password.
 func (p *PlatformInfo) BarretClientKeyPair(password string) (tls.Certificate, error) {
 
 	return loadCertificates([]byte(p.BarretClientCert), []byte(p.BarretClientCertKey), password)
+}
+
+// ServiceLauncherClientKeyPair decodes the servicelauncher client certificates using the given password.
+func (p *PlatformInfo) ServiceLauncherClientKeyPair(password string) (tls.Certificate, error) {
+
+	return loadCertificates([]byte(p.ServiceLauncherClientCert), []byte(p.ServiceLauncherClientCertKey), password)
 }
 
 func (p *PlatformInfo) String() string {

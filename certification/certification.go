@@ -67,6 +67,7 @@ func Verify(signingCertPEMData []byte, certPEMData []byte, keyUsages []x509.ExtK
 	return nil
 }
 
+// GeneratePKCS12 generates a pkcs12
 func GeneratePKCS12(cert []byte, key []byte, ca []byte, passphrase string) ([]byte, error) {
 	// cert
 	tmpcert, err := ioutil.TempFile("", "tmpcert")

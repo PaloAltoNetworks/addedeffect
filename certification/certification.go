@@ -62,46 +62,45 @@ func Verify(signingCertPEMData []byte, certPEMData []byte, keyUsages []x509.ExtK
 	return nil
 }
 
-// GenerateBase64PKCS12 generates a full PKCS certificate based on the input keys.
-func GenerateBase64PKCS12(cert []byte, key []byte, ca []byte, passphrase string) (string, error) {
-
+// GeneratePKCS12 generates a pkcs12
+func GeneratePKCS12(cert []byte, key []byte, ca []byte, passphrase string) ([]byte, error) {
 	// cert
 	tmpcert, err := ioutil.TempFile("", "tmpcert")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer os.Remove(tmpcert.Name()) // nolint: errcheck
 	defer tmpcert.Close()           // nolint: errcheck
 	if _, err = tmpcert.Write(cert); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// key
 	tmpkey, err := ioutil.TempFile("", "tmpkey")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer os.Remove(tmpkey.Name()) // nolint: errcheck
 	defer tmpkey.Close()           // nolint: errcheck
 	if _, err = tmpkey.Write(key); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// ca
 	tmpca, err := ioutil.TempFile("", "tmpca")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer os.Remove(tmpca.Name()) // nolint: errcheck
 	defer tmpca.Close()           // nolint: errcheck
 	if _, err = tmpca.Write(ca); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// p12
 	tmpp12, err := ioutil.TempFile("", "tmpp12")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer os.Remove(tmpp12.Name()) // nolint: errcheck
 	defer tmpp12.Close()           // nolint: errcheck
@@ -117,10 +116,21 @@ func GenerateBase64PKCS12(cert []byte, key []byte, ca []byte, passphrase string)
 	}
 
 	if err = exec.Command("openssl", args...).Run(); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	p12data, err := ioutil.ReadAll(tmpp12)
+	if err != nil {
+		return nil, err
+	}
+	return p12data, nil
+}
+
+// GenerateBase64PKCS12 generates a full PKCS certificate based on the input keys.
+func GenerateBase64PKCS12(cert []byte, key []byte, ca []byte, passphrase string) (string, error) {
+
+	p12data, err := GeneratePKCS12(cert, key, ca, passphrase)
+
 	if err != nil {
 		return "", err
 	}

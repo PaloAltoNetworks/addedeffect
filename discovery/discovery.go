@@ -32,6 +32,7 @@ type PlatformInfo struct {
 	JunonPublicURL        string   `json:"junonPublic,omitempty"`
 	YuffieURL             string   `json:"yuffie,omitempty"`
 	BarretURL             string   `json:"barret,omitempty"`
+	HighwindURL           string   `json:"highwind,omitempty"`
 	PubSubServices        []string `json:"pubsub,omitempty"`
 	CassandraServices     []string `json:"cassandra,omitempty"`
 	MongoURL              string   `json:"mongo,omitempty"`
@@ -54,6 +55,8 @@ type PlatformInfo struct {
 	TidusClientCertKey    string   `json:"tidusClientCertKey,omitempty"`
 	MarleneClientCert     string   `json:"marleneClientCert,omitempty"`
 	MarleneClientCertKey  string   `json:"marleneClientCertKey,omitempty"`
+	HighwindClientCert    string   `json:"highwindClientCert,omitempty"`
+	HighwindClientCertKey string   `json:"highwindClientCertKey,omitempty"`
 	TifaClientCert        string   `json:"tifaClientCert,omitempty"`
 	TifaClientCertKey     string   `json:"tifaClientCertKey,omitempty"`
 	BarretClientCert      string   `json:"barretClientCert,omitempty"`
@@ -136,10 +139,16 @@ func (p *PlatformInfo) MarleneClientKeyPair(password string) (tls.Certificate, e
 	return loadCertificates([]byte(p.MarleneClientCert), []byte(p.MarleneClientCertKey), password)
 }
 
-// BarretClientKeyPair decodes the marlene client certificates using the given password.
+// BarretClientKeyPair decodes the barret client certificates using the given password.
 func (p *PlatformInfo) BarretClientKeyPair(password string) (tls.Certificate, error) {
 
 	return loadCertificates([]byte(p.BarretClientCert), []byte(p.BarretClientCertKey), password)
+}
+
+// HighwindClientKeyPair decodes the highwind client certificates using the given password.
+func (p *PlatformInfo) HighwindClientKeyPair(password string) (tls.Certificate, error) {
+
+	return loadCertificates([]byte(p.HighwindClientCert), []byte(p.HighwindClientCertKey), password)
 }
 
 func (p *PlatformInfo) String() string {

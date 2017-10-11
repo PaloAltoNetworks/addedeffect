@@ -282,6 +282,7 @@ func CreateServiceCertificates(
 	getServerCertFunc bool,
 	dns []string,
 	ips []string,
+	additionalCertKeyPass string,
 ) (clientCert *tls.Certificate, serverCertFunc func(*tls.ClientHelloInfo) (*tls.Certificate, error)) {
 
 	issuingCertKeyPair, err := pf.IssuingServiceClientCertPair(password)
@@ -300,17 +301,17 @@ func CreateServiceCertificates(
 
 	}
 
-	var additionalServerCertificates []tls.Certificate
-	if pf.PublicServicesCert != "" {
-		pcert, e := pf.PublicServicesCertPair("aporeto") // TODO!
-		if e != nil {
-			zap.L().Fatal("Unable to decrypt public certs key pair", zap.Error(e))
+	if getServerCertFunc {
+		var additionalServerCertificates []tls.Certificate
+		if pf.PublicServicesCert != "" {
+			pcert, e := pf.PublicServicesCertPair(additionalCertKeyPass)
+			if e != nil {
+				zap.L().Fatal("Unable to decrypt public certs key pair", zap.Error(e))
+			}
+
+			additionalServerCertificates = append(additionalServerCertificates, pcert)
 		}
 
-		additionalServerCertificates = append(additionalServerCertificates, pcert)
-	}
-
-	if getServerCertFunc {
 		serverCertFunc, err = MakeRenewServiceServerCertificateFunc(issuingManipulator, serviceName, dns, ips, 4380*time.Hour, additionalServerCertificates)
 		if err != nil {
 			zap.L().Fatal("Unable to retrieve server certificate key pair",

@@ -303,7 +303,7 @@ func CreateServiceCertificates(
 
 	if getServerCertFunc {
 		var additionalServerCertificates []tls.Certificate
-		if pf.PublicServicesCert != "" {
+		if pf.PublicServicesCert != "" && additionalCertKeyPass != "" {
 			pcert, e := pf.PublicServicesCertPair(additionalCertKeyPass)
 			if e != nil {
 				zap.L().Fatal("Unable to decrypt public certs key pair", zap.Error(e))

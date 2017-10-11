@@ -72,6 +72,17 @@ func (p *PlatformInfo) IssuingServiceClientCertPair(password string) (tls.Certif
 	return tls.X509KeyPair([]byte(p.IssuingServiceClientCert), pem.EncodeToMemory(keyBlock))
 }
 
+// PublicServicesCertPair decodes the initial public server certificates using the given password.
+func (p *PlatformInfo) PublicServicesCertPair(password string) (tls.Certificate, error) {
+
+	keyBlock, err := tglib.DecryptPrivateKeyPEM([]byte(p.PublicServicesCertKey), password)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	return tls.X509KeyPair([]byte(p.PublicServicesCert), pem.EncodeToMemory(keyBlock))
+}
+
 func (p *PlatformInfo) String() string {
 
 	return fmt.Sprintf(

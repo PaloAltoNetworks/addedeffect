@@ -213,7 +213,14 @@ func IssueServiceServerCertificate(m manipulate.Manipulator, serviceName string,
 
 // MakeRenewServiceServerCertificateFunc returns a function that will renew the certificate if needed. This can be used as TLSConfig.GetCertificate func.
 // Internally, it uses IssueServiceServerCertificate.
-func MakeRenewServiceServerCertificateFunc(m manipulate.Manipulator, serviceName string, dns []string, ips []string, validity time.Duration) (func(*tls.ClientHelloInfo) (*tls.Certificate, error), error) {
+func MakeRenewServiceServerCertificateFunc(
+	m manipulate.Manipulator,
+	serviceName string,
+	dns []string,
+	ips []string,
+	validity time.Duration,
+	additionalCertificates []tls.Certificate,
+) (func(*tls.ClientHelloInfo) (*tls.Certificate, error), error) {
 
 	cert, err := IssueServiceServerCertificate(m, serviceName, dns, ips, validity)
 	if err != nil {
@@ -222,7 +229,27 @@ func MakeRenewServiceServerCertificateFunc(m manipulate.Manipulator, serviceName
 
 	lock := &sync.Mutex{}
 
-	return func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+	certsNameMap := map[string]*tls.Certificate{}
+	for _, item := range additionalCertificates {
+		for _, subItem := range item.Certificate {
+			x509Cert, err := x509.ParseCertificate(subItem)
+			if err != nil {
+				return nil, err
+			}
+			for _, dns := range x509Cert.DNSNames {
+				certsNameMap[dns] = &item
+			}
+			for _, ip := range x509Cert.IPAddresses {
+				certsNameMap[ip.String()] = &item
+			}
+		}
+	}
+
+	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+
+		if ac := certsNameMap[hello.ServerName]; ac != nil {
+			return ac, nil
+		}
 
 		lock.Lock()
 		defer lock.Unlock()
@@ -273,8 +300,18 @@ func CreateServiceCertificates(
 
 	}
 
+	var additionalServerCertificates []tls.Certificate
+	if pf.PublicServicesCert != "" {
+		pcert, e := pf.PublicServicesCertPair("aporeto") // TODO!
+		if e != nil {
+			zap.L().Fatal("Unable to decrypt public certs key pair", zap.Error(e))
+		}
+
+		additionalServerCertificates = append(additionalServerCertificates, pcert)
+	}
+
 	if getServerCertFunc {
-		serverCertFunc, err = MakeRenewServiceServerCertificateFunc(issuingManipulator, serviceName, dns, ips, 4380*time.Hour)
+		serverCertFunc, err = MakeRenewServiceServerCertificateFunc(issuingManipulator, serviceName, dns, ips, 4380*time.Hour, additionalServerCertificates)
 		if err != nil {
 			zap.L().Fatal("Unable to retrieve server certificate key pair",
 				zap.Strings("dns", dns),

@@ -39,10 +39,13 @@ type PlatformInfo struct {
 	JunonURL       string `json:"junon,omitempty"`
 	JunonPublicURL string `json:"junonPublic,omitempty"`
 
-	YuffieURL   string `json:"yuffie,omitempty"`
-	BarretURL   string `json:"barret,omitempty"`
-	HighwindURL string `json:"highwind,omitempty"`
-	GeoIPURL    string `json:"geoipURL,omitempty"`
+	YuffieURL string `json:"yuffie,omitempty"`
+	BarretURL string `json:"barret,omitempty"`
+
+	HighwindURL       string `json:"highwind,omitempty"`
+	HighwindPublicURL string `json:"highwindPublic,omitempty"`
+
+	GeoIPURL string `json:"geoipURL,omitempty"`
 
 	PubSubServices []string `json:"pubsub,omitempty"`
 	MongoURL       string   `json:"mongo,omitempty"`

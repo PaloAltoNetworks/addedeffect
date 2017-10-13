@@ -55,6 +55,7 @@ type PlatformInfo struct {
 	OpenTracingService string `json:"openTracingService,omitempty"`
 
 	CACert                      string `json:"CACert,omitempty"`
+	SystemCACert                string `json:"systemCACert,omitempty"`
 	PublicServicesCert          string `json:"publicServicesCert,omitempty"`
 	PublicServicesCertKey       string `json:"publicServicesCertKey,omitempty"`
 	IssuingServiceClientCert    string `json:"issuingServiceClientCert,omitempty"`
@@ -150,15 +151,26 @@ func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 	}
 
 	pool.AppendCertsFromPEM([]byte(p.CACert))
+	pool.AppendCertsFromPEM([]byte(p.SystemCACert))
 
 	return pool, nil
 }
 
-// ClientCAPool returns a a CA pool using only the custom CA.
+// SystemCAPool returns a a CA pool using only the system CA.
+func (p *PlatformInfo) SystemCAPool() (*x509.CertPool, error) {
+
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM([]byte(p.SystemCACert))
+
+	return pool, nil
+}
+
+// ClientCAPool returns a a CA pool using only the client CA and the system CA.
 func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 
 	pool := x509.NewCertPool()
 	pool.AppendCertsFromPEM([]byte(p.CACert))
+	pool.AppendCertsFromPEM([]byte(p.SystemCACert))
 
 	return pool, nil
 }

@@ -30,9 +30,18 @@ const (
 	KeyUsageClientServer
 )
 
+// SignerType is the type of signer name.
+type SignerType int
+
+// Various possible SignerType values
+const (
+	SignerTypeSystem SignerType = iota + 1
+	SignerTypePublic
+)
+
 // IssueCert asks and returns an new certificate using the given barret Manipulator and given CSR.
 // You can generate easily a CSR using GenerateSimpleCSR.
-func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, usage KeyUsage, span opentracing.Span) (cert []byte, serialNumber string, exp time.Time, err error) {
+func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, usage KeyUsage, signerType SignerType, span opentracing.Span) (cert []byte, serialNumber string, exp time.Time, err error) {
 
 	var sp opentracing.Span
 	if span != nil {
@@ -46,6 +55,7 @@ func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, us
 	request.ExpirationDate = expiration
 	request.CSR = string(csrPEM)
 	request.Usage = convertKeyUsage(usage)
+	request.Signer = convertSignerType(signerType)
 
 	mctx := manipulate.NewContext()
 	mctx.TrackingSpan = sp
@@ -145,7 +155,7 @@ func IssueServiceClientCertificate(m manipulate.Manipulator, serviceName string,
 		return nil, fmt.Errorf("client: Unable to prepare certificate request: %s", err)
 	}
 
-	clientCert, _, _, err := IssueCert(m, csr, time.Now().Add(validity), KeyUsageClient, nil)
+	clientCert, _, _, err := IssueCert(m, csr, time.Now().Add(validity), KeyUsageClient, SignerTypeSystem, nil)
 	if err != nil {
 		return nil, fmt.Errorf("client: Unable to get new certificate: %s", err)
 	}
@@ -192,7 +202,7 @@ func IssueServiceServerCertificate(m manipulate.Manipulator, serviceName string,
 		return nil, fmt.Errorf("server: Unable to prepare certificate request: %s", err)
 	}
 
-	serverCert, _, _, err := IssueCert(m, csrData, time.Now().Add(validity), KeyUsageServer, nil)
+	serverCert, _, _, err := IssueCert(m, csrData, time.Now().Add(validity), KeyUsageServer, SignerTypeSystem, nil)
 	if err != nil {
 		return nil, fmt.Errorf("server: Unable to get new certificate: %s", err)
 	}
@@ -230,6 +240,7 @@ func MakeRenewServiceServerCertificateFunc(
 	lock := &sync.Mutex{}
 
 	certsNameMap := map[string]*tls.Certificate{}
+	certsIPsMap := map[string]*tls.Certificate{}
 	for _, item := range additionalCertificates {
 		for _, subItem := range item.Certificate {
 			x509Cert, err := x509.ParseCertificate(subItem)
@@ -240,7 +251,7 @@ func MakeRenewServiceServerCertificateFunc(
 				certsNameMap[dns] = &item
 			}
 			for _, ip := range x509Cert.IPAddresses {
-				certsNameMap[ip.String()] = &item
+				certsIPsMap[ip.String()] = &item
 			}
 		}
 	}
@@ -248,6 +259,11 @@ func MakeRenewServiceServerCertificateFunc(
 	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 
 		if ac := certsNameMap[hello.ServerName]; ac != nil {
+			return ac, nil
+		}
+
+		host, _, _ := net.SplitHostPort(hello.Conn.LocalAddr().String())
+		if ac := certsIPsMap[host]; ac != nil {
 			return ac, nil
 		}
 
@@ -333,5 +349,14 @@ func convertKeyUsage(usage KeyUsage) barretmodels.CertificateUsageValue {
 		return barretmodels.CertificateUsageServerclient
 	default:
 		return barretmodels.CertificateUsageClient
+	}
+}
+
+func convertSignerType(signerType SignerType) barretmodels.CertificateSignerValue {
+	switch signerType {
+	case SignerTypeSystem:
+		return barretmodels.CertificateSignerSystem
+	default:
+		return barretmodels.CertificateSignerPublic
 	}
 }

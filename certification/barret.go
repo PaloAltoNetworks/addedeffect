@@ -246,13 +246,13 @@ func MakeRenewServiceServerCertificateFunc(
 
 	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 
-		if ac := certsNameMap[hello.ServerName]; ac != nil {
-			return ac, nil
+		if ac, ok := certsNameMap[hello.ServerName]; ok {
+			return &ac, nil
 		}
 
 		host, _, _ := net.SplitHostPort(hello.Conn.LocalAddr().String())
-		if ac := certsIPsMap[host]; ac != nil {
-			return ac, nil
+		if ac, ok := certsIPsMap[host]; ok {
+			return &ac, nil
 		}
 
 		lock.Lock()

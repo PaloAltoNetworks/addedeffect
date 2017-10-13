@@ -221,6 +221,31 @@ func IssueServiceServerCertificate(m manipulate.Manipulator, serviceName string,
 	return &X509ServerCert, nil
 }
 
+// BuildCertificatesMaps returns to maps to get what certificate to use for which DNS or IPs.
+// This can be used in a custom tls.Config.GetCertificate function.
+func BuildCertificatesMaps(certs []tls.Certificate) (map[string]*tls.Certificate, map[string]*tls.Certificate, error) {
+
+	certsNamesMap := map[string]*tls.Certificate{}
+	certsIPsMap := map[string]*tls.Certificate{}
+
+	for _, item := range certs {
+		for _, subItem := range item.Certificate {
+			x509Cert, err := x509.ParseCertificate(subItem)
+			if err != nil {
+				return nil, nil, err
+			}
+			for _, dns := range x509Cert.DNSNames {
+				certsNamesMap[dns] = &item
+			}
+			for _, ip := range x509Cert.IPAddresses {
+				certsIPsMap[ip.String()] = &item
+			}
+		}
+	}
+
+	return certsNamesMap, certsIPsMap, nil
+}
+
 // MakeRenewServiceServerCertificateFunc returns a function that will renew the certificate if needed. This can be used as TLSConfig.GetCertificate func.
 // Internally, it uses IssueServiceServerCertificate.
 func MakeRenewServiceServerCertificateFunc(
@@ -239,21 +264,9 @@ func MakeRenewServiceServerCertificateFunc(
 
 	lock := &sync.Mutex{}
 
-	certsNameMap := map[string]*tls.Certificate{}
-	certsIPsMap := map[string]*tls.Certificate{}
-	for _, item := range additionalCertificates {
-		for _, subItem := range item.Certificate {
-			x509Cert, err := x509.ParseCertificate(subItem)
-			if err != nil {
-				return nil, err
-			}
-			for _, dns := range x509Cert.DNSNames {
-				certsNameMap[dns] = &item
-			}
-			for _, ip := range x509Cert.IPAddresses {
-				certsIPsMap[ip.String()] = &item
-			}
-		}
+	certsNameMap, certsIPsMap, err := BuildCertificatesMaps(additionalCertificates)
+	if err != nil {
+		return nil, err
 	}
 
 	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {

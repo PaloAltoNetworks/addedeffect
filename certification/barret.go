@@ -290,7 +290,7 @@ func CreateServiceCertificates(
 		zap.L().Fatal("Unable to decode issuing certificate key pair", zap.Error(err))
 	}
 
-	issuingManipulator := maniphttp.NewHTTPManipulatorWithMTLS(pf.BarretURL, rootCAPool, nil, []tls.Certificate{issuingCertKeyPair}, false)
+	issuingManipulator := maniphttp.NewHTTPManipulatorWithMTLS(pf.BarretURL, rootCAPool, []tls.Certificate{issuingCertKeyPair}, false)
 
 	if getClientCert {
 		clientCert, err = IssueServiceClientCertificate(issuingManipulator, serviceName, 8760*time.Hour)

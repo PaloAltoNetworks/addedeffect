@@ -99,7 +99,7 @@ func (p *PlatformInfo) ServicesKeyPair(password string) ([]tls.Certificate, erro
 	return ret, nil
 }
 
-// IssuingServiceClientCertPair decodes the initial issueing client certificates using the given password.
+// IssuingServiceClientCertPair decodes the initial issuing client certificates using the given password.
 func (p *PlatformInfo) IssuingServiceClientCertPair(password string) (tls.Certificate, error) {
 
 	return loadCertificates([]byte(p.IssuingServiceClientCert), []byte(p.IssuingServiceClientCertKey), password)

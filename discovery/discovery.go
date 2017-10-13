@@ -65,7 +65,7 @@ type PlatformInfo struct {
 	License string `json:"license,omitempty"`
 }
 
-// IssuingServiceClientCertPair decodes the initial issueing client certificates using the given password.
+// IssuingServiceClientCertPair decodes the initial issuing client certificates using the given password.
 func (p *PlatformInfo) IssuingServiceClientCertPair(password string) (tls.Certificate, error) {
 
 	keyBlock, err := tglib.DecryptPrivateKeyPEM([]byte(p.IssuingServiceClientCertKey), password)

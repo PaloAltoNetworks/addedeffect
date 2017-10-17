@@ -239,40 +239,65 @@ func MakeRenewServiceServerCertificateFunc(
 
 	lock := &sync.Mutex{}
 
-	certsNameMap, certsIPsMap, err := tglib.BuildCertificatesMaps(additionalCertificates)
+	certs := append([]tls.Certificate{*cert}, additionalCertificates...)
+	certsNameMap, certsIPsMap, err := tglib.BuildCertificatesMaps(certs)
 	if err != nil {
 		return nil, err
 	}
 
 	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 
-		if ac, ok := certsNameMap[hello.ServerName]; ok {
-			return &ac, nil
-		}
-
-		host, _, _ := net.SplitHostPort(hello.Conn.LocalAddr().String())
-		if ac, ok := certsIPsMap[host]; ok {
-			return &ac, nil
-		}
-
 		lock.Lock()
 		defer lock.Unlock()
 
-		if time.Now().Add(time.Hour).After(cert.Leaf.NotAfter) {
+		// First let's find a cert that matches the DNS SANs.
+		var targetCert *tls.Certificate
+		if ac, ok := certsNameMap[hello.ServerName]; ok {
+			targetCert = &ac
+		}
 
-			renewedCerts, err := IssueServiceServerCertificate(m, serviceName, dns, ips, validity)
+		// If we found nothing, try to find one matching the IP SANs.
+		if targetCert == nil {
+
+			host, _, err := net.SplitHostPort(hello.Conn.LocalAddr().String())
 			if err != nil {
 				return nil, err
 			}
 
-			if err := RevokeCert(m, renewedCerts.Leaf.SerialNumber.String(), true, nil); err != nil {
+			if ac, ok := certsIPsMap[host]; ok {
+				targetCert = &ac
+			}
+		}
+
+		// If we did not find any certificate at that point, we return the first public one.
+		if targetCert == nil {
+
+			if len(additionalCertificates) == 0 {
+				return nil, fmt.Errorf("Couldn't find any valid certificate for the requested server name or IP")
+			}
+
+			return &additionalCertificates[0], nil
+		}
+
+		// If the targetCert happens to be the one we issued, then we check if we need to renew
+		if targetCert.Leaf != nil && targetCert.Leaf.SerialNumber == cert.Leaf.SerialNumber && time.Now().After(targetCert.Leaf.NotAfter) {
+
+			renewedCert, err := IssueServiceServerCertificate(m, serviceName, dns, ips, validity)
+			if err != nil {
 				return nil, err
 			}
 
-			cert = renewedCerts
+			// We rebuild the mapping using the newly issued certificate.
+			certs = append([]tls.Certificate{*renewedCert}, additionalCertificates...)
+			certsNameMap, certsIPsMap, err = tglib.BuildCertificatesMaps(certs)
+			if err != nil {
+				return nil, err
+			}
+
+			targetCert = renewedCert
 		}
 
-		return cert, nil
+		return targetCert, nil
 	}, nil
 }
 

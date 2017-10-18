@@ -154,8 +154,11 @@ func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 		return nil, fmt.Errorf("Unable to create RootCAPool: cannot append public ca certificate: %s", p.CACert)
 	}
 
-	if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
-		return nil, fmt.Errorf("Unable to create RootCAPool: cannot append system ca certificate: %s", p.SystemCACert)
+	// If it's not set, it's probably because it's public.
+	if p.SystemCACert != "" {
+		if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
+			return nil, fmt.Errorf("Unable to create RootCAPool: cannot append system ca certificate: %s", p.SystemCACert)
+		}
 	}
 
 	return pool, nil

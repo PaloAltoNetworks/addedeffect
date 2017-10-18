@@ -10,7 +10,6 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 )
 
 // Configurable is the interface of a configuration.
@@ -30,7 +29,7 @@ func Initialize(conf Configurable) {
 
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		zap.L().Fatal("Unable to bind flags", zap.Error(err))
+		panic("Unable to bind flags: " + err.Error())
 	}
 
 	viper.SetEnvPrefix(conf.Prefix())
@@ -40,20 +39,20 @@ func Initialize(conf Configurable) {
 	checkRequired(conf.RequiredParameters()...)
 
 	if err := viper.Unmarshal(conf); err != nil {
-		zap.L().Fatal("Unable to unmarshal configuration", zap.Error(err))
+		panic("Unable to unmarshal configuration: " + err.Error())
 	}
 
 	if c, ok := conf.(CidCommunicator); ok {
 
 		pool, err := x509.SystemCertPool()
 		if err != nil {
-			zap.L().Fatal("Unable to load system CA pool", zap.Error(err))
+			panic("Unable to load system CA pool: " + err.Error())
 		}
 
 		if path := viper.GetString("cid-cacert"); path != "" {
 			data, err := ioutil.ReadFile(path)
 			if err != nil {
-				zap.L().Fatal("Unable to read cid CA file", zap.String("path", path), zap.Error(err))
+				panic("Unable to read cid CA file: " + err.Error())
 			}
 			pool.AppendCertsFromPEM(data)
 		}

@@ -19,7 +19,7 @@ type Configurable interface {
 	RequiredParameters() []string
 }
 
-// CidCommunicator is an extention to Configurable that asks for
+// CidCommunicator is an extension to Configurable that asks for
 // an initial ca to talk to cid.
 type CidCommunicator interface {
 	SetInitialCAPool(pool *x509.CertPool)

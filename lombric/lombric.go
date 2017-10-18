@@ -67,7 +67,7 @@ func checkRequired(keys ...string) {
 	var fail bool
 	for _, key := range keys {
 
-		if reflect.DeepEqual(viper.Get(key), reflect.Zero(reflect.TypeOf(viper.Get(key))).Interface()) {
+		if !viper.IsSet(key) || reflect.DeepEqual(viper.Get(key), reflect.Zero(reflect.TypeOf(viper.Get(key))).Interface()) {
 			fmt.Printf("Error: Parameter '--%s' is required.\n", key)
 			fail = true
 		}

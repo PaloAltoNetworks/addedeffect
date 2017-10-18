@@ -150,8 +150,13 @@ func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 		return nil, err
 	}
 
-	pool.AppendCertsFromPEM([]byte(p.CACert))
-	pool.AppendCertsFromPEM([]byte(p.SystemCACert))
+	if ok := pool.AppendCertsFromPEM([]byte(p.CACert)); !ok {
+		return nil, fmt.Errorf("Unable to create RootCAPool: cannot append public ca certificate: %s", p.CACert)
+	}
+
+	if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
+		return nil, fmt.Errorf("Unable to create RootCAPool: cannot append system ca certificate: %s", p.SystemCACert)
+	}
 
 	return pool, nil
 }
@@ -160,7 +165,10 @@ func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 func (p *PlatformInfo) SystemCAPool() (*x509.CertPool, error) {
 
 	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM([]byte(p.SystemCACert))
+
+	if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
+		return nil, fmt.Errorf("Unable to create SystemCAPool: cannot append system ca certificate: %s", p.SystemCACert)
+	}
 
 	return pool, nil
 }
@@ -169,8 +177,14 @@ func (p *PlatformInfo) SystemCAPool() (*x509.CertPool, error) {
 func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 
 	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM([]byte(p.CACert))
-	pool.AppendCertsFromPEM([]byte(p.SystemCACert))
+
+	if ok := pool.AppendCertsFromPEM([]byte(p.CACert)); !ok {
+		return nil, fmt.Errorf("Unable to create ClientCAPool: cannot append public ca certificate: %s", p.CACert)
+	}
+
+	if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
+		return nil, fmt.Errorf("Unable to create ClientCAPool: cannot append system ca certificate: %s", p.SystemCACert)
+	}
 
 	return pool, nil
 }

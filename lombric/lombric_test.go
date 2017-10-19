@@ -2,6 +2,7 @@ package lombric
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -67,7 +68,7 @@ func TestLombric_Initialize(t *testing.T) {
 
 			So(viper.GetStringSlice("a-string-slice-from-var"), ShouldResemble, []string{"x", "y", "z"})
 
-			So(pflag.CommandLine.FlagUsages(), ShouldEqual, usage)
+			So(strings.Replace(pflag.CommandLine.FlagUsages(), " ", "", -1), ShouldEqual, strings.Replace(usage, " ", "", -1))
 		})
 
 	})

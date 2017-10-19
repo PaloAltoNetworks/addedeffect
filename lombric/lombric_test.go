@@ -66,7 +66,7 @@ func TestLombric_Initialize(t *testing.T) {
 
 			So(viper.GetStringSlice("a-string-slice-from-var"), ShouldResemble, []string{"x", "y", "z"})
 
-			// This test is disable because here we have stringSlice and on concourse we get strings...
+			// This test is disabled because here we have stringSlice and on concourse we get strings...
 			// So(strings.Replace(pflag.CommandLine.FlagUsages(), " ", "", -1), ShouldEqual, strings.Replace(usage, " ", "", -1))
 		})
 

@@ -1,6 +1,7 @@
 package lombric
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -10,16 +11,17 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-const usage = `      --a-bool                             This is a boolean [required] (default true)
-      --a-bool-nodef                       This is a no def boolean
-      --a-duration duration                This is a duration [required] (default 10s)
-      --a-duration-nodef duration          This is a no def duration
-      --a-integer int                      This is a number [required] (default 42)
-      --a-integer-nodef int                This is a no def number
-      --a-string string                    This is a string [required] (default "hello")
-      --a-string-nodef string              This is a no def string
-      --a-string-slice stringSlice         This is a string slice [required] (default [a,b,c])
-      --a-string-slice-nodef stringSlice   This is a no def string slice
+const usage = `      --a-bool                                This is a boolean [required] (default true)
+      --a-bool-nodef                          This is a no def boolean
+      --a-duration duration                   This is a duration [required] (default 10s)
+      --a-duration-nodef duration             This is a no def duration
+      --a-integer int                         This is a number [required] (default 42)
+      --a-integer-nodef int                   This is a no def number
+      --a-string string                       This is a string [required] (default "hello")
+      --a-string-nodef string                 This is a no def string
+      --a-string-slice stringSlice            This is a string slice [required] (default [a,b,c])
+      --a-string-slice-from-var stringSlice   This is a no def string slice populated from var
+      --a-string-slice-nodef stringSlice      This is a no def string slice
 `
 
 type testConf struct {
@@ -34,10 +36,12 @@ type testConf struct {
 	ADurationNoDef    time.Duration `mapstructure:"a-duration-nodef"      desc:"This is a no def duration"`
 	AIntegerNoDef     int           `mapstructure:"a-integer-nodef"       desc:"This is a no def number"`
 	AStringSliceNoDef []string      `mapstructure:"a-string-slice-nodef"  desc:"This is a no def string slice"`
+
+	AnotherStringSliceNoDef []string `mapstructure:"a-string-slice-from-var"  desc:"This is a no def string slice populated from var"`
 }
 
 // Prefix return the configuration prefix.
-func (c *testConf) Prefix() string { return "tidus" }
+func (c *testConf) Prefix() string { return "lombric" }
 
 func TestLombric_Initialize(t *testing.T) {
 
@@ -47,6 +51,8 @@ func TestLombric_Initialize(t *testing.T) {
 		Initialize(conf)
 
 		Convey("Then the flags should be correctly set", func() {
+			os.Setenv("LOMBRIC_A_STRING_SLICE_FROM_VAR", "x y z") // nolint: errcheck
+
 			So(viper.GetString("a-string"), ShouldEqual, "hello")
 			So(viper.GetBool("a-bool"), ShouldEqual, true)
 			So(viper.GetDuration("a-duration"), ShouldEqual, 10*time.Second)
@@ -58,6 +64,8 @@ func TestLombric_Initialize(t *testing.T) {
 			So(viper.GetDuration("a-duration-nodef"), ShouldEqual, 0)
 			So(viper.GetInt("a-integer-nodef"), ShouldEqual, 0)
 			So(viper.GetStringSlice("a-string-slice-nodef"), ShouldResemble, []string{})
+
+			So(viper.GetStringSlice("a-string-slice-from-var"), ShouldResemble, []string{"x", "y", "z"})
 
 			So(pflag.CommandLine.FlagUsages(), ShouldEqual, usage)
 		})

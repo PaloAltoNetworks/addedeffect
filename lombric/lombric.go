@@ -28,11 +28,34 @@ type CidCommunicator interface {
 func Initialize(conf Configurable) {
 
 	pflag.Parse()
+
+	pflag.VisitAll(func(f *pflag.Flag) {
+		var v interface{}
+		var err error
+		switch f.Value.Type() {
+		case "stringSlice":
+			v, err = pflag.CommandLine.GetStringSlice(f.Name)
+		case "boolSlice":
+			v, err = pflag.CommandLine.GetBoolSlice(f.Name)
+		case "intSlice":
+			v, err = pflag.CommandLine.GetIntSlice(f.Name)
+		case "ipSlice":
+			v, err = pflag.CommandLine.GetIPSlice(f.Name)
+		}
+
+		if err != nil {
+			panic("Unable to trick viper with the defaults: %s" + err.Error())
+		}
+
+		viper.SetDefault(f.Name, v)
+	})
+
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		panic("Unable to bind flags: " + err.Error())
 	}
 
 	viper.SetEnvPrefix(conf.Prefix())
+	viper.SetTypeByDefaultValue(true)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 

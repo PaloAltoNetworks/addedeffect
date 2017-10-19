@@ -72,7 +72,12 @@ func Initialize(conf Configurable) {
 			panic("Unable to load system CA pool: " + err.Error())
 		}
 
-		if path := viper.GetString("cid-cacert"); path != "" {
+		path := viper.GetString("cid-cacert")
+		if path == "" {
+			path = viper.GetString("api-cacert")
+		}
+
+		if path != "" {
 			data, err := ioutil.ReadFile(path)
 			if err != nil {
 				panic("Unable to read cid CA file: " + err.Error())

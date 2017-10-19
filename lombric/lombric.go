@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -15,7 +17,6 @@ import (
 // Configurable is the interface of a configuration.
 type Configurable interface {
 	Prefix() string
-	RequiredParameters() []string
 }
 
 // CidCommunicator is an extension to Configurable that asks for
@@ -24,10 +25,105 @@ type CidCommunicator interface {
 	SetInitialCAPool(pool *x509.CertPool)
 }
 
+func deepFields(ift reflect.Type) []reflect.StructField {
+
+	fields := make([]reflect.StructField, 0)
+
+	for i := 0; i < ift.NumField(); i++ {
+		field := ift.Field(i)
+
+		switch field.Type.Kind() {
+		case reflect.Struct:
+			fields = append(fields, deepFields(field.Type)...)
+		default:
+			fields = append(fields, field)
+		}
+	}
+
+	return fields
+}
+
+func installFlags(conf Configurable) (requiredFlags []string) {
+
+	t := reflect.ValueOf(conf).Elem().Type()
+
+	for _, field := range deepFields(t) {
+
+		// field := t.Field(i)
+
+		key := field.Tag.Get("mapstructure")
+		if key == "" || key == "-" {
+			continue
+		}
+
+		description := field.Tag.Get("desc")
+		def := field.Tag.Get("default")
+
+		required := field.Tag.Get("required") == "true"
+		if required {
+			requiredFlags = append(requiredFlags, key)
+			description += " [required]"
+		}
+
+		if field.Type.Kind() != reflect.Slice {
+
+			switch field.Type.Name() {
+
+			case "bool":
+				pflag.Bool(key, def == "true", description)
+
+			case "string":
+				pflag.String(key, def, description)
+
+			case "Duration":
+				if def == "" {
+					pflag.Duration(key, 0, description)
+					break
+				}
+				d, err := time.ParseDuration(def)
+				if err != nil {
+					panic("Unable to parse duration from: " + def)
+				}
+				pflag.Duration(key, d, description)
+
+			case "int":
+				if def == "" {
+					pflag.Int(key, 0, description)
+					break
+				}
+				d, err := strconv.Atoi(def)
+				if err != nil {
+					panic("Unable to parse int from: " + def)
+				}
+				pflag.Int(key, d, description)
+
+			default:
+				panic("Unsupported type: " + field.Type.Name())
+			}
+
+		} else {
+
+			switch field.Type.Elem().Name() {
+
+			case "string":
+				sdef := strings.Split(def, ",")
+				pflag.StringSlice(key, sdef, description)
+
+			default:
+				panic("Unsupported type: " + field.Type.Name())
+			}
+		}
+	}
+
+	pflag.Parse()
+
+	return requiredFlags
+}
+
 // Initialize does all the basic job of bindings
 func Initialize(conf Configurable) {
 
-	pflag.Parse()
+	requiredFlags := installFlags(conf)
 
 	pflag.VisitAll(func(f *pflag.Flag) {
 		var v interface{}
@@ -59,7 +155,7 @@ func Initialize(conf Configurable) {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
-	checkRequired(conf.RequiredParameters()...)
+	checkRequired(requiredFlags...)
 
 	if err := viper.Unmarshal(conf); err != nil {
 		panic("Unable to unmarshal configuration: " + err.Error())

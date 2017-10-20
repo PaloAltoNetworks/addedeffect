@@ -25,6 +25,11 @@ type CidCommunicator interface {
 	SetInitialCAPool(pool *x509.CertPool)
 }
 
+// VersionPrinter is an extension to Configurable that can print its version.
+type VersionPrinter interface {
+	PrintVersion()
+}
+
 func deepFields(ift reflect.Type) []reflect.StructField {
 
 	fields := make([]reflect.StructField, 0)
@@ -48,8 +53,6 @@ func installFlags(conf Configurable) (requiredFlags []string) {
 	t := reflect.ValueOf(conf).Elem().Type()
 
 	for _, field := range deepFields(t) {
-
-		// field := t.Field(i)
 
 		key := field.Tag.Get("mapstructure")
 		if key == "" || key == "-" {
@@ -115,6 +118,10 @@ func installFlags(conf Configurable) (requiredFlags []string) {
 		}
 	}
 
+	if _, ok := conf.(VersionPrinter); ok {
+		pflag.BoolP("version", "v", false, "Display the version")
+	}
+
 	pflag.Parse()
 
 	return requiredFlags
@@ -154,6 +161,11 @@ func Initialize(conf Configurable) {
 	viper.SetTypeByDefaultValue(true)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
+
+	if vp, ok := conf.(VersionPrinter); ok {
+		vp.PrintVersion()
+		os.Exit(0)
+	}
 
 	checkRequired(requiredFlags...)
 

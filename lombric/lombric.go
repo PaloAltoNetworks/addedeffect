@@ -162,7 +162,7 @@ func Initialize(conf Configurable) {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
-	if vp, ok := conf.(VersionPrinter); ok {
+	if vp, ok := conf.(VersionPrinter); ok && viper.GetBool("version") {
 		vp.PrintVersion()
 		os.Exit(0)
 	}

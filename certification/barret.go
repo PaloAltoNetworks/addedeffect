@@ -57,9 +57,7 @@ func IssueCert(m manipulate.Manipulator, csrPEM []byte, expiration time.Time, us
 	request.Usage = convertKeyUsage(usage)
 	request.Signer = convertSignerType(signerType)
 
-	mctx := manipulate.NewContext()
-	mctx.TrackingSpan = sp
-
+	mctx := manipulate.NewContextWithTrackingSpan(sp)
 	if err = manipulate.Retry(func() error { return m.Create(mctx, request) }, nil, 10); err != nil {
 		return
 	}
@@ -86,9 +84,7 @@ func RevokeCert(m manipulate.Manipulator, serialNumber string, revoked bool, spa
 	request.Revoked = revoked
 	request.ID = serialNumber
 
-	mctx := manipulate.NewContext()
-	mctx.TrackingSpan = sp
-
+	mctx := manipulate.NewContextWithTrackingSpan(sp)
 	return manipulate.Retry(func() error { return m.Update(mctx, request) }, nil, 10)
 }
 
@@ -106,14 +102,61 @@ func CheckRevocation(m manipulate.Manipulator, serialNumber string, span opentra
 	request := barretmodels.NewCheck()
 	request.ID = serialNumber
 
-	mctx := manipulate.NewContext()
-	mctx.TrackingSpan = sp
-
+	mctx := manipulate.NewContextWithTrackingSpan(sp)
 	return manipulate.Retry(func() error { return m.Retrieve(mctx, request) }, nil, 10)
 }
 
+// IssueCA asks and returns an new CA using the given barret Manipulator.
+func IssueCA(m manipulate.Manipulator, commonName string, expiration time.Time, span opentracing.Span) (ca []byte, ID string, exp time.Time, err error) {
+
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("addedeffect.certification.issueca", opentracing.ChildOf(span.Context()))
+	} else {
+		sp = opentracing.StartSpan("addedeffect.certification.issueca")
+	}
+	defer sp.Finish()
+
+	authority := barretmodels.NewAuthority()
+	authority.ExpirationDate = expiration
+	authority.CommonName = commonName
+
+	mctx := manipulate.NewContextWithTrackingSpan(sp)
+	if err = manipulate.Retry(func() error { return m.Create(mctx, authority) }, nil, 10); err != nil {
+		return
+	}
+
+	ca = []byte(authority.Certificate)
+	ID = authority.ID
+	exp = authority.ExpirationDate
+
+	return
+}
+
+// DeleteCA deletes the CA with the given ID.
+func DeleteCA(m manipulate.Manipulator, ID string, span opentracing.Span) (err error) {
+
+	var sp opentracing.Span
+	if span != nil {
+		sp = opentracing.StartSpan("addedeffect.certification.deleteca", opentracing.ChildOf(span.Context()))
+	} else {
+		sp = opentracing.StartSpan("addedeffect.certification.deleteca")
+	}
+	defer sp.Finish()
+
+	authority := barretmodels.NewAuthority()
+	authority.ID = ID
+
+	mctx := manipulate.NewContextWithTrackingSpan(sp)
+	if err = manipulate.Retry(func() error { return m.Delete(mctx, authority) }, nil, 10); err != nil {
+		return
+	}
+
+	return
+}
+
 // IssueEncryptionToken asks and return a token from the given certificate using the given barret manipulator.
-func IssueEncryptionToken(m manipulate.Manipulator, cert []byte, span opentracing.Span) (token string, err error) {
+func IssueEncryptionToken(m manipulate.Manipulator, cert []byte, signingKeyID string, span opentracing.Span) (token string, err error) {
 
 	var sp opentracing.Span
 	if span != nil {
@@ -125,6 +168,7 @@ func IssueEncryptionToken(m manipulate.Manipulator, cert []byte, span opentracin
 
 	request := barretmodels.NewToken()
 	request.Certificate = string(cert)
+	request.SigningKeyID = signingKeyID
 
 	mctx := manipulate.NewContext()
 	mctx.TrackingSpan = sp

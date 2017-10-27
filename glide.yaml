@@ -5,7 +5,3 @@ import:
 ## 3rd Party
 - package: github.com/uber/jaeger-client-go
   version: ^2.9.0
-
-## TRASH ME
-- package: github.com/aporeto-inc/gaia
-  version: 3964de42a4eac1c5b3822ccd0e377d869d0861c6

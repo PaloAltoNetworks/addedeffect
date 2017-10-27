@@ -2,6 +2,6 @@ package: github.com/aporeto-inc/addedeffect
 description: ""
 import:
 
-  ## 3rd Party
+## 3rd Party
 - package: github.com/uber/jaeger-client-go
   version: ^2.9.0

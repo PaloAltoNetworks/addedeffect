@@ -30,107 +30,10 @@ type VersionPrinter interface {
 	PrintVersion()
 }
 
-func deepFields(ift reflect.Type) []reflect.StructField {
-
-	fields := make([]reflect.StructField, 0)
-
-	for i := 0; i < ift.NumField(); i++ {
-		field := ift.Field(i)
-
-		switch field.Type.Kind() {
-		case reflect.Struct:
-			fields = append(fields, deepFields(field.Type)...)
-		default:
-			fields = append(fields, field)
-		}
-	}
-
-	return fields
-}
-
-func installFlags(conf Configurable) (requiredFlags []string) {
-
-	t := reflect.ValueOf(conf).Elem().Type()
-
-	for _, field := range deepFields(t) {
-
-		key := field.Tag.Get("mapstructure")
-		if key == "" || key == "-" {
-			continue
-		}
-
-		description := field.Tag.Get("desc")
-		def := field.Tag.Get("default")
-
-		required := field.Tag.Get("required") == "true"
-		if required {
-			requiredFlags = append(requiredFlags, key)
-			description += " [required]"
-		}
-
-		if field.Type.Kind() != reflect.Slice {
-
-			switch field.Type.Name() {
-
-			case "bool":
-				pflag.Bool(key, def == "true", description)
-
-			case "string":
-				pflag.String(key, def, description)
-
-			case "Duration":
-				if def == "" {
-					pflag.Duration(key, 0, description)
-					break
-				}
-				d, err := time.ParseDuration(def)
-				if err != nil {
-					panic("Unable to parse duration from: " + def)
-				}
-				pflag.Duration(key, d, description)
-
-			case "int":
-				if def == "" {
-					pflag.Int(key, 0, description)
-					break
-				}
-				d, err := strconv.Atoi(def)
-				if err != nil {
-					panic("Unable to parse int from: " + def)
-				}
-				pflag.Int(key, d, description)
-
-			default:
-				panic("Unsupported type: " + field.Type.Name())
-			}
-
-		} else {
-
-			switch field.Type.Elem().Name() {
-
-			case "string":
-				sdef := strings.Split(def, ",")
-				pflag.StringSlice(key, sdef, description)
-
-			default:
-				panic("Unsupported type: " + field.Type.Name())
-			}
-		}
-	}
-
-	if _, ok := conf.(VersionPrinter); ok {
-		pflag.BoolP("version", "v", false, "Display the version")
-	}
-
-	pflag.Parse()
-
-	return requiredFlags
-}
-
 // Initialize does all the basic job of bindings
 func Initialize(conf Configurable) {
 
-	requiredFlags := installFlags(conf)
+	requiredFlags, secretFlags := installFlags(conf)
 
 	pflag.VisitAll(func(f *pflag.Flag) {
 		var v interface{}
@@ -195,6 +98,114 @@ func Initialize(conf Configurable) {
 
 		c.SetInitialCAPool(pool)
 	}
+
+	// Clean up all secrets
+	for _, key := range secretFlags {
+		env := strings.Replace(strings.ToUpper(conf.Prefix()+"_"+key), "-", "_", -1)
+		if err := os.Unsetenv(env); err != nil {
+			panic("Unable to unset secret env variable " + env)
+		}
+	}
+}
+
+func deepFields(ift reflect.Type) []reflect.StructField {
+
+	fields := make([]reflect.StructField, 0)
+
+	for i := 0; i < ift.NumField(); i++ {
+		field := ift.Field(i)
+
+		switch field.Type.Kind() {
+		case reflect.Struct:
+			fields = append(fields, deepFields(field.Type)...)
+		default:
+			fields = append(fields, field)
+		}
+	}
+
+	return fields
+}
+
+func installFlags(conf Configurable) (requiredFlags []string, secretFlags []string) {
+
+	t := reflect.ValueOf(conf).Elem().Type()
+
+	for _, field := range deepFields(t) {
+
+		key := field.Tag.Get("mapstructure")
+		if key == "" || key == "-" {
+			continue
+		}
+
+		description := field.Tag.Get("desc")
+		def := field.Tag.Get("default")
+
+		if field.Tag.Get("secret") == "true" {
+			secretFlags = append(secretFlags, key)
+		}
+
+		if field.Tag.Get("required") == "true" {
+			requiredFlags = append(requiredFlags, key)
+			description += " [required]"
+		}
+
+		if field.Type.Kind() != reflect.Slice {
+
+			switch field.Type.Name() {
+
+			case "bool":
+				pflag.Bool(key, def == "true", description)
+
+			case "string":
+				pflag.String(key, def, description)
+
+			case "Duration":
+				if def == "" {
+					pflag.Duration(key, 0, description)
+					break
+				}
+				d, err := time.ParseDuration(def)
+				if err != nil {
+					panic("Unable to parse duration from: " + def)
+				}
+				pflag.Duration(key, d, description)
+
+			case "int":
+				if def == "" {
+					pflag.Int(key, 0, description)
+					break
+				}
+				d, err := strconv.Atoi(def)
+				if err != nil {
+					panic("Unable to parse int from: " + def)
+				}
+				pflag.Int(key, d, description)
+
+			default:
+				panic("Unsupported type: " + field.Type.Name())
+			}
+
+		} else {
+
+			switch field.Type.Elem().Name() {
+
+			case "string":
+				sdef := strings.Split(def, ",")
+				pflag.StringSlice(key, sdef, description)
+
+			default:
+				panic("Unsupported type: " + field.Type.Name())
+			}
+		}
+	}
+
+	if _, ok := conf.(VersionPrinter); ok {
+		pflag.BoolP("version", "v", false, "Display the version")
+	}
+
+	pflag.Parse()
+
+	return requiredFlags, secretFlags
 }
 
 func checkRequired(keys ...string) {

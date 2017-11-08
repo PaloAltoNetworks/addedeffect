@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spf13/viper"
-
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -37,6 +35,7 @@ type testConf struct {
 	AStringSliceNoDef []string      `mapstructure:"a-string-slice-nodef"  desc:"This is a no def string slice"`
 
 	AnotherStringSliceNoDef []string `mapstructure:"a-string-slice-from-var"  desc:"This is a no def string slice populated from var"`
+	ASecret                 string   `mapstructure:"a-secret-from-var"        desc:"This is a secret"       secret:"true"`
 }
 
 // Prefix return the configuration prefix.
@@ -47,24 +46,28 @@ func TestLombric_Initialize(t *testing.T) {
 	Convey("Given have a conf", t, func() {
 
 		conf := &testConf{}
+		os.Setenv("LOMBRIC_A_STRING_SLICE_FROM_VAR", "x y z") // nolint: errcheck
+		os.Setenv("LOMBRIC_A_SECRET_FROM_VAR", "secret")      // nolint: errcheck
+
 		Initialize(conf)
 
 		Convey("Then the flags should be correctly set", func() {
-			os.Setenv("LOMBRIC_A_STRING_SLICE_FROM_VAR", "x y z") // nolint: errcheck
 
-			So(viper.GetString("a-string"), ShouldEqual, "hello")
-			So(viper.GetBool("a-bool"), ShouldEqual, true)
-			So(viper.GetDuration("a-duration"), ShouldEqual, 10*time.Second)
-			So(viper.GetInt("a-integer"), ShouldEqual, 42)
-			So(viper.GetStringSlice("a-string-slice"), ShouldResemble, []string{"a", "b", "c"})
+			So(conf.AString, ShouldEqual, "hello")
+			So(conf.ABool, ShouldEqual, true)
+			So(conf.ADuration, ShouldEqual, 10*time.Second)
+			So(conf.AInteger, ShouldEqual, 42)
+			So(conf.AStringSlice, ShouldResemble, []string{"a", "b", "c"})
 
-			So(viper.GetString("a-string-nodef"), ShouldEqual, "")
-			So(viper.GetBool("a-bool-nodef"), ShouldEqual, false)
-			So(viper.GetDuration("a-duration-nodef"), ShouldEqual, 0)
-			So(viper.GetInt("a-integer-nodef"), ShouldEqual, 0)
-			So(viper.GetStringSlice("a-string-slice-nodef"), ShouldResemble, []string{})
+			So(conf.AStringNoDef, ShouldEqual, "")
+			So(conf.ABoolNoDef, ShouldEqual, false)
+			So(conf.ADurationNoDef, ShouldEqual, 0)
+			So(conf.AIntegerNoDef, ShouldEqual, 0)
+			So(conf.AStringSliceNoDef, ShouldResemble, []string{})
 
-			So(viper.GetStringSlice("a-string-slice-from-var"), ShouldResemble, []string{"x", "y", "z"})
+			So(conf.AnotherStringSliceNoDef, ShouldResemble, []string{"x", "y", "z"})
+			So(conf.ASecret, ShouldEqual, "secret")
+			So(os.Getenv("LOMBRIC_A_SECRET_FROM_VAR"), ShouldEqual, "")
 
 			// This test is disabled because here we have stringSlice and on concourse we get strings...
 			// So(strings.Replace(pflag.CommandLine.FlagUsages(), " ", "", -1), ShouldEqual, strings.Replace(usage, " ", "", -1))

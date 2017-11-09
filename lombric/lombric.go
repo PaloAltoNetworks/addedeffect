@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const enabledKey = "true"
+
 // Configurable is the interface of a configuration.
 type Configurable interface {
 	Prefix() string
@@ -140,11 +142,11 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 		description := field.Tag.Get("desc")
 		def := field.Tag.Get("default")
 
-		if field.Tag.Get("secret") == "true" {
+		if field.Tag.Get("secret") == enabledKey {
 			secretFlags = append(secretFlags, key)
 		}
 
-		if field.Tag.Get("required") == "true" {
+		if field.Tag.Get("required") == enabledKey {
 			requiredFlags = append(requiredFlags, key)
 			description += " [required]"
 		}
@@ -154,7 +156,7 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 			switch field.Type.Name() {
 
 			case "bool":
-				pflag.Bool(key, def == "true", description)
+				pflag.Bool(key, def == enabledKey, description)
 
 			case "string":
 				pflag.String(key, def, description)

@@ -104,16 +104,19 @@ func handleOutputFile(config *zap.Config, file string, fileOnly bool) error {
 	if file == "" {
 		return nil
 	}
+
 	dir := filepath.Dir(file)
 	if dir != "." {
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 			return err
 		}
 	}
+
 	if fileOnly {
 		config.OutputPaths = []string{file}
 	} else {
 		config.OutputPaths = append(config.OutputPaths, file)
 	}
+
 	return nil
 }

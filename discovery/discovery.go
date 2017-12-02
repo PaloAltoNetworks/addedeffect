@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -151,13 +152,13 @@ func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 	}
 
 	if ok := pool.AppendCertsFromPEM([]byte(p.CACert)); !ok {
-		return nil, fmt.Errorf("Unable to create RootCAPool: cannot append public ca certificate: '%s'", p.CACert)
+		return nil, fmt.Errorf("unable to create rootcapool: cannot append public ca certificate: '%s'", p.CACert)
 	}
 
 	// If it's not set, it's probably because it's public.
 	if p.SystemCACert != "" {
 		if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
-			return nil, fmt.Errorf("Unable to create RootCAPool: cannot append system ca certificate: '%s'", p.SystemCACert)
+			return nil, fmt.Errorf("unable to create rootcapool: cannot append system ca certificate: '%s'", p.SystemCACert)
 		}
 	}
 
@@ -170,7 +171,7 @@ func (p *PlatformInfo) SystemCAPool() (*x509.CertPool, error) {
 	pool := x509.NewCertPool()
 
 	if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
-		return nil, fmt.Errorf("Unable to create SystemCAPool: cannot append system ca certificate: '%s'", p.SystemCACert)
+		return nil, fmt.Errorf("unable to create systemcapool: cannot append system ca certificate: '%s'", p.SystemCACert)
 	}
 
 	return pool, nil
@@ -182,11 +183,11 @@ func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 	pool := x509.NewCertPool()
 
 	if ok := pool.AppendCertsFromPEM([]byte(p.CACert)); !ok {
-		return nil, fmt.Errorf("Unable to create ClientCAPool: cannot append public ca certificate: '%s'", p.CACert)
+		return nil, fmt.Errorf("unable to create clientcapool: cannot append public ca certificate: '%s'", p.CACert)
 	}
 
 	if ok := pool.AppendCertsFromPEM([]byte(p.SystemCACert)); !ok {
-		return nil, fmt.Errorf("Unable to create ClientCAPool: cannot append system ca certificate: '%s'", p.SystemCACert)
+		return nil, fmt.Errorf("unable to create clientcapool: cannot append system ca certificate: '%s'", p.SystemCACert)
 	}
 
 	return pool, nil
@@ -207,7 +208,7 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 
 	req, err := http.NewRequest(http.MethodGet, cidURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create request %s: %s", cidURL, err)
+		return nil, fmt.Errorf("unable to create request %s: %s", cidURL, err)
 	}
 
 	try := 0
@@ -225,23 +226,23 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 		select {
 		case <-time.After(3 * time.Second):
 		case <-c:
-			return nil, fmt.Errorf("Discovery aborted per os signal")
+			return nil, errors.New("discovery aborted per os signal")
 		}
 
 		try++
 		if try > 20 {
-			return nil, fmt.Errorf("Unable retrieve platform info after 1m. Aborting. error: %s", err)
+			return nil, fmt.Errorf("unable retrieve platform info after 1m. aborting: %s", err)
 		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unable to retrieve system info: status code %d", resp.StatusCode)
+		return nil, fmt.Errorf("unable to retrieve system info: status code %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
 	info := &PlatformInfo{}
 	if err = json.NewDecoder(resp.Body).Decode(&info); err != nil {
-		return nil, fmt.Errorf("Unable to decode system info: %s", err)
+		return nil, fmt.Errorf("unable to decode system info: %s", err)
 	}
 
 	info.CidURL = cidURL

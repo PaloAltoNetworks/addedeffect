@@ -162,6 +162,9 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 		var def string
 		if o, ok := defaultOverrides[key]; ok {
+			if o == "-" {
+				continue
+			}
 			def = o
 		} else {
 			def = field.Tag.Get("default")

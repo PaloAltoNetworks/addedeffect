@@ -6,6 +6,7 @@ import (
 	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/spf13/viper"
 )
 
 // const usage = `      --a-bool                                This is a boolean [required] (default true)
@@ -37,12 +38,13 @@ type testConf struct {
 	AnotherStringSliceNoDef []string `mapstructure:"a-string-slice-from-var"  desc:"This is a no def string slice populated from var"`
 	ASecret                 string   `mapstructure:"a-secret-from-var"        desc:"This is a secret"       secret:"true"`
 
-	embedTestConf `mapstructure:",squash" override:"embeded-string-a=outter1"`
+	embedTestConf `mapstructure:",squash" override:"embeded-string-a=outter1,embeded-ignored-string=-"`
 }
 
 type embedTestConf struct {
-	EmbededStringA string `mapstructure:"embeded-string-a"        desc:"This is a string"       required:"true" default:"inner1"`
-	EmbededStringB string `mapstructure:"embeded-string-b"        desc:"This is a string"       required:"true" default:"inner2"`
+	EmbededStringA        string `mapstructure:"embeded-string-a"        desc:"This is a string"       required:"true" default:"inner1"`
+	EmbededStringB        string `mapstructure:"embeded-string-b"        desc:"This is a string"       required:"true" default:"inner2"`
+	EmbededIgnoredStringB string `mapstructure:"embeded-ignored-string"  desc:"This is a string"       required:"true" default:"inner3"`
 }
 
 // Prefix return the configuration prefix.
@@ -74,6 +76,8 @@ func TestLombric_Initialize(t *testing.T) {
 
 			So(conf.EmbededStringA, ShouldEqual, "outter1")
 			So(conf.EmbededStringB, ShouldEqual, "inner2")
+			So(conf.EmbededIgnoredStringB, ShouldEqual, "")
+			So(viper.AllKeys(), ShouldNotContain, "embeded-ignored-string")
 
 			So(conf.AStringSliceNoDef, ShouldResemble, []string{})
 

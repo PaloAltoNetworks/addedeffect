@@ -38,13 +38,13 @@ type testConf struct {
 	AnotherStringSliceNoDef []string `mapstructure:"a-string-slice-from-var"  desc:"This is a no def string slice populated from var"`
 	ASecret                 string   `mapstructure:"a-secret-from-var"        desc:"This is a secret"       secret:"true"`
 
-	embedTestConf `mapstructure:",squash" override:"embeded-string-a=outter1,embeded-ignored-string=-"`
+	embedTestConf `mapstructure:",squash" override:"embedded-string-a=outter1,embedded-ignored-string=-"`
 }
 
 type embedTestConf struct {
-	EmbededStringA        string `mapstructure:"embeded-string-a"        desc:"This is a string"       required:"true" default:"inner1"`
-	EmbededStringB        string `mapstructure:"embeded-string-b"        desc:"This is a string"       required:"true" default:"inner2"`
-	EmbededIgnoredStringB string `mapstructure:"embeded-ignored-string"  desc:"This is a string"       required:"true" default:"inner3"`
+	EmbeddedStringA        string `mapstructure:"embedded-string-a"        desc:"This is a string"       required:"true" default:"inner1"`
+	EmbeddedStringB        string `mapstructure:"embedded-string-b"        desc:"This is a string"       required:"true" default:"inner2"`
+	EmbeddedIgnoredStringB string `mapstructure:"embedded-ignored-string"  desc:"This is a string"       required:"true" default:"inner3"`
 }
 
 // Prefix return the configuration prefix.
@@ -74,10 +74,10 @@ func TestLombric_Initialize(t *testing.T) {
 			So(conf.AIntegerNoDef, ShouldEqual, 0)
 			So(conf.AStringSliceNoDef, ShouldResemble, []string{})
 
-			So(conf.EmbededStringA, ShouldEqual, "outter1")
-			So(conf.EmbededStringB, ShouldEqual, "inner2")
-			So(conf.EmbededIgnoredStringB, ShouldEqual, "")
-			So(viper.AllKeys(), ShouldNotContain, "embeded-ignored-string")
+			So(conf.EmbeddedStringA, ShouldEqual, "outter1")
+			So(conf.EmbeddedStringB, ShouldEqual, "inner2")
+			So(conf.EmbeddedIgnoredStringB, ShouldEqual, "")
+			So(viper.AllKeys(), ShouldNotContain, "embedded-ignored-string")
 
 			So(conf.AStringSliceNoDef, ShouldResemble, []string{})
 

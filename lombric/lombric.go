@@ -110,29 +110,48 @@ func Initialize(conf Configurable) {
 	}
 }
 
-func deepFields(ift reflect.Type) []reflect.StructField {
+func deepFields(ift reflect.Type) ([]reflect.StructField, []string) {
 
 	fields := make([]reflect.StructField, 0)
+	overrides := []string{}
 
 	for i := 0; i < ift.NumField(); i++ {
 		field := ift.Field(i)
 
 		switch field.Type.Kind() {
 		case reflect.Struct:
-			fields = append(fields, deepFields(field.Type)...)
+			if overrideString := field.Tag.Get("override"); overrideString != "" {
+				overrides = append(overrides, overrideString)
+			}
+
+			f, o := deepFields(field.Type)
+
+			overrides = append(overrides, o...)
+			fields = append(fields, f...)
+
 		default:
 			fields = append(fields, field)
 		}
 	}
 
-	return fields
+	return fields, overrides
 }
 
 func installFlags(conf Configurable) (requiredFlags []string, secretFlags []string) {
 
 	t := reflect.ValueOf(conf).Elem().Type()
 
-	for _, field := range deepFields(t) {
+	fields, overrides := deepFields(t)
+
+	defaultOverrides := map[string]string{}
+	for _, raw := range overrides {
+		for _, innerOverride := range strings.Split(raw, ",") {
+			parts := strings.SplitN(innerOverride, "=", 2)
+			defaultOverrides[parts[0]] = parts[1]
+		}
+	}
+
+	for _, field := range fields {
 
 		key := field.Tag.Get("mapstructure")
 		if key == "" || key == "-" {
@@ -140,7 +159,13 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 		}
 
 		description := field.Tag.Get("desc")
-		def := field.Tag.Get("default")
+
+		var def string
+		if o, ok := defaultOverrides[key]; ok {
+			def = o
+		} else {
+			def = field.Tag.Get("default")
+		}
 
 		if field.Tag.Get("secret") == enabledKey {
 			secretFlags = append(secretFlags, key)

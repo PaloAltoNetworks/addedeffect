@@ -36,6 +36,13 @@ type testConf struct {
 
 	AnotherStringSliceNoDef []string `mapstructure:"a-string-slice-from-var"  desc:"This is a no def string slice populated from var"`
 	ASecret                 string   `mapstructure:"a-secret-from-var"        desc:"This is a secret"       secret:"true"`
+
+	embedTestConf `mapstructure:",squash" override:"embeded-string-a=outter1"`
+}
+
+type embedTestConf struct {
+	EmbededStringA string `mapstructure:"embeded-string-a"        desc:"This is a string"       required:"true" default:"inner1"`
+	EmbededStringB string `mapstructure:"embeded-string-b"        desc:"This is a string"       required:"true" default:"inner2"`
 }
 
 // Prefix return the configuration prefix.
@@ -63,6 +70,11 @@ func TestLombric_Initialize(t *testing.T) {
 			So(conf.ABoolNoDef, ShouldEqual, false)
 			So(conf.ADurationNoDef, ShouldEqual, 0)
 			So(conf.AIntegerNoDef, ShouldEqual, 0)
+			So(conf.AStringSliceNoDef, ShouldResemble, []string{})
+
+			So(conf.EmbededStringA, ShouldEqual, "outter1")
+			So(conf.EmbededStringB, ShouldEqual, "inner2")
+
 			So(conf.AStringSliceNoDef, ShouldResemble, []string{})
 
 			So(conf.AnotherStringSliceNoDef, ShouldResemble, []string{"x", "y", "z"})

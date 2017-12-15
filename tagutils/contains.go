@@ -1,4 +1,4 @@
-package tag
+package tagutils
 
 // Contains returns true if the given tag strings list contains the given tag string.
 func Contains(tags []string, value string) bool {

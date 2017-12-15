@@ -1,4 +1,4 @@
-package tag
+package tagutils
 
 // RemoveDuplicates returns a tag strings list with all duplicates removed.
 func RemoveDuplicates(tags []string) (result []string) {

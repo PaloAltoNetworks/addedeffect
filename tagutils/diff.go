@@ -1,4 +1,4 @@
-package tag
+package tagutils
 
 // Diff returns the list of tags that has been added and removed
 // between given elemental.Identifiables.

@@ -1,4 +1,4 @@
-package tag
+package tagutils
 
 // ToMap converts the given tag list into a map.
 // If the tags array contains invalid tags, ToMap will panic

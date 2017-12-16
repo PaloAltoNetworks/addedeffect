@@ -6,31 +6,7 @@ import "fmt"
 // It will return the key, value and eventual error.
 func Split(tag string) (key string, value string, err error) {
 
-	l := len(tag)
-	if l < 3 {
-		err = fmt.Errorf("Invalid tag: invalid length '%s'", tag)
-		return
-	}
-
-	if tag[0] == '=' {
-		err = fmt.Errorf("Invalid tag: missing key '%s'", tag)
-		return
-	}
-
-	if tag[l-1] == '=' {
-		err = fmt.Errorf("Invalid tag: missing value '%s'", tag)
-		return
-	}
-
-	for i := 0; i < l; i++ {
-		if tag[i] == '=' {
-			key = tag[:i]
-			value = tag[i+1:]
-			return
-		}
-	}
-
-	err = fmt.Errorf("Invalid tag: missing equal symbol '%s'", tag)
+	err = SplitPtr(tag, &key, &value)
 	return
 }
 

@@ -26,13 +26,13 @@ func ToMap(tags []string) map[string]string {
 // FromMap converts a map to a tag list.
 func FromMap(m map[string]string) []string {
 
-	r := []string{}
+	out := []string{}
 
 	for k, v := range m {
-		r = append(r, k+"="+v)
+		out = append(out, k+"="+v)
 	}
 
-	sort.Strings(r)
+	sort.Strings(out)
 
-	return r
+	return out
 }

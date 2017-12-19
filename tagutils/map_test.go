@@ -54,7 +54,9 @@ func TestTag_FromMap(t *testing.T) {
 			l := FromMap(m)
 			Convey("Then the result should be correct", func() {
 				So(len(l), ShouldEqual, 3)
-				So(l, ShouldResemble, expectedList)
+				So(l, ShouldContain, expectedList[0])
+				So(l, ShouldContain, expectedList[1])
+				So(l, ShouldContain, expectedList[2])
 			})
 		})
 	})

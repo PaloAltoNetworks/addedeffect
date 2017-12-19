@@ -1,9 +1,5 @@
 package tagutils
 
-import (
-	"sort"
-)
-
 // ToMap converts the given tag list into a map.
 // If the tags array contains invalid tags, ToMap will panic
 func ToMap(tags []string) map[string]string {
@@ -31,8 +27,6 @@ func FromMap(m map[string]string) []string {
 	for k, v := range m {
 		out = append(out, k+"="+v)
 	}
-
-	sort.Strings(out)
 
 	return out
 }

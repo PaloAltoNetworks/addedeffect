@@ -35,7 +35,7 @@ type VersionPrinter interface {
 // Initialize does all the basic job of bindings
 func Initialize(conf Configurable) {
 
-	requiredFlags, secretFlags := installFlags(conf)
+	requiredFlags, secretFlags, allowedValues := installFlags(conf)
 
 	pflag.VisitAll(func(f *pflag.Flag) {
 		var v interface{}
@@ -73,6 +73,7 @@ func Initialize(conf Configurable) {
 	}
 
 	checkRequired(requiredFlags...)
+	checkAllowedValues(allowedValues)
 
 	if err := viper.Unmarshal(conf); err != nil {
 		panic("Unable to unmarshal configuration: " + err.Error())
@@ -137,13 +138,15 @@ func deepFields(ift reflect.Type) ([]reflect.StructField, []string) {
 	return fields, overrides
 }
 
-func installFlags(conf Configurable) (requiredFlags []string, secretFlags []string) {
+func installFlags(conf Configurable) (requiredFlags []string, secretFlags []string, allowedValues map[string][]string) {
 
 	t := reflect.ValueOf(conf).Elem().Type()
 
 	fields, overrides := deepFields(t)
 
 	defaultOverrides := map[string]string{}
+	allowedValues = map[string][]string{}
+
 	for _, raw := range overrides {
 		for _, innerOverride := range strings.Split(raw, ",") {
 			parts := strings.SplitN(innerOverride, "=", 2)
@@ -187,6 +190,10 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 				pflag.Bool(key, def == enabledKey, description)
 
 			case "string":
+				if allowed := field.Tag.Get("allowed"); allowed != "" {
+					allowedValues[key] = strings.Split(allowed, ",")
+					description += fmt.Sprintf(" [allowed: %s]", allowed)
+				}
 				pflag.String(key, def, description)
 
 			case "Duration":
@@ -235,7 +242,7 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 	pflag.Parse()
 
-	return requiredFlags, secretFlags
+	return requiredFlags, secretFlags, allowedValues
 }
 
 func checkRequired(keys ...string) {
@@ -254,4 +261,34 @@ func checkRequired(keys ...string) {
 		pflag.Usage()
 		os.Exit(1)
 	}
+}
+
+func checkAllowedValues(allowedValues map[string][]string) {
+
+	var fail bool
+
+	for key, values := range allowedValues {
+
+		if !stringInSlice(viper.GetString(key), values) {
+			fmt.Printf("Error: Parameter '--%s' must be one of %s. '%s' is invalid.\n", key, values, viper.GetString(key))
+			fail = true
+		}
+	}
+
+	if fail {
+		fmt.Println()
+		pflag.Usage()
+		os.Exit(1)
+	}
+}
+
+func stringInSlice(str string, list []string) bool {
+
+	for _, s := range list {
+		if s == str {
+			return true
+		}
+	}
+
+	return false
 }

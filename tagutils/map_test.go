@@ -37,3 +37,25 @@ func TestTag_ToMap(t *testing.T) {
 		})
 	})
 }
+func TestTag_FromMap(t *testing.T) {
+
+	Convey("Given given I have a map of tags", t, func() {
+
+		m := map[string]string{
+			"@image":   "hello/world",
+			"@private": "ok",
+			"private":  "nok",
+		}
+
+		expectedList := []string{"@image=hello/world", "@private=ok", "private=nok"}
+
+		Convey("When I convert it into a list", func() {
+
+			l := FromMap(m)
+			Convey("Then the result should be correct", func() {
+				So(len(l), ShouldEqual, 3)
+				So(l, ShouldResemble, expectedList)
+			})
+		})
+	})
+}

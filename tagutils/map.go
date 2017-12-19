@@ -1,7 +1,6 @@
 package tagutils
 
 import (
-	"fmt"
 	"sort"
 )
 
@@ -26,10 +25,14 @@ func ToMap(tags []string) map[string]string {
 
 // FromMap converts a map to a tag list.
 func FromMap(m map[string]string) []string {
+
 	r := []string{}
+
 	for k, v := range m {
-		r = append(r, fmt.Sprintf("%s=%s", k, v))
+		r = append(r, k+"="+v)
 	}
+
 	sort.Strings(r)
+
 	return r
 }

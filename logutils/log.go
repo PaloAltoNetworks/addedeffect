@@ -29,6 +29,7 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 		config.EncoderConfig.MessageKey = "m"
 		config.EncoderConfig.NameKey = "n"
 		config.EncoderConfig.TimeKey = "t"
+
 	case "stackdriver":
 		config = zap.NewProductionConfig()
 		config.EncoderConfig.LevelKey = "severity"
@@ -85,14 +86,28 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	default:
 		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
+	if fileonly == true || file != "" {
+		w := zapcore.AddSync(&lumberjack.Logger{
+			FileName:   file,
+			MaxSize:    1,
+			MaxBackups: 3,
+			MaxAge:     8,
+		})
+		logger, err := config.Build()
 
-	logger, err := config.Build()
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
+
+		zap.ReplaceGlobals(logger)
+	} else {
+		logger, err := config.Build()
+
+		if err != nil {
+			panic(err)
+		}
+
 	}
-
-	zap.ReplaceGlobals(logger)
-
 	go handleElevationSignal(config)
 
 	return config

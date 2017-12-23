@@ -1,7 +1,6 @@
 package logutils
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -12,8 +11,8 @@ import (
 )
 
 const (
-	logFileSizeDefault = 10
-	logFileNumBackups  = 3
+	logFileSizeDefault = 50
+	logFileNumBackups  = 2
 	logFileAge         = 30
 )
 
@@ -131,7 +130,7 @@ func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
 func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.WriteSyncer, error) {
 
 	if file == "" {
-		return nil, errors.New("Missing filename")
+		return nil, nil
 	}
 	dir := filepath.Dir(file)
 	if dir != "." {

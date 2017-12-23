@@ -87,7 +87,7 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	default:
 		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
-	if fileOnly == true || file != "" {
+	if fileOnly || file != "" {
 		w := zapcore.AddSync(&lumberjack.Logger{
 			Filename:   file,
 			MaxSize:    1,
@@ -114,6 +114,7 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	return config
 }
 
+// SetOutput returns the zap option with the new sync writer
 func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
 	var enc zapcore.Encoder
 	// Copy paste from zap.Config.buildEncoder.

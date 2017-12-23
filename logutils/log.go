@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -86,15 +87,14 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	default:
 		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
-	if fileonly == true || file != "" {
+	if fileOnly == true || file != "" {
 		w := zapcore.AddSync(&lumberjack.Logger{
-			FileName:   file,
+			Filename:   file,
 			MaxSize:    1,
 			MaxBackups: 3,
 			MaxAge:     8,
 		})
-		logger, err := config.Build()
-
+		logger, err := config.Build(SetOutput(w, config))
 		if err != nil {
 			panic(err)
 		}
@@ -106,11 +106,28 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 		if err != nil {
 			panic(err)
 		}
+		zap.ReplaceGlobals(logger)
 
 	}
 	go handleElevationSignal(config)
 
 	return config
+}
+
+func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
+	var enc zapcore.Encoder
+	// Copy paste from zap.Config.buildEncoder.
+	switch conf.Encoding {
+	case "json":
+		enc = zapcore.NewJSONEncoder(conf.EncoderConfig)
+	case "console":
+		enc = zapcore.NewConsoleEncoder(conf.EncoderConfig)
+	default:
+		panic("unknown encoding")
+	}
+	return zap.WrapCore(func(zapcore.Core) zapcore.Core {
+		return zapcore.NewCore(enc, w, conf.Level)
+	})
 }
 
 // handleOutputFile handles options in log configs to redirect to file

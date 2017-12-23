@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	logFileSizeDefault = 50
-	logFileNumBackups  = 2
+	logFileSizeDefault = 10
+	logFileNumBackups  = 1
 	logFileAge         = 30
 )
 

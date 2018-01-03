@@ -19,7 +19,7 @@ type Manifest map[string]Component
 // RetrieveManifest fetch the manifest at the given URL.
 func RetrieveManifest(url string) (Manifest, error) {
 
-	resp, err := http.Get(url + "?nocache=" + uuid.NewV4().String())
+	resp, err := http.Get(url + "?nocache=" + uuid.Must(uuid.NewV4()).String())
 	if err != nil {
 		return Manifest{}, err
 	}

@@ -7,6 +7,13 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
+)
+
+const (
+	logFileSizeDefault = 10
+	logFileNumBackups  = 1
+	logFileAge         = 30
 )
 
 // Configure configures the shared default logger.
@@ -29,6 +36,7 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 		config.EncoderConfig.MessageKey = "m"
 		config.EncoderConfig.NameKey = "n"
 		config.EncoderConfig.TimeKey = "t"
+
 	case "stackdriver":
 		config = zap.NewProductionConfig()
 		config.EncoderConfig.LevelKey = "severity"
@@ -59,7 +67,8 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	}
 
 	// Handle log file output
-	if err := handleOutputFile(&config, file, fileOnly); err != nil {
+	w, err := handleOutputFile(&config, file, fileOnly)
+	if err != nil {
 		panic(err)
 	}
 
@@ -87,10 +96,12 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	}
 
 	logger, err := config.Build()
+	if w != nil {
+		logger, err = config.Build(SetOutput(w, config))
+	}
 	if err != nil {
 		panic(err)
 	}
-
 	zap.ReplaceGlobals(logger)
 
 	go handleElevationSignal(config)
@@ -98,25 +109,47 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	return config
 }
 
+// SetOutput returns the zap option with the new sync writer
+func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
+	var enc zapcore.Encoder
+	// Copy paste from zap.Config.buildEncoder.
+	switch conf.Encoding {
+	case "json":
+		enc = zapcore.NewJSONEncoder(conf.EncoderConfig)
+	case "console":
+		enc = zapcore.NewConsoleEncoder(conf.EncoderConfig)
+	default:
+		panic("unknown encoding")
+	}
+	return zap.WrapCore(func(zapcore.Core) zapcore.Core {
+		return zapcore.NewCore(enc, w, conf.Level)
+	})
+}
+
 // handleOutputFile handles options in log configs to redirect to file
-func handleOutputFile(config *zap.Config, file string, fileOnly bool) error {
+func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.WriteSyncer, error) {
 
 	if file == "" {
-		return nil
+		return nil, nil
 	}
-
 	dir := filepath.Dir(file)
 	if dir != "." {
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	if fileOnly {
+		w := zapcore.AddSync(&lumberjack.Logger{
+			Filename:   file,
+			MaxSize:    logFileSizeDefault,
+			MaxBackups: logFileNumBackups,
+			MaxAge:     logFileAge,
+		})
 		config.OutputPaths = []string{file}
-	} else {
-		config.OutputPaths = append(config.OutputPaths, file)
+		return w, nil
 	}
 
-	return nil
+	config.OutputPaths = append(config.OutputPaths, file)
+	return nil, nil
 }

@@ -206,11 +206,6 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, cidURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create request %s: %s", cidURL, err)
-	}
-
 	try := 0
 	var resp *http.Response
 
@@ -218,6 +213,11 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 	signal.Notify(c, os.Interrupt)
 
 	for {
+		req, err := http.NewRequest(http.MethodGet, cidURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create request %s: %s", cidURL, err)
+		}
+
 		resp, err = client.Do(req)
 		if err == nil {
 			break
@@ -241,7 +241,7 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 
 	defer resp.Body.Close() // nolint: errcheck
 	info := &PlatformInfo{}
-	if err = json.NewDecoder(resp.Body).Decode(&info); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
 		return nil, fmt.Errorf("unable to decode system info: %s", err)
 	}
 

@@ -223,6 +223,8 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 			break
 		}
 
+		zap.L().Warn("Unable to send request to cid. Retrying", zap.Error(err))
+
 		select {
 		case <-time.After(3 * time.Second):
 		case <-c:

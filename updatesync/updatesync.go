@@ -16,7 +16,7 @@ import (
 // UpdateSync gets the Identifiable you want to update using your function and tries to update
 // it. If it fails because of a desync, it will retrieve the latest copy of your object (modifying it)
 // then will apply your function again (so you can reaply your desired changes) and try again until
-// it suceeds or until the max number of tries is reached.
+// it succeeds or until the max number of tries is reached.
 //
 // Example:
 //

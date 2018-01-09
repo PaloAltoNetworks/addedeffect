@@ -27,9 +27,8 @@ import (
 //      }
 //
 //      // Then if we want to change the description, even if an update happened, we do:
-//      err := UpdateSync(m, nil, 5, func() elemental.Identifiable {
-//          o.Description = "This is the description I want!" // USE OUTER CONTEXT TO GET O
-//          return o
+//      err := UpdateSync(m, nil, 5, func(obj elemental.Identifiable) {
+//          o.(*Object).Description = "This is the description I want!" // USE OUTER CONTEXT TO GET O
 //      }
 //
 // Please keep in mind you have to be very careful with this function. You may still put the target object
@@ -37,8 +36,9 @@ import (
 func UpdateSync(
 	m manipulate.Manipulator,
 	mctx *manipulate.Context,
+	obj elemental.Identifiable,
+	updateFunc func(elemental.Identifiable),
 	maxTry int,
-	updateFunc func() elemental.Identifiable,
 ) error {
 
 	var try int
@@ -47,7 +47,7 @@ func UpdateSync(
 
 		try++
 
-		obj := updateFunc()
+		updateFunc(obj)
 
 		err := manipulate.Retry(func() error { return m.Update(mctx, obj) }, nil, 10)
 		if err == nil {

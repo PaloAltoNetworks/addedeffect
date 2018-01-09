@@ -22,10 +22,10 @@ func TestAPI_UpdateSync(t *testing.T) {
 		o := squallmodels.NewProcessingUnit()
 		o.Name = "name-original"
 		o.Description = "desc-original"
-		uf := func() elemental.Identifiable {
+
+		uf := func(obj elemental.Identifiable) {
 			synced++
-			o.Description = "synced!"
-			return o
+			obj.(*squallmodels.ProcessingUnit).Description = "synced!"
 		}
 
 		Convey("When I update my object there is no sync needed", func() {
@@ -34,7 +34,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			err := UpdateSync(m, nil, 10, uf)
+			err := UpdateSync(m, nil, o, uf, 10)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -64,7 +64,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			err := UpdateSync(m, nil, 10, uf)
+			err := UpdateSync(m, nil, o, uf, 10)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -86,7 +86,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return elemental.NewError("Not Read Only Error", "bloob", "subject", http.StatusInternalServerError)
 			})
 
-			err := UpdateSync(m, nil, 10, uf)
+			err := UpdateSync(m, nil, o, uf, 10)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -112,7 +112,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return e
 			})
 
-			err := UpdateSync(m, nil, 2, uf)
+			err := UpdateSync(m, nil, o, uf, 2)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -141,7 +141,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return fmt.Errorf("boom")
 			})
 
-			err := UpdateSync(m, nil, 10, uf)
+			err := UpdateSync(m, nil, o, uf, 10)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)

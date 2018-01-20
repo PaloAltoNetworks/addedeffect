@@ -16,7 +16,8 @@ func handleElevationSignal(cfg zap.Config) {
 	var elevated bool
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGUSR1)
+	signal.Notify(c, syscall.SIGUSR1)
+
 	for s := range c {
 		if s == syscall.SIGINT {
 			return

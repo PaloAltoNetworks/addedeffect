@@ -2,7 +2,8 @@
 
 package logutils
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
 
-func handleElevationSignal(cfg zap.Config) {
-}
+func handleElevationSignal(cfg zap.Config) {}

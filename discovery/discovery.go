@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -196,6 +197,45 @@ func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 // DiscoverPlatform retrieves the Platform Information from a Squall URL.
 func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*PlatformInfo, error) {
 
+	zap.L().Warn("Deprecated: discovery.DiscoverPlatform is deprecated. Use discovery.Discover")
+
+	signalCh := make(chan os.Signal, 1)
+	errCh := make(chan error)
+	infoCh := make(chan *PlatformInfo)
+
+	signal.Notify(signalCh, os.Interrupt)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer func() {
+		cancel()
+		signal.Stop(signalCh)
+		close(signalCh)
+		close(errCh)
+		close(infoCh)
+	}()
+
+	go func() {
+		info, err := Discover(ctx, cidURL, rootCAPool, skip)
+		if err != nil {
+			errCh <- err
+		}
+		infoCh <- info
+	}()
+
+	select {
+	case <-signalCh:
+		cancel()
+		return nil, errors.New("discovery aborted per os signal")
+	case err := <-errCh:
+		return nil, err
+	case info := <-infoCh:
+		return info, nil
+	}
+}
+
+// Discover retrieves the Platform Information from a Cid URL.
+func Discover(ctx context.Context, cidURL string, rootCAPool *x509.CertPool, skip bool) (*PlatformInfo, error) {
+
 	client := &http.Client{
 		Timeout: 3 * time.Second,
 		Transport: &http.Transport{
@@ -206,11 +246,7 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 		},
 	}
 
-	try := 0
 	var resp *http.Response
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
 
 	for {
 		req, err := http.NewRequest(http.MethodGet, cidURL, nil)
@@ -227,13 +263,8 @@ func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*Pla
 
 		select {
 		case <-time.After(3 * time.Second):
-		case <-c:
-			return nil, errors.New("discovery aborted per os signal")
-		}
-
-		try++
-		if try > 20 {
-			return nil, fmt.Errorf("unable retrieve platform info after 1m. aborting: %s", err)
+		case <-ctx.Done():
+			return nil, fmt.Errorf("discovery aborted per context: %s", ctx.Err())
 		}
 	}
 

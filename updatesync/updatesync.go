@@ -1,6 +1,8 @@
 package updatesync
 
 import (
+	"context"
+
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/manipulate"
 )
@@ -34,6 +36,7 @@ import (
 // Please keep in mind you have to be very careful with this function. You may still put the target object
 // in a very weird state, if you override attributes that can be managed by a different source of truth.
 func UpdateSync(
+	ctx context.Context,
 	m manipulate.Manipulator,
 	mctx *manipulate.Context,
 	obj elemental.Identifiable,
@@ -49,7 +52,7 @@ func UpdateSync(
 
 		updateFunc(obj)
 
-		err := manipulate.Retry(func() error { return m.Update(mctx, obj) }, nil, 10)
+		err := manipulate.Retry(ctx, func() error { return m.Update(mctx, obj) }, nil, 10)
 		if err == nil {
 			return nil
 		}

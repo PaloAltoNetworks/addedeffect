@@ -6,11 +6,8 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
 	"time"
 
 	"github.com/aporeto-inc/tg/tglib"
@@ -194,50 +191,12 @@ func (p *PlatformInfo) ClientCAPool() (*x509.CertPool, error) {
 	return pool, nil
 }
 
-// DiscoverPlatform retrieves the Platform Information from a Squall URL.
-func DiscoverPlatform(cidURL string, rootCAPool *x509.CertPool, skip bool) (*PlatformInfo, error) {
-
-	zap.L().Warn("Deprecated: discovery.DiscoverPlatform is deprecated. Use discovery.Discover")
-
-	signalCh := make(chan os.Signal, 1)
-	errCh := make(chan error)
-	infoCh := make(chan *PlatformInfo)
-
-	signal.Notify(signalCh, os.Interrupt)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer func() {
-		cancel()
-		signal.Stop(signalCh)
-		close(signalCh)
-		close(errCh)
-		close(infoCh)
-	}()
-
-	go func() {
-		info, err := Discover(ctx, cidURL, rootCAPool, skip)
-		if err != nil {
-			errCh <- err
-		}
-		infoCh <- info
-	}()
-
-	select {
-	case <-signalCh:
-		cancel()
-		return nil, errors.New("discovery aborted per os signal")
-	case err := <-errCh:
-		return nil, err
-	case info := <-infoCh:
-		return info, nil
-	}
-}
-
-// Discover retrieves the Platform Information from a Cid URL.
+// Discover retrieves the Platform Information from a Cid URL. In case of communication error it will retry
+// every 3 seconds until the given context is canceled.
 func Discover(ctx context.Context, cidURL string, rootCAPool *x509.CertPool, skip bool) (*PlatformInfo, error) {
 
 	client := &http.Client{
-		Timeout: 3 * time.Second,
+		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				RootCAs:            rootCAPool,

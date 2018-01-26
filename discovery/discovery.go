@@ -149,8 +149,10 @@ func (p *PlatformInfo) RootCAPool() (*x509.CertPool, error) {
 		return nil, err
 	}
 
-	if ok := pool.AppendCertsFromPEM([]byte(p.CACert)); !ok {
-		return nil, fmt.Errorf("unable to create rootcapool: cannot append public ca certificate: '%s'", p.CACert)
+	if p.CACert != "" {
+		if ok := pool.AppendCertsFromPEM([]byte(p.CACert)); !ok {
+			return nil, fmt.Errorf("unable to create rootcapool: cannot append public ca certificate: '%s'", p.CACert)
+		}
 	}
 
 	// If it's not set, it's probably because it's public.
@@ -213,7 +215,7 @@ func Discover(ctx context.Context, cidURL string, rootCAPool *x509.CertPool, ski
 			return nil, fmt.Errorf("unable to create request %s: %s", cidURL, err)
 		}
 
-		resp, err = client.Do(req)
+		resp, err = client.Do(req.WithContext(ctx))
 		if err == nil {
 			break
 		}

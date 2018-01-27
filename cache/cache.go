@@ -7,8 +7,6 @@ import "time"
 type ExpirationNotifier func(c Cacher, id string, item interface{})
 
 // A Cacher is the interface caching struct have to implement
-//
-// Deprecated: this is deprecated. Please use another cache implementation.
 type Cacher interface {
 	SetDefaultExpiration(exp time.Duration)
 	SetDefaultExpirationNotifier(expNotifier ExpirationNotifier)

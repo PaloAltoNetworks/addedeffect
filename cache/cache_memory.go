@@ -13,6 +13,8 @@ type memoryCache struct {
 }
 
 // NewMemoryCache returns a new generic cache.
+//
+// Deprecated: this is deprecated. Please use another cache implementation.
 func NewMemoryCache() Cacher {
 
 	return &memoryCache{

@@ -29,8 +29,8 @@ import (
 //      }
 //
 //      // Then if we want to change the description, even if an update happened, we do:
-//      err := UpdateSync(m, nil, 5, func(obj elemental.Identifiable) {
-//          o.(*Object).Description = "This is the description I want!" // USE OUTER CONTEXT TO GET O
+//      err := UpdateSync(ctx.Background(), m, nil, func(obj elemental.Identifiable) {
+//          obj.(*Object).Description = "This is the description I want!"
 //      }
 //
 // Please keep in mind you have to be very careful with this function. You may still put the target object
@@ -41,25 +41,15 @@ func UpdateSync(
 	mctx *manipulate.Context,
 	obj elemental.Identifiable,
 	updateFunc func(elemental.Identifiable),
-	maxTry int,
 ) error {
 
-	var try int
-
 	for {
-
-		try++
 
 		updateFunc(obj)
 
 		err := manipulate.Retry(ctx, func() error { return m.Update(mctx, obj) }, nil)
 		if err == nil {
 			return nil
-		}
-
-		// If we reach the maximum number of try, we return the error.
-		if try >= maxTry {
-			return err
 		}
 
 		// If the error is not a validation error for read only update time, we return the error.

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/gaia/squallmodels/v1/golang"
@@ -35,7 +36,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf, 10)
+			err := UpdateSync(context.TODO(), m, nil, o, uf)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -65,7 +66,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf, 10)
+			err := UpdateSync(context.TODO(), m, nil, o, uf)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -87,7 +88,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return elemental.NewError("Not Read Only Error", "bloob", "subject", http.StatusInternalServerError)
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf, 10)
+			err := UpdateSync(context.TODO(), m, nil, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -105,7 +106,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 			})
 		})
 
-		Convey("When I update my object there is a sync needed but if fails more than the number of tries", func() {
+		Convey("When I update my object there is a sync needed but the context is canceled", func() {
 
 			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
 				e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)
@@ -113,14 +114,35 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return e
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf, 2)
+			ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+			defer cancel()
+
+			err := UpdateSync(ctx, m, nil, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "error 422 (subject): Read Only Error: bloob")
 			})
 
-			Convey("Then the updateFunc should have been called four times", func() {
-				So(synced, ShouldEqual, 2)
+			Convey("Then the updateFunc should have been called many times", func() {
+				So(synced, ShouldBeGreaterThan, 10)
+			})
+		})
+
+		Convey("When I update my object there is a sync needed the manipulator returns an comm error", func() {
+
+			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+				return manipulate.NewErrCannotCommunicate("nope")
+			})
+
+			ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+			defer cancel()
+
+			err := UpdateSync(ctx, m, nil, o, uf)
+
+			Convey("Then err should not be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "Disconnected: interupted by context: context deadline exceeded. original error: Cannot communicate: nope")
 			})
 		})
 
@@ -142,7 +164,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return fmt.Errorf("boom")
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf, 10)
+			err := UpdateSync(context.TODO(), m, nil, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)

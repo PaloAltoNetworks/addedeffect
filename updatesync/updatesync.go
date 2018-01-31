@@ -2,6 +2,7 @@ package updatesync
 
 import (
 	"context"
+	"time"
 
 	"github.com/aporeto-inc/elemental"
 	"github.com/aporeto-inc/manipulate"
@@ -43,6 +44,8 @@ func UpdateSync(
 	updateFunc func(elemental.Identifiable),
 ) error {
 
+	deadline, hasDeadline := ctx.Deadline()
+
 	for {
 
 		updateFunc(obj)
@@ -50,6 +53,10 @@ func UpdateSync(
 		err := manipulate.Retry(ctx, func() error { return m.Update(mctx, obj) }, nil)
 		if err == nil {
 			return nil
+		}
+
+		if hasDeadline && deadline.Before(time.Now()) {
+			return err
 		}
 
 		// If the error is not a validation error for read only update time, we return the error.

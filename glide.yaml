@@ -1,6 +1,39 @@
 package: github.com/aporeto-inc/addedeffect
 import:
+- package: github.com/aporeto-inc/elemental
+  version: 3.4.0
+- package: github.com/aporeto-inc/manipulate
+  version: 6.7.0
+- package: github.com/aporeto-inc/tg
+  version: 2.20.0
+  subpackages:
+  - tglib
+- package: github.com/blang/semver
+  version: v3.5.1
+- package: github.com/opentracing/opentracing-go
+  version: v1.0.2
+- package: github.com/satori/go.uuid
+  version: v1.2.0
+- package: github.com/spf13/pflag
+  version: v1.0.0
+- package: github.com/spf13/viper
+  version: v1.0.0
 - package: github.com/uber/jaeger-client-go
-  version: ^2.9.0
+  version: v2.11.2
+  subpackages:
+  - config
+- package: go.uber.org/zap
+  version: v1.7.1
+  subpackages:
+  - zapcore
 - package: gopkg.in/natefinch/lumberjack.v2
-  version: ^2.1.0
+  version: v2.1
+testImport:
+- package: github.com/aporeto-inc/gaia
+  version: 3.101.0
+  subpackages:
+  - squallmodels/v1/golang
+- package: github.com/smartystreets/goconvey
+  version: 1.6.3
+  subpackages:
+  - convey

@@ -1,6 +1,6 @@
 package: github.com/aporeto-inc/addedeffect
 import:
 - package: github.com/uber/jaeger-client-go
-  version: ^2.9.0
+  version: ^2.11.0
 - package: gopkg.in/natefinch/lumberjack.v2
   version: ^2.1.0

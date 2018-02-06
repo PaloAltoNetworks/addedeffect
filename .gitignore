@@ -1,2 +1,3 @@
 testresults.xml
 .DS_Store
+*.lock

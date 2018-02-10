@@ -20,7 +20,9 @@ func DebugWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Debug(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 
@@ -41,7 +43,9 @@ func InfoWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Info(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 
@@ -62,7 +66,9 @@ func WarnWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Warn(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 
@@ -83,7 +89,9 @@ func ErrorWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Error(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 
@@ -104,7 +112,9 @@ func DPanicWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) 
 	DPanic(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 
@@ -125,7 +135,9 @@ func PanicWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Panic(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 
@@ -144,7 +156,9 @@ func FatalWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Fatal(log, fields...)
 	if span != nil {
 		span.LogEvent(log)
-		span.LogFields()
+		if len(fields) > 0 {
+			span.LogFields(zapFieldsToOpentracing(fields...)...)
+		}
 	}
 }
 

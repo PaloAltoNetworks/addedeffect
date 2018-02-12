@@ -31,7 +31,7 @@ func zapFieldToOpentracing(zapField zapcore.Field) opentracinglog.Field {
 	case zapcore.Float64Type:
 		return opentracinglog.Float64(zapField.Key, math.Float64frombits(uint64(zapField.Integer)))
 	case zapcore.Int64Type:
-		return opentracinglog.Int64(zapField.Key, zapField.Integer)
+		return opentracinglog.Int64(zapField.Key, int64(zapField.Integer))
 	case zapcore.Int32Type:
 		return opentracinglog.Int32(zapField.Key, int32(zapField.Integer))
 	case zapcore.StringType:

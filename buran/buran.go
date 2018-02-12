@@ -4,6 +4,7 @@ import (
 	"context"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracinglog "github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -18,12 +19,7 @@ func DebugWithContext(ctx context.Context, log string, fields ...zapcore.Field) 
 // DebugWithSpan logs on debug level and add the logs on the trace if span exists.
 func DebugWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Debug(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
+	logSpan(span, log, fields...)
 }
 
 // Debug logs on debug level
@@ -41,12 +37,8 @@ func InfoWithContext(ctx context.Context, log string, fields ...zapcore.Field) {
 // InfoWithSpan logs on info level and add the logs on the trace if span exists.
 func InfoWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Info(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
+	logSpan(span, log, fields...)
+
 }
 
 // Info logs on info level
@@ -64,12 +56,8 @@ func WarnWithContext(ctx context.Context, log string, fields ...zapcore.Field) {
 // WarnWithSpan logs on warn level and add the logs on the trace if span exists.
 func WarnWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Warn(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
+	logSpan(span, log, fields...)
+
 }
 
 // Warn logs on warn level
@@ -87,12 +75,7 @@ func ErrorWithContext(ctx context.Context, log string, fields ...zapcore.Field) 
 // ErrorWithSpan logs on error level and add the logs on the trace if span exists.
 func ErrorWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
 	Error(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
+	logSpan(span, log, fields...)
 }
 
 // Error logs on error level
@@ -109,13 +92,8 @@ func DPanicWithContext(ctx context.Context, log string, fields ...zapcore.Field)
 
 // DPanicWithSpan logs on dPanic level and add the logs on the trace if span exists.
 func DPanicWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
+	logSpan(span, log, fields...)
 	DPanic(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
 }
 
 // DPanic logs on dPanic level
@@ -132,13 +110,8 @@ func PanicWithContext(ctx context.Context, log string, fields ...zapcore.Field) 
 
 // PanicWithSpan logs on panic level and add the logs on the trace if span exists.
 func PanicWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
+	logSpan(span, log, fields...)
 	Panic(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
 }
 
 // Panic logs on panic level
@@ -153,16 +126,24 @@ func FatalWithContext(ctx context.Context, log string, fields ...zapcore.Field) 
 
 // FatalWithSpan logs on fatal level and add the logs on the trace if span exists.
 func FatalWithSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
+	logSpan(span, log, fields...)
 	Fatal(log, fields...)
-	if span != nil {
-		span.LogEvent(log)
-		if len(fields) > 0 {
-			span.LogFields(zapFieldsToOpentracing(fields...)...)
-		}
-	}
 }
 
 // Fatal logs on fatal level
 func Fatal(log string, fields ...zapcore.Field) {
 	zap.L().Fatal(log, fields...)
+}
+
+func logSpan(span opentracing.Span, log string, fields ...zapcore.Field) {
+	if span != nil {
+		opentracingFields := make([]opentracinglog.Field, len(fields)+1)
+		if log != "" {
+			opentracingFields = append(opentracingFields, opentracinglog.String("event", log))
+		}
+		if len(fields) > 0 {
+			opentracingFields = append(opentracingFields, zapFieldsToOpentracing(fields...)...)
+		}
+		span.LogFields(opentracingFields...)
+	}
 }

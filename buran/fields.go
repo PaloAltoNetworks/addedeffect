@@ -1,6 +1,8 @@
 package buran
 
 import (
+	"math"
+
 	opentracinglog "github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap/zapcore"
 )
@@ -19,21 +21,25 @@ func zapFieldToOpentracing(zapField zapcore.Field) opentracinglog.Field {
 	switch zapField.Type {
 
 	case zapcore.BoolType:
-		return opentracinglog.Bool(zapField.Key, zapField.Interface.(bool))
+		val := false
+		if zapField.Integer >= 1 {
+			val = true
+		}
+		return opentracinglog.Bool(zapField.Key, val)
 	case zapcore.Float32Type:
-		return opentracinglog.Float32(zapField.Key, zapField.Interface.(float32))
+		return opentracinglog.Float32(zapField.Key, math.Float32frombits(uint32(zapField.Integer)))
 	case zapcore.Float64Type:
-		return opentracinglog.Float64(zapField.Key, zapField.Interface.(float64))
+		return opentracinglog.Float64(zapField.Key, math.Float64frombits(uint64(zapField.Integer)))
 	case zapcore.Int64Type:
-		return opentracinglog.Int64(zapField.Key, zapField.Interface.(int64))
+		return opentracinglog.Int64(zapField.Key, zapField.Integer)
 	case zapcore.Int32Type:
-		return opentracinglog.Int32(zapField.Key, zapField.Interface.(int32))
+		return opentracinglog.Int32(zapField.Key, int32(zapField.Integer))
 	case zapcore.StringType:
-		return opentracinglog.String(zapField.Key, zapField.Interface.(string))
+		return opentracinglog.String(zapField.Key, zapField.String)
 	case zapcore.Uint64Type:
-		return opentracinglog.Uint64(zapField.Key, zapField.Interface.(uint64))
+		return opentracinglog.Uint64(zapField.Key, uint64(zapField.Integer))
 	case zapcore.Uint32Type:
-		return opentracinglog.Uint32(zapField.Key, zapField.Interface.(uint32))
+		return opentracinglog.Uint32(zapField.Key, uint32(zapField.Integer))
 	case zapcore.ErrorType:
 		return opentracinglog.Error(zapField.Interface.(error))
 	default:

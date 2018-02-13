@@ -107,7 +107,7 @@ func GetManifestURL(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/ca", api), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/manifest", api), nil)
 	if err != nil {
 		return nil, err
 	}

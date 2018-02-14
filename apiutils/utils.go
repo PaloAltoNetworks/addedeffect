@@ -124,3 +124,31 @@ func GetManifestURL(api string, tlsConfig *tls.Config) ([]byte, error) {
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
 }
+
+// GetGoogleOAuthClientID returns the Google oauth client ID used bby the platform.
+func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/googleclientid", api), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+	}
+
+	defer resp.Body.Close() // nolint: errcheck
+	return ioutil.ReadAll(resp.Body)
+}

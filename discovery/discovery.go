@@ -15,6 +15,8 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
+	PublicAPIURL       string `json:"public-api"`
+	PublicCladURL      string `json:"public-clad"`
 	WutaiURL           string `json:"wutai"`
 	SquallURL          string `json:"squall"`
 	CladURL            string `json:"clad"`

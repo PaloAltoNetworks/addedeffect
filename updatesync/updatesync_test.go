@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aporeto-inc/elemental"
-	"github.com/aporeto-inc/gaia/squallmodels/v1/golang"
+	"github.com/aporeto-inc/gaia/v1/golang"
 	"github.com/aporeto-inc/manipulate"
 	"github.com/aporeto-inc/manipulate/maniptest"
 
@@ -21,13 +21,13 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		var synced int
 		m := maniptest.NewTestManipulator()
-		o := squallmodels.NewProcessingUnit()
+		o := gaia.NewProcessingUnit()
 		o.Name = "name-original"
 		o.Description = "desc-original"
 
 		uf := func(obj elemental.Identifiable) {
 			synced++
-			obj.(*squallmodels.ProcessingUnit).Description = "synced!"
+			obj.(*gaia.ProcessingUnit).Description = "synced!"
 		}
 
 		Convey("When I update my object there is no sync needed", func() {
@@ -55,7 +55,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 		Convey("When I update my object there is a sync needed", func() {
 
 			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
-				objects[0].(*squallmodels.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
+				objects[0].(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
 
 				if synced <= 3 {
 					e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)
@@ -149,7 +149,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 		Convey("When I update my object there is a sync needed but the retrieve fails", func() {
 
 			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
-				objects[0].(*squallmodels.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
+				objects[0].(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
 
 				if synced <= 3 {
 					e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)

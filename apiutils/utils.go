@@ -27,7 +27,7 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/version", api), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/versions", api), nil)
 	if err != nil {
 		return nil, err
 	}

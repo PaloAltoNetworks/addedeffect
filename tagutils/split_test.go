@@ -71,6 +71,27 @@ func TestTag_Split(t *testing.T) {
 		})
 	})
 
+	Convey("Given I have a tag a=b=", t, func() {
+		t := "a=b="
+
+		Convey("When I call Split", func() {
+			k, v, e := Split(t)
+
+			Convey("Then e should be nil", func() {
+				So(e, ShouldBeNil)
+			})
+
+			Convey("Then k should equal a", func() {
+				So(k, ShouldEqual, "a")
+			})
+
+			Convey("Then v should equal b=", func() {
+				So(v, ShouldEqual, "b=")
+			})
+
+		})
+	})
+
 	Convey("Given I have a tag a", t, func() {
 		t := "a"
 

@@ -27,19 +27,16 @@ func SplitPtr(tag string, key *string, value *string) (err error) {
 		return
 	}
 
-	if tag[l-1] == '=' {
-		err = fmt.Errorf("Invalid tag: missing value '%s'", tag)
-		return
-	}
-
 	for i := 0; i < l; i++ {
 		if tag[i] == '=' {
+			if i+1 >= l {
+				return fmt.Errorf("Invalid tag: missing value '%s'", tag)
+			}
 			*key = tag[:i]
 			*value = tag[i+1:]
 			return
 		}
 	}
 
-	err = fmt.Errorf("Invalid tag: missing equal symbol '%s'", tag)
-	return
+	return fmt.Errorf("Invalid tag: missing equal symbol '%s'", tag)
 }

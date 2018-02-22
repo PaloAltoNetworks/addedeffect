@@ -27,7 +27,7 @@ type PlatformInfo struct {
 	YuffieURL          string `json:"yuffie"`
 	BarretURL          string `json:"barret"`
 	HighwindURL        string `json:"highwind"`
-	ConsulService      string `json:"consul"`
+	ConsulURL          string `json:"consul"`
 	GeoIPURL           string `json:"geoipURL"`
 	PubSubService      string `json:"pubsub"`
 	MongoURL           string `json:"mongo"`
@@ -67,7 +67,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("influxdb", p.InfluxDBURL),
 		zap.String("geoip", p.GeoIPURL),
 		zap.String("nats", p.PubSubService),
-		zap.String("consul", p.ConsulService),
+		zap.String("consul", p.ConsulURL),
 	}
 }
 

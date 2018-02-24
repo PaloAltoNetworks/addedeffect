@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/blang/semver"
-	uuid "github.com/satori/go.uuid"
 )
 
 // A Manifest represents a Download Manifest
@@ -19,7 +19,7 @@ type Manifest map[string]Component
 // RetrieveManifest fetch the manifest at the given URL.
 func RetrieveManifest(url string) (Manifest, error) {
 
-	resp, err := http.Get(url + "?nocache=" + uuid.Must(uuid.NewV4()).String())
+	resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int()))
 	if err != nil {
 		return Manifest{}, err
 	}

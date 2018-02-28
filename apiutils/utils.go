@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -95,6 +97,53 @@ func GetPublicCAPool(api string, tlsConfig *tls.Config) (*x509.CertPool, error) 
 	pool.AppendCertsFromPEM(cadata)
 
 	return pool, nil
+}
+
+// GetJWTCert returns the public certificate used to sign jwt.
+func GetJWTCert(api string, tlsConfig *tls.Config) ([]byte, error) {
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/jwtcert", api), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+	}
+
+	defer resp.Body.Close() // nolint: errcheck
+	return ioutil.ReadAll(resp.Body)
+}
+
+// GetJWTX509Cert returns the public certificate used to sign jwt as an *x509.Certificate.
+func GetJWTX509Cert(api string, tlsConfig *tls.Config) (*x509.Certificate, error) {
+
+	data, err := GetJWTCert(api, tlsConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	block, rest := pem.Decode(data)
+	if block == nil {
+		return nil, errors.New("unable to parse certificate data")
+	}
+	if len(rest) != 0 {
+		return nil, errors.New("multiple certificates found in the certificate")
+	}
+
+	return x509.ParseCertificate(block.Bytes)
 }
 
 // GetManifestURL returns the url of the manifest.

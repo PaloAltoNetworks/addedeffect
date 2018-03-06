@@ -114,21 +114,98 @@ func TestTokenUtils_UnsecureClaimsMap(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a token a token with broken json claims", t, func() {
+	Convey("Given I have a token a token with invalid json data", t, func() {
 
-		token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYnJvIg==.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+		token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJicm9rZW46ICJqc29u.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
 
 		Convey("When I UnsecureClaimsMap", func() {
 
-			claims, err := UnsecureClaimsMap(token)
+			alg, err := UnsecureClaimsMap(token)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid jwt: unexpected end of JSON input")
+				So(err.Error(), ShouldEqual, "invalid jwt: invalid character 'j' after object key")
 			})
 
-			Convey("Then claims should be nil", func() {
-				So(claims, ShouldBeNil)
+			Convey("Then alg should be empty", func() {
+				So(alg, ShouldBeEmpty)
+			})
+		})
+	})
+}
+
+func TestJWTUtils_SigAlg(t *testing.T) {
+
+	Convey("Given I have a valid token", t, func() {
+
+		token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+
+		Convey("When I SigAlg", func() {
+
+			alg, err := SigAlg(token)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then alg should be correct", func() {
+				So(alg, ShouldEqual, "HS256")
+			})
+		})
+	})
+
+	Convey("Given I have a token an invalid token", t, func() {
+
+		token := "not good"
+
+		Convey("When I SigAlg", func() {
+
+			alg, err := SigAlg(token)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid jwt: not enough segments")
+			})
+
+			Convey("Then alg should be empty", func() {
+				So(alg, ShouldBeEmpty)
+			})
+		})
+	})
+
+	Convey("Given I have a token a token with invalid base64", t, func() {
+
+		token := "not-base-64.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+
+		Convey("When I SigAlg", func() {
+
+			alg, err := SigAlg(token)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid jwt: illegal base64 data at input byte 3")
+			})
+
+			Convey("Then alg should be empty", func() {
+				So(alg, ShouldBeEmpty)
+			})
+		})
+	})
+
+	Convey("Given I have a token a token with invalid json data", t, func() {
+
+		token := "eyJicm9rZW46ICJqc29u.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+
+		Convey("When I SigAlg", func() {
+			alg, err := SigAlg(token)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid jwt: invalid character 'j' after object key")
+			})
+
+			Convey("Then alg should be empty", func() {
+				So(alg, ShouldBeEmpty)
 			})
 		})
 	})

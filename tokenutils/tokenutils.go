@@ -33,7 +33,7 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 		return nil, errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := base64.StdEncoding.DecodeString(parts[1])
+	data, err := base64.RawStdEncoding.DecodeString(parts[1])
 	if err != nil {
 		return nil, fmt.Errorf("invalid jwt: %s", err)
 	}
@@ -44,4 +44,28 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 	}
 
 	return claims, nil
+}
+
+// SigAlg returns the signature used by the token
+func SigAlg(token string) (string, error) {
+
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return "", errors.New("invalid jwt: not enough segments")
+	}
+
+	data, err := base64.RawStdEncoding.DecodeString(parts[0])
+	if err != nil {
+		return "", fmt.Errorf("invalid jwt: %s", err)
+	}
+
+	header := struct {
+		Alg string `json:"alg"`
+	}{}
+
+	if err := json.Unmarshal(data, &header); err != nil {
+		return "", fmt.Errorf("invalid jwt: %s", err)
+	}
+
+	return header.Alg, nil
 }

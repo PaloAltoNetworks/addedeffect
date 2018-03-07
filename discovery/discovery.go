@@ -112,7 +112,7 @@ func Discover(ctx context.Context, cidURL string, rootCAPool *x509.CertPool, ski
 
 	defer resp.Body.Close() // nolint: errcheck
 	info := &PlatformInfo{}
-	if err := jsoniter.NewDecoder(resp.Body).Decode(&info); err != nil {
+	if err := jsoniter.ConfigCompatibleWithStandardLibrary.NewDecoder(resp.Body).Decode(&info); err != nil {
 		return nil, fmt.Errorf("unable to decode system info: %s", err)
 	}
 

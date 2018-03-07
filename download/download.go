@@ -31,7 +31,7 @@ func RetrieveManifest(url string) (Manifest, error) {
 
 	manifest := Manifest{}
 	defer resp.Body.Close() // nolint: errcheck
-	if err = jsoniter.NewDecoder(resp.Body).Decode(&manifest); err != nil {
+	if err = jsoniter.ConfigCompatibleWithStandardLibrary.NewDecoder(resp.Body).Decode(&manifest); err != nil {
 		return Manifest{}, err
 	}
 

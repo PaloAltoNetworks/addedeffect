@@ -40,7 +40,7 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 	}
 
 	claims = map[string]interface{}{}
-	if err := jsoniter.Unmarshal(data, &claims); err != nil {
+	if err := jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal(data, &claims); err != nil {
 		return nil, errors.New("invalid jwt: invalid json")
 	}
 
@@ -64,7 +64,7 @@ func SigAlg(token string) (string, error) {
 		Alg string `json:"alg"`
 	}{}
 
-	if err := jsoniter.Unmarshal(data, &header); err != nil {
+	if err := jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal(data, &header); err != nil {
 		return "", errors.New("invalid jwt: invalid json")
 	}
 

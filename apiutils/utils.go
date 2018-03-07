@@ -47,7 +47,7 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 	out := map[string]ServiceVersion{}
 
 	defer resp.Body.Close() // nolint: errcheck
-	if err := jsoniter.NewDecoder(resp.Body).Decode(&out); err != nil {
+	if err := jsoniter.ConfigCompatibleWithStandardLibrary.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return nil, err
 	}
 

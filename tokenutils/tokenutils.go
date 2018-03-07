@@ -2,10 +2,11 @@ package tokenutils
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Snip snips the given token from the given error.
@@ -39,8 +40,8 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 	}
 
 	claims = map[string]interface{}{}
-	if err := json.Unmarshal(data, &claims); err != nil {
-		return nil, fmt.Errorf("invalid jwt: %s", err)
+	if err := jsoniter.Unmarshal(data, &claims); err != nil {
+		return nil, errors.New("invalid jwt: invalid json")
 	}
 
 	return claims, nil
@@ -63,8 +64,8 @@ func SigAlg(token string) (string, error) {
 		Alg string `json:"alg"`
 	}{}
 
-	if err := json.Unmarshal(data, &header); err != nil {
-		return "", fmt.Errorf("invalid jwt: %s", err)
+	if err := jsoniter.Unmarshal(data, &header); err != nil {
+		return "", errors.New("invalid jwt: invalid json")
 	}
 
 	return header.Alg, nil

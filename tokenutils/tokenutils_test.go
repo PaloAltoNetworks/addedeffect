@@ -124,7 +124,7 @@ func TestTokenUtils_UnsecureClaimsMap(t *testing.T) {
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid jwt: invalid character 'j' after object key")
+				So(err.Error(), ShouldEqual, "invalid jwt: invalid json")
 			})
 
 			Convey("Then alg should be empty", func() {
@@ -197,11 +197,12 @@ func TestJWTUtils_SigAlg(t *testing.T) {
 		token := "eyJicm9rZW46ICJqc29u.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
 
 		Convey("When I SigAlg", func() {
+
 			alg, err := SigAlg(token)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid jwt: invalid character 'j' after object key")
+				So(err.Error(), ShouldEqual, "invalid jwt: invalid json")
 			})
 
 			Convey("Then alg should be empty", func() {

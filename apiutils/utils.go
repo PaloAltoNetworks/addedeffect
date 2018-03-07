@@ -3,13 +3,14 @@ package apiutils
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // ServiceVersion holds the version of a servie
@@ -46,7 +47,7 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 	out := map[string]ServiceVersion{}
 
 	defer resp.Body.Close() // nolint: errcheck
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+	if err := jsoniter.ConfigCompatibleWithStandardLibrary.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return nil, err
 	}
 

@@ -2,7 +2,6 @@ package download
 
 import (
 	"crypto/sha1"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -11,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // A Manifest represents a Download Manifest
@@ -30,7 +31,7 @@ func RetrieveManifest(url string) (Manifest, error) {
 
 	manifest := Manifest{}
 	defer resp.Body.Close() // nolint: errcheck
-	if err = json.NewDecoder(resp.Body).Decode(&manifest); err != nil {
+	if err = jsoniter.ConfigCompatibleWithStandardLibrary.NewDecoder(resp.Body).Decode(&manifest); err != nil {
 		return Manifest{}, err
 	}
 

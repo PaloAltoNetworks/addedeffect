@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const retryNumber = 3
+
 // ServiceVersion holds the version of a servie
 type ServiceVersion struct {
 	Libs    map[string]string
@@ -29,18 +31,28 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/versions", api), nil)
-	if err != nil {
-		return nil, err
+	f := func() (*http.Response, error) {
+		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/versions", api), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		}
+
+		return resp, err
 	}
 
-	resp, err := client.Do(req)
+	resp, err := retryRequest(f, retryNumber)
+
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
 	}
 
 	out := map[string]ServiceVersion{}
@@ -63,18 +75,28 @@ func GetPublicCA(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/ca", api), nil)
-	if err != nil {
-		return nil, err
+	f := func() (*http.Response, error) {
+		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/ca", api), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		}
+
+		return resp, nil
 	}
 
-	resp, err := client.Do(req)
+	resp, err := retryRequest(f, retryNumber)
+
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
@@ -109,18 +131,28 @@ func GetJWTCert(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/jwtcert", api), nil)
-	if err != nil {
-		return nil, err
+	f := func() (*http.Response, error) {
+		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/jwtcert", api), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		}
+
+		return resp, nil
 	}
 
-	resp, err := client.Do(req)
+	resp, err := retryRequest(f, retryNumber)
+
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
@@ -156,18 +188,27 @@ func GetManifestURL(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/manifest", api), nil)
-	if err != nil {
-		return nil, err
+	f := func() (*http.Response, error) {
+		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/manifest", api), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		}
+		return resp, nil
 	}
 
-	resp, err := client.Do(req)
+	resp, err := retryRequest(f, retryNumber)
+
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
@@ -184,20 +225,45 @@ func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/googleclientid", api), nil)
-	if err != nil {
-		return nil, err
+	f := func() (*http.Response, error) {
+		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/googleclientid", api), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		}
+
+		return resp, nil
 	}
 
-	resp, err := client.Do(req)
+	resp, err := retryRequest(f, retryNumber)
+
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
+}
+
+func retryRequest(f func() (*http.Response, error), retry int) (resp *http.Response, err error) {
+	for index := 0; index < retry; index++ {
+
+		resp, err = f()
+
+		if err == nil {
+			return resp, err
+		}
+
+		<-time.After(3 * time.Second)
+	}
+
+	return resp, err
 }

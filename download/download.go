@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aporeto-inc/addedeffect/utils"
 	"github.com/blang/semver"
 )
 
@@ -19,13 +20,23 @@ type Manifest map[string]Component
 // RetrieveManifest fetch the manifest at the given URL.
 func RetrieveManifest(url string) (Manifest, error) {
 
-	resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int()))
-	if err != nil {
-		return Manifest{}, err
+	f := func() (*http.Response, error) {
+		resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int()))
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("Unable to download manifest: %s", resp.Status)
+		}
+
+		return resp, nil
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return Manifest{}, fmt.Errorf("Unable to download manifest: %s", resp.Status)
+	resp, err := utils.RetryRequest(f)
+
+	if err != nil {
+		return Manifest{}, err
 	}
 
 	manifest := Manifest{}
@@ -84,13 +95,23 @@ func NewVariant(url, signature string) Variant {
 // Binary downloads and saves the binary at the given url to the given dest with the given mode.
 func Binary(url string, dest string, mode os.FileMode, signature string) error {
 
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
+	f := func() (*http.Response, error) {
+		resp, err := http.Get(url)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Unable to find the request binary: %s", resp.Status)
+		}
+
+		return resp, nil
 	}
 
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Unable to find the request binary: %s", resp.Status)
+	resp, err := utils.RetryRequest(f)
+
+	if err != nil {
+		return err
 	}
 
 	defer resp.Body.Close() // nolint: errcheck

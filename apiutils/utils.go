@@ -10,9 +10,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-)
 
-const retryNumber = 3
+	"github.com/aporeto-inc/addedeffect/utils"
+)
 
 // ServiceVersion holds the version of a servie
 type ServiceVersion struct {
@@ -49,7 +49,7 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 		return resp, err
 	}
 
-	resp, err := retryRequest(f, retryNumber)
+	resp, err := utils.RetryRequest(f)
 
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func GetPublicCA(api string, tlsConfig *tls.Config) ([]byte, error) {
 		return resp, nil
 	}
 
-	resp, err := retryRequest(f, retryNumber)
+	resp, err := utils.RetryRequest(f)
 
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func GetJWTCert(api string, tlsConfig *tls.Config) ([]byte, error) {
 		return resp, nil
 	}
 
-	resp, err := retryRequest(f, retryNumber)
+	resp, err := utils.RetryRequest(f)
 
 	if err != nil {
 		return nil, err
@@ -205,7 +205,7 @@ func GetManifestURL(api string, tlsConfig *tls.Config) ([]byte, error) {
 		return resp, nil
 	}
 
-	resp, err := retryRequest(f, retryNumber)
+	resp, err := utils.RetryRequest(f)
 
 	if err != nil {
 		return nil, err
@@ -243,7 +243,7 @@ func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
 		return resp, nil
 	}
 
-	resp, err := retryRequest(f, retryNumber)
+	resp, err := utils.RetryRequest(f)
 
 	if err != nil {
 		return nil, err
@@ -251,19 +251,4 @@ func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
 
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
-}
-
-func retryRequest(f func() (*http.Response, error), retry int) (resp *http.Response, err error) {
-	for index := 0; index < retry; index++ {
-
-		resp, err = f()
-
-		if err == nil {
-			return resp, err
-		}
-
-		<-time.After(3 * time.Second)
-	}
-
-	return resp, err
 }

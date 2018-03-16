@@ -3,7 +3,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: 926088932149.dkr.ecr.us-west-2.amazonaws.com/domingo
+    repository: gcr.io/aporetodev/domingo
 
 inputs:
 - name: src
@@ -12,15 +12,12 @@ inputs:
 run:
   path: bash
   args:
-    - -exc
+    - -ec
     - |
-      set +x
       export PATH=$PATH:$GOPATH/bin:$PWD/go/bin
       export GOPATH=$PWD/go:$GOPATH
 
-      go get -u github.com/magefile/mage github.com/aporeto-inc/domingo/golang
-
       cd go/src/github.com/aporeto-inc/addedeffect
-      mage init || exit 1
-      mage test || exit 1
-      bash <(curl -s https://codecov.io/bash) || exit 0
+      dep ensure -v
+      ./.test.sh
+      bash <(curl -s https://codecov.io/bash)

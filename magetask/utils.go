@@ -56,7 +56,7 @@ func writeVersionsFile(templateData versionTemplate, versionsFilePath string) er
 		Fragment:  true,
 	})
 	if err != nil {
-		fmt.Println(string(buffer.Bytes()))
+		fmt.Println(buffer.String())
 		panic(err)
 	}
 

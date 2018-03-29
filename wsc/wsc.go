@@ -30,7 +30,6 @@ type Websocket interface {
 
 type ws struct {
 	conn      *websocket.Conn
-	tlsConfig *tls.Config
 	readChan  chan []byte
 	writeChan chan []byte
 	doneChan  chan error

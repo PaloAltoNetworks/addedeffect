@@ -16,15 +16,46 @@ type Config struct {
 	PingPeriod        time.Duration
 	TLSConfig         *tls.Config
 	ReadBufferSize    int
+	ReadChanSize      int
 	WriteBufferSize   int
+	WriteChanSize     int
 	EnableCompression bool
 }
 
 // Websocket is the interface of channel based websocket.
 type Websocket interface {
+
+	// Reads returns a channel where the incoming messages are published.
+	// If nothing pumps the Read() while it is full, new messages will be
+	// discarded.
+	//
+	// You can configure the size of the read chan in Config.
+	// The default is 64 messages.
 	Read() chan []byte
+
+	// Write write the given []byte in to the websocket.
+	// If the other side of the websocket cannot get all messages
+	// while the internal write channel is full, new messages will
+	// be discarded.
+	//
+	// You can configure the size of the write chan in Config.
+	// The default is 64 messages.
 	Write([]byte)
+
+	// Done returns a channel that will return when the connection
+	// if closed.
+	//
+	// The content will be nil for clean disconnection or
+	// the error that caused the disconnection. If nothing pumps the
+	// Done() channel, the message will be discarded.
+	//
+	// If nothing pumps the Done() chan, the message will be discarded.
 	Done() chan error
+
+	// Close closes the webbsocket.
+	//
+	// Closing the websocket a second time has no effect.
+	// A closed Websocket cannot be reused.
 	Close() error
 }
 
@@ -38,8 +69,8 @@ type ws struct {
 	config    Config
 }
 
-// NewWebsocket returns a new connected Websocket.
-func NewWebsocket(ctx context.Context, url string, config Config) (Websocket, *http.Response, error) {
+// Connect connects to the url and returns a Websocket.
+func Connect(ctx context.Context, url string, config Config) (Websocket, *http.Response, error) {
 
 	dialer := &websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
@@ -54,6 +85,14 @@ func NewWebsocket(ctx context.Context, url string, config Config) (Websocket, *h
 		return nil, resp, err
 	}
 
+	s, err := Accept(ctx, conn, config)
+
+	return s, resp, err
+}
+
+// Accept handles an already connect *websocket.Conn and returns a Websocket.
+func Accept(ctx context.Context, conn *websocket.Conn, config Config) (Websocket, error) {
+
 	if config.PongWait == 0 {
 		config.PongWait = 30 * time.Second
 	}
@@ -63,34 +102,64 @@ func NewWebsocket(ctx context.Context, url string, config Config) (Websocket, *h
 	if config.PingPeriod == 0 {
 		config.PingPeriod = 15 * time.Second
 	}
+	if config.WriteChanSize == 0 {
+		config.WriteChanSize = 64
+	}
+	if config.ReadChanSize == 0 {
+		config.ReadChanSize = 64
+	}
 
-	if err = conn.SetReadDeadline(time.Now().Add(config.PongWait)); err != nil {
-		return nil, resp, err
+	if err := conn.SetReadDeadline(time.Now().Add(config.PongWait)); err != nil {
+		return nil, err
 	}
 
 	subCtx, cancel := context.WithCancel(ctx)
 
 	s := &ws{
 		conn:      conn,
-		readChan:  make(chan []byte),
-		writeChan: make(chan []byte),
-		doneChan:  make(chan error, 16),
+		readChan:  make(chan []byte, config.ReadChanSize),
+		writeChan: make(chan []byte, config.WriteChanSize),
+		doneChan:  make(chan error),
 		cancel:    cancel,
 		config:    config,
 	}
 
-	s.conn.SetCloseHandler(s.closeHandler)
-	s.conn.SetPongHandler(s.pongHandler)
+	s.conn.SetCloseHandler(func(code int, text string) error {
+		return s.Close()
+	})
+
+	s.conn.SetPongHandler(func(string) error {
+		return s.conn.SetReadDeadline(time.Now().Add(s.config.PongWait))
+	})
 
 	go s.readPump(subCtx)
 	go s.writePump(subCtx)
 
-	return s, resp, nil
+	return s, nil
 }
 
-func (s *ws) Write(data []byte) { s.writeChan <- data }
-func (s *ws) Read() chan []byte { return s.readChan }
-func (s *ws) Done() chan error  { return s.doneChan }
+// Write is part of the the Websocket interface implementation.
+func (s *ws) Write(data []byte) {
+
+	select {
+	case s.writeChan <- data:
+	default:
+	}
+}
+
+// Read is part of the the Websocket interface implementation.
+func (s *ws) Read() chan []byte {
+
+	return s.readChan
+}
+
+// Done is part of the the Websocket interface implementation.
+func (s *ws) Done() chan error {
+
+	return s.doneChan
+}
+
+// Close is part of the the Websocket interface implementation.
 func (s *ws) Close() error {
 
 	if s.isClosed {
@@ -98,13 +167,8 @@ func (s *ws) Close() error {
 	}
 
 	s.cancel()
-
 	s.isClosed = true
-	if err := s.conn.Close(); err != nil {
-		s.publishDoneMessage(err)
-	}
-
-	s.publishDoneMessage(nil)
+	s.done(s.conn.Close())
 
 	return nil
 }
@@ -116,11 +180,14 @@ func (s *ws) readPump(ctx context.Context) {
 
 	for {
 		if _, message, err = s.conn.ReadMessage(); err != nil {
-			s.publishDoneMessage(err)
+			s.done(err)
 			return
 		}
 
-		s.readChan <- message
+		select {
+		case s.readChan <- message:
+		default:
+		}
 	}
 }
 
@@ -138,7 +205,7 @@ func (s *ws) writePump(ctx context.Context) {
 
 			s.conn.SetWriteDeadline(time.Now().Add(s.config.WriteWait)) // nolint: errcheck
 			if err = s.conn.WriteMessage(websocket.TextMessage, message); err != nil {
-				s.publishDoneMessage(err)
+				s.done(err)
 				return
 			}
 
@@ -146,31 +213,21 @@ func (s *ws) writePump(ctx context.Context) {
 
 			s.conn.SetWriteDeadline(time.Now().Add(s.config.WriteWait)) // nolint: errcheck
 			if err = s.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				s.publishDoneMessage(nil)
+				s.done(nil)
 				return
 			}
 
 		case <-ctx.Done():
 
-			s.publishDoneMessage(s.conn.WriteMessage(websocket.CloseMessage, []byte{}))
+			s.done(s.conn.WriteMessage(websocket.CloseMessage, []byte{}))
 			return
 		}
 	}
 }
 
-func (s *ws) publishDoneMessage(err error) {
+func (s *ws) done(err error) {
 	select {
 	case s.doneChan <- err:
 	default:
 	}
-}
-
-func (s *ws) pongHandler(string) error {
-
-	return s.conn.SetReadDeadline(time.Now().Add(s.config.PongWait))
-}
-
-func (s *ws) closeHandler(code int, text string) error {
-
-	return s.Close()
 }

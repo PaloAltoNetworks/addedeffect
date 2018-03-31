@@ -226,6 +226,7 @@ func (s *ws) writePump(ctx context.Context) {
 }
 
 func (s *ws) done(err error) {
+
 	select {
 	case s.doneChan <- err:
 	default:

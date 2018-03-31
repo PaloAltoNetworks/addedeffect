@@ -64,7 +64,6 @@ type ws struct {
 	readChan  chan []byte
 	writeChan chan []byte
 	doneChan  chan error
-	isClosed  bool
 	cancel    context.CancelFunc
 	config    Config
 }
@@ -119,7 +118,7 @@ func Accept(ctx context.Context, conn *websocket.Conn, config Config) (Websocket
 		conn:      conn,
 		readChan:  make(chan []byte, config.ReadChanSize),
 		writeChan: make(chan []byte, config.WriteChanSize),
-		doneChan:  make(chan error),
+		doneChan:  make(chan error, 1),
 		cancel:    cancel,
 		config:    config,
 	}
@@ -162,31 +161,32 @@ func (s *ws) Done() chan error {
 // Close is part of the the Websocket interface implementation.
 func (s *ws) Close() error {
 
-	if s.isClosed {
-		return nil
-	}
-
 	s.cancel()
-	s.isClosed = true
-	s.done(s.conn.Close())
-
 	return nil
 }
 
 func (s *ws) readPump(ctx context.Context) {
 
 	var err error
-	var message []byte
+	var msg []byte
+	var msgType int
 
 	for {
-		if _, message, err = s.conn.ReadMessage(); err != nil {
+		if msgType, msg, err = s.conn.ReadMessage(); err != nil {
 			s.done(err)
 			return
 		}
 
-		select {
-		case s.readChan <- message:
-		default:
+		switch msgType {
+
+		case websocket.TextMessage, websocket.BinaryMessage:
+			select {
+			case s.readChan <- msg:
+			default:
+			}
+
+		case websocket.CloseMessage:
+			return
 		}
 	}
 }
@@ -213,13 +213,22 @@ func (s *ws) writePump(ctx context.Context) {
 
 			s.conn.SetWriteDeadline(time.Now().Add(s.config.WriteWait)) // nolint: errcheck
 			if err = s.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				s.done(nil)
+				s.done(err)
 				return
 			}
 
 		case <-ctx.Done():
 
-			s.done(s.conn.WriteMessage(websocket.CloseMessage, []byte{}))
+			s.done(
+				s.conn.WriteControl(
+					websocket.CloseMessage,
+					[]byte{},
+					time.Now().Add(1*time.Second),
+				),
+			)
+
+			_ = s.conn.Close()
+
 			return
 		}
 	}

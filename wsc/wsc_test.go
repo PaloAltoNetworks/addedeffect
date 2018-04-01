@@ -187,7 +187,7 @@ func TestWSC_GentleServerDisconnection(t *testing.T) {
 				panic(err)
 			}
 
-			h.Close()
+			h.Close() // nolint: errcheck
 		}))
 		defer ts.Close()
 
@@ -232,7 +232,7 @@ func TestWSC_BrutalServerDisconnection(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			ws.Close()
+			ws.Close() // nolint: errcheck
 		}))
 		defer ts.Close()
 
@@ -302,9 +302,9 @@ func TestWSC_GentleClientDisconnection(t *testing.T) {
 
 			ws, _, _ := Connect(ctx, strings.Replace(ts.URL, "http://", "ws://", 1), Config{})
 
-			Convey("When I gracefuly stop the connection", func() {
+			Convey("When I gracefully stop the connection", func() {
 
-				ws.Close()
+				ws.Close() // nolint: errcheck
 
 				var err error
 				var msg []byte
@@ -370,9 +370,9 @@ func TestWSC_BrutalClientDisconnection(t *testing.T) {
 
 			w, _, _ := Connect(ctx, strings.Replace(ts.URL, "http://", "ws://", 1), Config{})
 
-			Convey("When I gracefuly stop the connection", func() {
+			Convey("When I gracefully stop the connection", func() {
 
-				w.(*ws).conn.Close()
+				w.(*ws).conn.Close() // nolint: errcheck
 
 				var err error
 				var msg []byte

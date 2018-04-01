@@ -154,7 +154,7 @@ func TestWSC_CannotConnect(t *testing.T) {
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "dial tcp 127.0.0.1:7745: connect: connection refused")
+				So(err.Error(), ShouldEndWith, "connection refused")
 			})
 
 			Convey("Then resp should be nil", func() {

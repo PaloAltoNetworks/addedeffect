@@ -2,70 +2,21 @@ package wsc
 
 import (
 	"context"
-	"crypto/tls"
+	"encoding/binary"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-// Config contains configuration for the webbsocket.
-type Config struct {
-	WriteWait         time.Duration
-	PongWait          time.Duration
-	PingPeriod        time.Duration
-	TLSConfig         *tls.Config
-	ReadBufferSize    int
-	ReadChanSize      int
-	WriteBufferSize   int
-	WriteChanSize     int
-	EnableCompression bool
-}
-
-// Websocket is the interface of channel based websocket.
-type Websocket interface {
-
-	// Reads returns a channel where the incoming messages are published.
-	// If nothing pumps the Read() while it is full, new messages will be
-	// discarded.
-	//
-	// You can configure the size of the read chan in Config.
-	// The default is 64 messages.
-	Read() chan []byte
-
-	// Write write the given []byte in to the websocket.
-	// If the other side of the websocket cannot get all messages
-	// while the internal write channel is full, new messages will
-	// be discarded.
-	//
-	// You can configure the size of the write chan in Config.
-	// The default is 64 messages.
-	Write([]byte)
-
-	// Done returns a channel that will return when the connection
-	// if closed.
-	//
-	// The content will be nil for clean disconnection or
-	// the error that caused the disconnection. If nothing pumps the
-	// Done() channel, the message will be discarded.
-	//
-	// If nothing pumps the Done() chan, the message will be discarded.
-	Done() chan error
-
-	// Close closes the webbsocket.
-	//
-	// Closing the websocket a second time has no effect.
-	// A closed Websocket cannot be reused.
-	Close() error
-}
-
 type ws struct {
-	conn      *websocket.Conn
-	readChan  chan []byte
-	writeChan chan []byte
-	doneChan  chan error
-	cancel    context.CancelFunc
-	config    Config
+	conn        *websocket.Conn
+	readChan    chan []byte
+	writeChan   chan []byte
+	doneChan    chan error
+	cancel      context.CancelFunc
+	closeCodeCh chan int
+	config      Config
 }
 
 // Connect connects to the url and returns a Websocket.
@@ -115,16 +66,18 @@ func Accept(ctx context.Context, conn *websocket.Conn, config Config) (Websocket
 	subCtx, cancel := context.WithCancel(ctx)
 
 	s := &ws{
-		conn:      conn,
-		readChan:  make(chan []byte, config.ReadChanSize),
-		writeChan: make(chan []byte, config.WriteChanSize),
-		doneChan:  make(chan error, 1),
-		cancel:    cancel,
-		config:    config,
+		conn:        conn,
+		readChan:    make(chan []byte, config.ReadChanSize),
+		writeChan:   make(chan []byte, config.WriteChanSize),
+		doneChan:    make(chan error, 1),
+		closeCodeCh: make(chan int, 1),
+		cancel:      cancel,
+		config:      config,
 	}
 
 	s.conn.SetCloseHandler(func(code int, text string) error {
-		return s.Close()
+		s.cancel()
+		return nil
 	})
 
 	s.conn.SetPongHandler(func(string) error {
@@ -159,10 +112,16 @@ func (s *ws) Done() chan error {
 }
 
 // Close is part of the the Websocket interface implementation.
-func (s *ws) Close() error {
+func (s *ws) Close(code int) {
+
+	if code != 0 {
+		select {
+		case s.closeCodeCh <- code:
+		default:
+		}
+	}
 
 	s.cancel()
-	return nil
 }
 
 func (s *ws) readPump(ctx context.Context) {
@@ -219,10 +178,19 @@ func (s *ws) writePump(ctx context.Context) {
 
 		case <-ctx.Done():
 
+			code := websocket.CloseGoingAway
+			select {
+			case code = <-s.closeCodeCh:
+			default:
+			}
+
+			enc := make([]byte, 2)
+			binary.BigEndian.PutUint16(enc, uint16(code))
+
 			s.done(
 				s.conn.WriteControl(
 					websocket.CloseMessage,
-					[]byte{},
+					enc,
 					time.Now().Add(1*time.Second),
 				),
 			)

@@ -80,23 +80,10 @@ func TestWSC_ReadWrite(t *testing.T) {
 						}
 					}()
 
-					err := ws.Close()
-
-					Convey("Then err should be nil", func() {
-						So(err, ShouldBeNil)
-					})
+					ws.Close(0)
 
 					Convey("Then doneErr should be nil", func() {
 						So(<-doneErr, ShouldBeNil)
-					})
-
-					Convey("When I close it again", func() {
-
-						err := ws.Close()
-
-						Convey("Then err should be nil", func() {
-							So(err, ShouldBeNil)
-						})
 					})
 				})
 			})
@@ -187,7 +174,7 @@ func TestWSC_GentleServerDisconnection(t *testing.T) {
 				panic(err)
 			}
 
-			h.Close() // nolint: errcheck
+			h.Close(0)
 		}))
 		defer ts.Close()
 
@@ -208,7 +195,7 @@ func TestWSC_GentleServerDisconnection(t *testing.T) {
 
 				Convey("Then err should be nil", func() {
 					So(err, ShouldNotBeNil)
-					So(err.Error(), ShouldEqual, "websocket: close 1005 (no status)")
+					So(err.Error(), ShouldEqual, "websocket: close 1001 (going away)")
 				})
 			})
 		})
@@ -304,7 +291,7 @@ func TestWSC_GentleClientDisconnection(t *testing.T) {
 
 			Convey("When I gracefully stop the connection", func() {
 
-				ws.Close() // nolint: errcheck
+				ws.Close(websocket.CloseInvalidFramePayloadData)
 
 				var err error
 				var msg []byte
@@ -317,7 +304,7 @@ func TestWSC_GentleClientDisconnection(t *testing.T) {
 
 				Convey("Then the err received by the client not be nil", func() {
 					So(err, ShouldNotBeNil)
-					So(err.Error(), ShouldEqual, "websocket: close 1005 (no status)")
+					So(err.Error(), ShouldEqual, "websocket: close 1007 (invalid payload data)")
 				})
 
 				Convey("Then no msg should be received by the client", func() {
@@ -362,7 +349,6 @@ func TestWSC_BrutalClientDisconnection(t *testing.T) {
 			case <-ctx.Done():
 				panic("test: no response in time")
 			}
-
 		}))
 		defer ts.Close()
 

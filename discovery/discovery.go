@@ -23,6 +23,7 @@ type PlatformInfo struct {
 	JunonURL           string `json:"junon"`
 	MidgardURL         string `json:"midgard"`
 	MongoURL           string `json:"mongo"`
+	RedisService       string `json:"redis"`
 	OpenTracingService string `json:"openTracingService"`
 	PublicAPIURL       string `json:"public-api"`
 	PublicCladURL      string `json:"public-clad"`

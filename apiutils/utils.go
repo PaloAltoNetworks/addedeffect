@@ -65,6 +65,50 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 	return out, nil
 }
 
+// GetConfig returns the additional config exposed by the gateway.
+func GetConfig(api string, tlsConfig *tls.Config) (map[string]string, error) {
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
+
+	f := func() (*http.Response, error) {
+		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/config", api), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		}
+
+		return resp, err
+	}
+
+	resp, err := utils.RetryRequest(f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	out := map[string]string{}
+
+	defer resp.Body.Close() // nolint: errcheck
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 // GetPublicCA returns the public CA used by the api.
 func GetPublicCA(api string, tlsConfig *tls.Config) ([]byte, error) {
 

@@ -15,23 +15,25 @@ import (
 
 // A PlatformInfo describes the Aporeto platform services.
 type PlatformInfo struct {
+	BarretURL          string `json:"barret"`
+	CladURL            string `json:"clad"`
+	GeoIPURL           string `json:"geoipURL"`
+	HighwindURL        string `json:"highwind"`
+	InfluxDBURL        string `json:"influxdb"`
+	JunonURL           string `json:"junon"`
+	MidgardURL         string `json:"midgard"`
+	MongoURL           string `json:"mongo"`
+	RedisService       string `json:"redis"`
+	OpenTracingService string `json:"openTracingService"`
 	PublicAPIURL       string `json:"public-api"`
 	PublicCladURL      string `json:"public-clad"`
-	WutaiURL           string `json:"wutai"`
-	SquallURL          string `json:"squall"`
-	CladURL            string `json:"clad"`
-	MidgardURL         string `json:"midgard"`
-	ZackURL            string `json:"zack"`
-	VinceURL           string `json:"vince"`
-	JunonURL           string `json:"junon"`
-	YuffieURL          string `json:"yuffie"`
-	BarretURL          string `json:"barret"`
-	HighwindURL        string `json:"highwind"`
-	GeoIPURL           string `json:"geoipURL"`
 	PubSubService      string `json:"pubsub"`
-	MongoURL           string `json:"mongo"`
-	InfluxDBURL        string `json:"influxdb"`
-	OpenTracingService string `json:"openTracingService"`
+	SquallURL          string `json:"squall"`
+	TagleURL           string `json:"taggle"`
+	VinceURL           string `json:"vince"`
+	WutaiURL           string `json:"wutai"`
+	YuffieURL          string `json:"yuffie"`
+	ZackURL            string `json:"zack"`
 
 	License string `json:"license"`
 }
@@ -66,6 +68,7 @@ func (p *PlatformInfo) Fields() []zapcore.Field {
 		zap.String("influxdb", p.InfluxDBURL),
 		zap.String("geoip", p.GeoIPURL),
 		zap.String("nats", p.PubSubService),
+		zap.String("tagle", p.TagleURL),
 	}
 }
 

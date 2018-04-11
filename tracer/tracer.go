@@ -3,7 +3,6 @@ package tracer
 import (
 	"time"
 
-	"github.com/aporeto-inc/addedeffect/discovery"
 	"github.com/opentracing/opentracing-go"
 
 	jaeger "github.com/uber/jaeger-client-go"
@@ -40,10 +39,4 @@ func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorder
 	opentracing.InitGlobalTracer(tracer)
 
 	return func() { close.Close() }, nil // nolint: errcheck
-}
-
-// ConfigureTracer returns a jaeger backed opentracing tracer.
-func ConfigureTracer(pf *discovery.PlatformInfo, serviceName string) (CloseRecorderHandler, error) {
-
-	return ConfigureTracerWithURL(pf.OpenTracingService, serviceName)
 }

@@ -1,6 +1,7 @@
 package download
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
@@ -10,34 +11,42 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aporeto-inc/addedeffect/utils"
+	"github.com/aporeto-inc/addedeffect/retry"
 	"github.com/blang/semver"
+	"go.uber.org/zap"
 )
 
 // A Manifest represents a Download Manifest
 type Manifest map[string]Component
 
 // RetrieveManifest fetch the manifest at the given URL.
-func RetrieveManifest(url string) (Manifest, error) {
+func RetrieveManifest(ctx context.Context, url string) (Manifest, error) {
 
-	f := func() (*http.Response, error) {
-		resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int()))
-		if err != nil {
-			return nil, err
-		}
+	out, err := retry.Retry(
+		ctx,
+		func() (interface{}, error) {
+			resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int()))
+			if err != nil {
+				return nil, err
+			}
 
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("Unable to download manifest: %s", resp.Status)
-		}
+			if resp.StatusCode != http.StatusOK {
+				return nil, fmt.Errorf("Unable to download manifest: %s", resp.Status)
+			}
 
-		return resp, nil
-	}
-
-	resp, err := utils.RetryRequest(f)
+			return resp, nil
+		},
+		func(err error) error {
+			zap.L().Warn("Unable to download manifest. retrying in 3s", zap.Error(err))
+			return nil
+		},
+	)
 
 	if err != nil {
 		return Manifest{}, err
 	}
+
+	resp := out.(*http.Response)
 
 	manifest := Manifest{}
 	defer resp.Body.Close() // nolint: errcheck
@@ -93,26 +102,33 @@ func NewVariant(url, signature string) Variant {
 }
 
 // Binary downloads and saves the binary at the given url to the given dest with the given mode.
-func Binary(url string, dest string, mode os.FileMode, signature string) error {
+func Binary(ctx context.Context, url string, dest string, mode os.FileMode, signature string) error {
 
-	f := func() (*http.Response, error) {
-		resp, err := http.Get(url)
-		if err != nil {
-			return nil, err
-		}
+	out, err := retry.Retry(
+		ctx,
+		func() (interface{}, error) {
+			resp, err := http.Get(url)
+			if err != nil {
+				return nil, err
+			}
 
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("Unable to find the request binary: %s", resp.Status)
-		}
+			if resp.StatusCode != 200 {
+				return nil, fmt.Errorf("Unable to find the request binary: %s", resp.Status)
+			}
 
-		return resp, nil
-	}
-
-	resp, err := utils.RetryRequest(f)
+			return resp, nil
+		},
+		func(err error) error {
+			zap.L().Warn("Unable to download binary. retrying in 3s", zap.Error(err))
+			return nil
+		},
+	)
 
 	if err != nil {
 		return err
 	}
+
+	resp := out.(*http.Response)
 
 	defer resp.Body.Close() // nolint: errcheck
 	data, err := ioutil.ReadAll(resp.Body)

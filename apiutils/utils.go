@@ -1,6 +1,7 @@
 package apiutils
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -11,7 +12,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aporeto-inc/addedeffect/utils"
+	"github.com/aporeto-inc/addedeffect/retry"
+	"go.uber.org/zap"
 )
 
 // ServiceVersion holds the version of a servie
@@ -22,7 +24,7 @@ type ServiceVersion struct {
 }
 
 // GetServiceVersions returns the version of the services.
-func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVersion, error) {
+func GetServiceVersions(ctx context.Context, api string, tlsConfig *tls.Config) (map[string]ServiceVersion, error) {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -31,42 +33,64 @@ func GetServiceVersions(api string, tlsConfig *tls.Config) (map[string]ServiceVe
 		},
 	}
 
-	f := func() (*http.Response, error) {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/versions", api), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
-		}
-
-		return resp, err
-	}
-
-	resp, err := utils.RetryRequest(f)
+	url := fmt.Sprintf("%s/_meta/versions", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve versions. Retrying in 3s", url),
+	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	out := map[string]ServiceVersion{}
+	resp := out.(*http.Response)
+
+	config := map[string]ServiceVersion{}
 
 	defer resp.Body.Close() // nolint: errcheck
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&config); err != nil {
 		return nil, err
 	}
 
-	return out, nil
+	return config, nil
+}
+
+// GetConfig returns the additional config exposed by the gateway.
+func GetConfig(ctx context.Context, api string, tlsConfig *tls.Config) (map[string]string, error) {
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
+
+	url := fmt.Sprintf("%s/_meta/config", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve config. Retrying in 3s", url),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := out.(*http.Response)
+
+	config := map[string]string{}
+
+	defer resp.Body.Close() // nolint: errcheck
+	if err := json.NewDecoder(resp.Body).Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 // GetPublicCA returns the public CA used by the api.
-func GetPublicCA(api string, tlsConfig *tls.Config) ([]byte, error) {
+func GetPublicCA(ctx context.Context, api string, tlsConfig *tls.Config) ([]byte, error) {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -75,38 +99,27 @@ func GetPublicCA(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	f := func() (*http.Response, error) {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/ca", api), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
-		}
-
-		return resp, nil
-	}
-
-	resp, err := utils.RetryRequest(f)
+	url := fmt.Sprintf("%s/_meta/ca", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve public ca. Retrying in 3s", url),
+	)
 
 	if err != nil {
 		return nil, err
 	}
+
+	resp := out.(*http.Response)
 
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
 }
 
 // GetPublicCAPool returns the public CA used by the api as a *x509.CertPool.
-func GetPublicCAPool(api string, tlsConfig *tls.Config) (*x509.CertPool, error) {
+func GetPublicCAPool(ctx context.Context, api string, tlsConfig *tls.Config) (*x509.CertPool, error) {
 
-	cadata, err := GetPublicCA(api, tlsConfig)
+	cadata, err := GetPublicCA(ctx, api, tlsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +135,7 @@ func GetPublicCAPool(api string, tlsConfig *tls.Config) (*x509.CertPool, error) 
 }
 
 // GetJWTCert returns the public certificate used to sign jwt.
-func GetJWTCert(api string, tlsConfig *tls.Config) ([]byte, error) {
+func GetJWTCert(ctx context.Context, api string, tlsConfig *tls.Config) ([]byte, error) {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -131,38 +144,27 @@ func GetJWTCert(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	f := func() (*http.Response, error) {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/jwtcert", api), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
-		}
-
-		return resp, nil
-	}
-
-	resp, err := utils.RetryRequest(f)
+	url := fmt.Sprintf("%s/_meta/jwtcert", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve jwt certificate. Retrying in 3s", url),
+	)
 
 	if err != nil {
 		return nil, err
 	}
+
+	resp := out.(*http.Response)
 
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
 }
 
 // GetJWTX509Cert returns the public certificate used to sign jwt as an *x509.Certificate.
-func GetJWTX509Cert(api string, tlsConfig *tls.Config) (*x509.Certificate, error) {
+func GetJWTX509Cert(ctx context.Context, api string, tlsConfig *tls.Config) (*x509.Certificate, error) {
 
-	data, err := GetJWTCert(api, tlsConfig)
+	data, err := GetJWTCert(ctx, api, tlsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +181,7 @@ func GetJWTX509Cert(api string, tlsConfig *tls.Config) (*x509.Certificate, error
 }
 
 // GetManifestURL returns the url of the manifest.
-func GetManifestURL(api string, tlsConfig *tls.Config) ([]byte, error) {
+func GetManifestURL(ctx context.Context, api string, tlsConfig *tls.Config) ([]byte, error) {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -188,35 +190,25 @@ func GetManifestURL(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	f := func() (*http.Response, error) {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/manifest", api), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
-		}
-		return resp, nil
-	}
-
-	resp, err := utils.RetryRequest(f)
+	url := fmt.Sprintf("%s/_meta/manifest", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve manifest url. Retrying in 3s", url),
+	)
 
 	if err != nil {
 		return nil, err
 	}
+
+	resp := out.(*http.Response)
 
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
 }
 
 // GetGoogleOAuthClientID returns the Google oauth client ID used bby the platform.
-func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
+func GetGoogleOAuthClientID(ctx context.Context, api string, tlsConfig *tls.Config) ([]byte, error) {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -225,8 +217,28 @@ func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
 		},
 	}
 
-	f := func() (*http.Response, error) {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/_meta/googleclientid", api), nil)
+	url := fmt.Sprintf("%s/_meta/googleclientid", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve google client id. Retrying in 3s", url),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := out.(*http.Response)
+
+	defer resp.Body.Close() // nolint: errcheck
+	return ioutil.ReadAll(resp.Body)
+}
+
+func makeJobFunc(client *http.Client, url string) func() (interface{}, error) {
+
+	return func() (interface{}, error) {
+
+		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -242,13 +254,12 @@ func GetGoogleOAuthClientID(api string, tlsConfig *tls.Config) ([]byte, error) {
 
 		return resp, nil
 	}
+}
 
-	resp, err := utils.RetryRequest(f)
+func makeRetryFunc(message string, url string) func(error) error {
 
-	if err != nil {
-		return nil, err
+	return func(err error) error {
+		zap.L().Warn(message, zap.String("url", url), zap.Error(err))
+		return nil
 	}
-
-	defer resp.Body.Close() // nolint: errcheck
-	return ioutil.ReadAll(resp.Body)
 }

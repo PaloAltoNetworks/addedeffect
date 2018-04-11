@@ -1,6 +1,7 @@
 package envopt
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -17,6 +18,8 @@ import (
 //      --options-a
 // And the value of environment variable will be simply ignored.
 func Parse(prefix string, doc string) error {
+
+	fmt.Println("DEPRECATED: envopt is deprecated. Please migrate to lombric or full viper/cobra.")
 
 	args := extractArguments(extractUsage(doc))
 

@@ -1,7 +1,3 @@
-[[constraint]]
-  name = "gopkg.in/natefinch/lumberjack.v2"
-  version = "2.x"
-
 [prune]
   go-tests = true
   unused-packages = true

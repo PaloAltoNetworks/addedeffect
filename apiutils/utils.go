@@ -248,18 +248,18 @@ func makeJobFunc(client *http.Client, url string) func() (interface{}, error) {
 			return nil, err
 		}
 
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		if resp.StatusCode == 200 {
+			return resp, nil
 		}
 
-		return resp, nil
+		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
 	}
 }
 
 func makeRetryFunc(message string, url string) func(error) error {
 
 	return func(err error) error {
-		zap.L().Warn(message, zap.String("url", url), zap.Error(err))
+		zap.L().Debug(message, zap.String("url", url), zap.Error(err))
 		return nil
 	}
 }

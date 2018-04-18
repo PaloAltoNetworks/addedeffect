@@ -25,6 +25,18 @@ func Configure(level string, format string) zap.Config {
 // ConfigureWithOptions configures the shared default logger with options such as file and timestamp formats.
 func ConfigureWithOptions(level string, format string, file string, fileOnly bool, prettyTimestamp bool) zap.Config {
 
+	logger, config := NewLogger(level, format, file, fileOnly, prettyTimestamp)
+
+	zap.ReplaceGlobals(logger)
+
+	go handleElevationSignal(config)
+
+	return config
+}
+
+// NewLogger returns a new configured zap.Logger
+func NewLogger(level string, format string, file string, fileOnly bool, prettyTimestamp bool) (*zap.Logger, zap.Config) {
+
 	var config zap.Config
 
 	switch format {
@@ -102,11 +114,8 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 	if err != nil {
 		panic(err)
 	}
-	zap.ReplaceGlobals(logger)
 
-	go handleElevationSignal(config)
-
-	return config
+	return logger, config
 }
 
 // SetOutput returns the zap option with the new sync writer

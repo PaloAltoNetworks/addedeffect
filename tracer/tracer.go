@@ -5,7 +5,6 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 
-	jaeger "github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 )
 
@@ -19,7 +18,8 @@ func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorder
 		return nil, nil
 	}
 
-	cfg := jaegercfg.Configuration{
+	tracer, close, err := jaegercfg.Configuration{
+		ServiceName: serviceName,
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  "const",
 			Param: 1,
@@ -29,9 +29,8 @@ func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorder
 			BufferFlushInterval: 1 * time.Second,
 			LocalAgentHostPort:  tracerURL,
 		},
-	}
+	}.NewTracer()
 
-	tracer, close, err := cfg.New(serviceName, jaegercfg.Logger(jaeger.NullLogger))
 	if err != nil {
 		return nil, err
 	}

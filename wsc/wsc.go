@@ -9,8 +9,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// WSConnection is the interface that must be implemented
+// as a websocket. github.com/gorilla/websocket implements
+// this interface.
+type WSConnection interface {
+	SetReadDeadline(time.Time) error
+	SetWriteDeadline(time.Time) error
+	SetCloseHandler(func(code int, text string) error)
+	SetPongHandler(func(string) error)
+	ReadMessage() (int, []byte, error)
+	WriteMessage(int, []byte) error
+	WriteControl(int, []byte, time.Time) error
+	Close() error
+}
+
 type ws struct {
-	conn        *websocket.Conn
+	conn        WSConnection
 	readChan    chan []byte
 	writeChan   chan []byte
 	doneChan    chan error
@@ -41,7 +55,7 @@ func Connect(ctx context.Context, url string, config Config) (Websocket, *http.R
 }
 
 // Accept handles an already connect *websocket.Conn and returns a Websocket.
-func Accept(ctx context.Context, conn *websocket.Conn, config Config) (Websocket, error) {
+func Accept(ctx context.Context, conn WSConnection, config Config) (Websocket, error) {
 
 	if config.PongWait == 0 {
 		config.PongWait = 30 * time.Second

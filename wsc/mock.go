@@ -2,7 +2,7 @@ package wsc
 
 import (
 	"context"
-	"errors"
+	"fmt"
 )
 
 // A MockWebsocket is a utility to write unit
@@ -39,7 +39,7 @@ func NewMockWebsocket(ctx context.Context) MockWebsocket {
 func (s *mockWebsocket) Write(data []byte)      { s.writeChan <- data }
 func (s *mockWebsocket) Read() chan []byte      { return s.readChan }
 func (s *mockWebsocket) Done() chan error       { return s.doneChan }
-func (s *mockWebsocket) Close(code int)         { s.doneChan <- errors.New("closed") }
+func (s *mockWebsocket) Close(code int)         { s.doneChan <- fmt.Errorf("%d", code) }
 func (s *mockWebsocket) NextRead(data []byte)   { s.readChan <- data }
 func (s *mockWebsocket) LastWrite() chan []byte { return s.writeChan }
 func (s *mockWebsocket) NextDone(err error)     { s.doneChan <- err }

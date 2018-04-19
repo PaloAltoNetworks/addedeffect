@@ -1,9 +1,7 @@
 package lombric
 
 import (
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -18,13 +16,12 @@ const enabledKey = "true"
 
 // Configurable is the interface of a configuration.
 type Configurable interface {
-	Prefix() string
 }
 
-// CidCommunicator is an extension to Configurable that asks for
-// an initial ca to talk to cid.
-type CidCommunicator interface {
-	SetInitialCAPool(pool *x509.CertPool)
+// EnvPrexixer is the interface to implement in order to
+// support arguments from env.
+type EnvPrexixer interface {
+	Prefix() string
 }
 
 // VersionPrinter is an extension to Configurable that can print its version.
@@ -38,15 +35,21 @@ func Initialize(conf Configurable) {
 	requiredFlags, secretFlags, allowedValues := installFlags(conf)
 
 	pflag.VisitAll(func(f *pflag.Flag) {
+
 		var v interface{}
 		var err error
+
 		switch f.Value.Type() {
+
 		case "stringSlice":
 			v, err = pflag.CommandLine.GetStringSlice(f.Name)
+
 		case "boolSlice":
 			v, err = pflag.CommandLine.GetBoolSlice(f.Name)
+
 		case "intSlice":
 			v, err = pflag.CommandLine.GetIntSlice(f.Name)
+
 		case "ipSlice":
 			v, err = pflag.CommandLine.GetIPSlice(f.Name)
 		}
@@ -62,51 +65,37 @@ func Initialize(conf Configurable) {
 		panic("Unable to bind flags: " + err.Error())
 	}
 
-	viper.SetEnvPrefix(conf.Prefix())
-	viper.SetTypeByDefaultValue(true)
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-	viper.AutomaticEnv()
+	if p, ok := conf.(EnvPrexixer); ok {
+		viper.SetEnvPrefix(p.Prefix())
+		viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+		viper.AutomaticEnv()
+		viper.SetTypeByDefaultValue(true)
+	}
 
 	if vp, ok := conf.(VersionPrinter); ok && viper.GetBool("version") {
 		vp.PrintVersion()
 		os.Exit(0)
 	}
 
-	checkRequired(requiredFlags...)
-	checkAllowedValues(allowedValues)
+	if err := checkRequired(fail, requiredFlags...); err != nil {
+		fail()
+	}
+
+	if err := checkAllowedValues(fail, allowedValues); err != nil {
+		fail()
+	}
 
 	if err := viper.Unmarshal(conf); err != nil {
 		panic("Unable to unmarshal configuration: " + err.Error())
 	}
 
-	if c, ok := conf.(CidCommunicator); ok {
-
-		pool, err := x509.SystemCertPool()
-		if err != nil {
-			panic("Unable to load system CA pool: " + err.Error())
-		}
-
-		path := viper.GetString("cid-cacert")
-		if path == "" {
-			path = viper.GetString("api-cacert")
-		}
-
-		if path != "" {
-			data, err := ioutil.ReadFile(path)
-			if err != nil {
-				panic("Unable to read cid CA file: " + err.Error())
+	if p, ok := conf.(EnvPrexixer); ok {
+		// Clean up all secrets
+		for _, key := range secretFlags {
+			env := strings.Replace(strings.ToUpper(p.Prefix()+"_"+key), "-", "_", -1)
+			if err := os.Unsetenv(env); err != nil {
+				panic("Unable to unset secret env variable " + env)
 			}
-			pool.AppendCertsFromPEM(data)
-		}
-
-		c.SetInitialCAPool(pool)
-	}
-
-	// Clean up all secrets
-	for _, key := range secretFlags {
-		env := strings.Replace(strings.ToUpper(conf.Prefix()+"_"+key), "-", "_", -1)
-		if err := os.Unsetenv(env); err != nil {
-			panic("Unable to unset secret env variable " + env)
 		}
 	}
 }
@@ -117,16 +106,18 @@ func deepFields(ift reflect.Type) ([]reflect.StructField, []string) {
 	overrides := []string{}
 
 	for i := 0; i < ift.NumField(); i++ {
+
 		field := ift.Field(i)
 
 		switch field.Type.Kind() {
+
 		case reflect.Struct:
+
 			if overrideString := field.Tag.Get("override"); overrideString != "" {
 				overrides = append(overrides, overrideString)
 			}
 
 			f, o := deepFields(field.Type)
-
 			overrides = append(overrides, o...)
 			fields = append(fields, f...)
 
@@ -143,12 +134,13 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 	t := reflect.ValueOf(conf).Elem().Type()
 
 	fields, overrides := deepFields(t)
-
 	defaultOverrides := map[string]string{}
 	allowedValues = map[string][]string{}
 
 	for _, raw := range overrides {
+
 		for _, innerOverride := range strings.Split(raw, ",") {
+
 			parts := strings.SplitN(innerOverride, "=", 2)
 			defaultOverrides[parts[0]] = parts[1]
 		}
@@ -163,14 +155,12 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 		description := field.Tag.Get("desc")
 
-		var def string
+		def := field.Tag.Get("default")
 		if o, ok := defaultOverrides[key]; ok {
 			if o == "-" {
 				continue
 			}
 			def = o
-		} else {
-			def = field.Tag.Get("default")
 		}
 
 		if field.Tag.Get("secret") == enabledKey {
@@ -224,14 +214,39 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 		} else {
 
+			defaultValues := strings.Split(def, ",")
+
 			switch field.Type.Elem().Name() {
 
 			case "string":
-				sdef := strings.Split(def, ",")
-				pflag.StringSlice(key, sdef, description)
+
+				pflag.StringSlice(key, defaultValues, description)
+
+			case "bool":
+				def, err := convertDefaultBool(defaultValues)
+				if err != nil {
+					panic(err)
+				}
+				pflag.BoolSlice(key, def, description)
+
+			case "int":
+
+				def, err := convertDefaultInts(defaultValues)
+				if err != nil {
+					panic(err)
+				}
+				pflag.IntSlice(key, def, description)
+
+			case "IP":
+
+				def, err := convertDefaultIPs(defaultValues)
+				if err != nil {
+					panic(err)
+				}
+				pflag.IPSlice(key, def, description)
 
 			default:
-				panic("Unsupported type: " + field.Type.Name())
+				panic("Unsupported type: " + field.Type.Elem().Name())
 			}
 		}
 	}
@@ -243,52 +258,4 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 	pflag.Parse()
 
 	return requiredFlags, secretFlags, allowedValues
-}
-
-func checkRequired(keys ...string) {
-
-	var fail bool
-	for _, key := range keys {
-
-		if !viper.IsSet(key) || reflect.DeepEqual(viper.Get(key), reflect.Zero(reflect.TypeOf(viper.Get(key))).Interface()) {
-			fmt.Printf("Error: Parameter '--%s' is required.\n", key)
-			fail = true
-		}
-	}
-
-	if fail {
-		fmt.Println()
-		pflag.Usage()
-		os.Exit(1)
-	}
-}
-
-func checkAllowedValues(allowedValues map[string][]string) {
-
-	var fail bool
-
-	for key, values := range allowedValues {
-
-		if !stringInSlice(viper.GetString(key), values) {
-			fmt.Printf("Error: Parameter '--%s' must be one of %s. '%s' is invalid.\n", key, values, viper.GetString(key))
-			fail = true
-		}
-	}
-
-	if fail {
-		fmt.Println()
-		pflag.Usage()
-		os.Exit(1)
-	}
-}
-
-func stringInSlice(str string, list []string) bool {
-
-	for _, s := range list {
-		if s == str {
-			return true
-		}
-	}
-
-	return false
 }

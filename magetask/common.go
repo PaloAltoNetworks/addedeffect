@@ -48,13 +48,16 @@ func GetSemver(branch string) (sver string, err error) {
 	sver = "0.0.0"
 	last, _ := semver.New(sver)
 	for _, v := range strings.Split(versions, "\n") {
+
+		v = strings.TrimLeft(v, "v")
+
 		curr, err := semver.New(v)
 		if err != nil {
 			continue
 		}
 		if last.Compare(*curr) < 0 {
 			last = curr
-			sver = v
+			sver = "v" + v
 		}
 	}
 

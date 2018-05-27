@@ -129,7 +129,7 @@ func Lint() error {
 		"--enable",
 		"staticcheck",
 		"--deadline",
-		"15m",
+		"30m",
 		"--tests",
 		"./...",
 	); err != nil {

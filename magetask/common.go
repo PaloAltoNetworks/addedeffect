@@ -246,6 +246,32 @@ func PackageFrom(path string) error {
 	return nil
 }
 
+// PackageRhel packages enforcerd binary for rhel docker build.
+func PackageRhel() error {
+
+	licenseFile := "licenses/license.txt"
+	project := "enforcerd"
+	iptablesBin := "scripts/bin/iptables"
+	if err := os.MkdirAll("docker/rhel/app", 0755); err != nil {
+		return err
+	}
+
+	if err := run(nil, "cp", "-a", project, "docker/rhel/app"); err != nil {
+		return err
+	}
+
+	if err := run(nil, "cp", "-a", licenseFile, "docker/rhel/app"); err != nil {
+		return err
+	}
+
+	if err := run(nil, "cp", "-a", iptablesBin, "docker/rhel/app"); err != nil {
+		return err
+	}
+
+	fmt.Println("complete: docker rhel packaging")
+	return nil
+}
+
 // Container creates the docker container.
 func Container() error {
 

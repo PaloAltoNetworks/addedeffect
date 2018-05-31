@@ -16,6 +16,13 @@ import (
 
 var projectName string
 
+const (
+	// AlpineContainer represents alpine container.
+	AlpineContainer = "alpine"
+	// RhelContainer represent rhel container.
+	RhelContainer = "rhel"
+)
+
 func init() {
 
 	wd, err := os.Getwd()
@@ -234,11 +241,11 @@ func Package() error {
 // PackageFrom packages the given binary for alpine docker build
 func PackageFrom(path string) error {
 
-	if err := os.MkdirAll("docker/alpine/app", 0755); err != nil {
+	if err := os.MkdirAll("docker/app", 0755); err != nil {
 		return err
 	}
 
-	if err := run(nil, "cp", "-a", path, "docker/alpine/app"); err != nil {
+	if err := run(nil, "cp", "-a", path, "docker/app"); err != nil {
 		return err
 	}
 
@@ -246,29 +253,41 @@ func PackageFrom(path string) error {
 	return nil
 }
 
-// PackageRhel packages enforcerd binary for rhel docker build.
-func PackageRhel() error {
+// PackageEnforcer packages enforcerd binary for rhel/alpine docker build.
+func PackageEnforcer(containerType string) error {
 
 	licenseFile := "licenses/license.txt"
 	project := "enforcerd"
 	iptablesBin := "scripts/bin/iptables"
-	if err := os.MkdirAll("docker/rhel/app", 0755); err != nil {
-		return err
-	}
 
-	if err := run(nil, "cp", "-a", project, "docker/rhel/app"); err != nil {
-		return err
-	}
+	if containerType == RhelContainer {
 
-	if err := run(nil, "cp", "-a", licenseFile, "docker/rhel/app"); err != nil {
-		return err
-	}
+		if err := os.MkdirAll("docker/rhel/app", 0755); err != nil {
+			return err
+		}
 
-	if err := run(nil, "cp", "-a", iptablesBin, "docker/rhel/app"); err != nil {
-		return err
-	}
+		if err := run(nil, "cp", "-a", project, "docker/rhel/app"); err != nil {
+			return err
+		}
 
-	fmt.Println("complete: docker rhel packaging")
+		if err := run(nil, "cp", "-a", licenseFile, "docker/rhel/app"); err != nil {
+			return err
+		}
+
+		if err := run(nil, "cp", "-a", iptablesBin, "docker/rhel/app"); err != nil {
+			return err
+		}
+		fmt.Println("complete: docker rhel packaging done.")
+	} else {
+		if err := os.MkdirAll("docker/alpine/app", 0755); err != nil {
+			return err
+		}
+
+		if err := run(nil, "cp", "-a", project, "docker/alpine/app"); err != nil {
+			return err
+		}
+		fmt.Println("complete: docker alpine packaging done.")
+	}
 	return nil
 }
 

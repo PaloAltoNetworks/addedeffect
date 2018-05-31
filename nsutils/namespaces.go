@@ -144,9 +144,12 @@ func AscendentsOfNamespace(manipulator manipulate.Manipulator, namespace *gaia.N
 	for _, name := range names {
 		subfilters = append(subfilters, manipulate.NewFilterComposer().WithKey("name").Equals(name).Done())
 	}
-	filter := manipulate.NewFilterComposer().Or(subfilters...)
 
-	mctx := manipulate.NewContextWithFilter(filter.Done())
+	if len(subfilters) == 0 {
+		return gaia.NamespacesList{}, nil
+	}
+
+	mctx := manipulate.NewContextWithFilter(manipulate.NewFilterComposer().Or(subfilters...).Done())
 	nss := gaia.NamespacesList{}
 	if err := manipulator.RetrieveMany(mctx, &nss); err != nil {
 		return nil, err

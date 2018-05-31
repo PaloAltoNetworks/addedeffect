@@ -231,14 +231,14 @@ func Package() error {
 	return PackageFrom(projectName)
 }
 
-// PackageFrom packages the given binary for docker build
+// PackageFrom packages the given binary for alpine docker build
 func PackageFrom(path string) error {
 
-	if err := os.MkdirAll("docker/app", 0755); err != nil {
+	if err := os.MkdirAll("docker/alpine/app", 0755); err != nil {
 		return err
 	}
 
-	if err := run(nil, "cp", "-a", path, "docker/app"); err != nil {
+	if err := run(nil, "cp", "-a", path, "docker/alpine/app"); err != nil {
 		return err
 	}
 

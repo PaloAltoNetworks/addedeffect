@@ -385,7 +385,28 @@ func TestWith(race bool, cover bool) error {
 	return TestWithExclude(race, cover, nil)
 }
 
-// TestWithExclude runs unit tests without race and skips packages in excluded list.
+func prependPathToExcludes(exclude []string) []string {
+
+	if len(exclude) == 0 {
+		return exclude
+	}
+
+	out, err := sh.Output("go", "list")
+	if err != nil {
+		return exclude
+	}
+
+	out = strings.TrimSuffix(out, "\n")
+	ret := []string{}
+
+	for _, value := range exclude {
+		ret = append(ret, out+value)
+	}
+
+	return ret
+}
+
+// TestWithExclude runs unit tests without race.
 func TestWithExclude(race bool, cover bool, exclude []string) error {
 
 	out, err := sh.Output("go", "list", "./...")
@@ -393,24 +414,18 @@ func TestWithExclude(race bool, cover bool, exclude []string) error {
 		return err
 	}
 
+	exclude = prependPathToExcludes(exclude)
+
 	var g errgroup.Group
-	packages := make(map[int]string)
 
-	for key, packageLink := range strings.Split(out, "\n") {
-		packages[key] = packageLink
-	}
-
-	if exclude != nil {
-		for key, packageName := range packages {
-			for _, name := range exclude {
-				if strings.Contains(packageName, name) {
-					delete(packages, key)
-				}
+	packages := strings.Split(out, "\n")
+	for _, p := range packages {
+		for _, e := range exclude {
+			if e == p {
+				fmt.Println("skipped: " + e)
+				continue
 			}
 		}
-	}
-
-	for _, p := range packages {
 		g.Go(func(p string) func() error {
 			return func() error {
 				args := getTestArgs(race, cover, p)

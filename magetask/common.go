@@ -397,14 +397,16 @@ func TestWithExclude(race bool, cover bool, exclude []string) error {
 	packages := make(map[string]string)
 
 	for _, packageLink := range strings.Split(out, "\n") {
-		packageNames := strings.SplitAfter(packageLink, "/")
-		packageName := packageNames[len(packageNames)-1]
-		packages[packageName] = packageLink
+		packages[packageLink] = packageLink
 	}
 
 	if exclude != nil {
-		for _, name := range exclude {
-			delete(packages, name)
+		for packageKey := range packages {
+			for _, name := range exclude {
+				if strings.Contains(packageKey, name) {
+					delete(packages, packageKey)
+				}
+			}
 		}
 	}
 

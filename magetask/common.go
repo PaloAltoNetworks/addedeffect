@@ -94,14 +94,24 @@ func WriteVersionIn(out string) error {
 
 // Lint runs the linters.
 func Lint() error {
+	return LintWithExclude(nil)
+}
 
-	if err := run(
-		nil,
-		"gometalinter",
+// Lint runs the linters.
+func LintWithExclude(exclude []string) error {
+
+	args := []string{
 		"--exclude",
 		"bindata.go",
 		"--exclude",
 		"vendor",
+	}
+
+	if exclude != nil {
+		args = append(args, exclude...)
+	}
+
+	args = append(args,
 		"--vendor",
 		"--disable-all",
 		"--enable",
@@ -132,7 +142,9 @@ func Lint() error {
 		"30m",
 		"--tests",
 		"./...",
-	); err != nil {
+	)
+
+	if err := run(nil, "gometalinter", args...); err != nil {
 		return err
 	}
 

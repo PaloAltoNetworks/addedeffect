@@ -96,7 +96,7 @@ func Test_prunePackagesToExclude(t *testing.T) {
 			},
 		},
 		{
-			name: "Some exclude list",
+			name: "Some exclude  which shouldnt remove any entry",
 			args: args{
 				packages: []string{
 					"github.com/aporeto-inc/addedeffect/magetask/somepackage",

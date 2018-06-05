@@ -400,7 +400,7 @@ func prependPathToExcludes(exclude []string) []string {
 	ret := []string{}
 
 	for _, value := range exclude {
-		ret = append(ret, out+value)
+		ret = append(ret, out+"/"+value)
 	}
 
 	return ret
@@ -418,14 +418,22 @@ func TestWithExclude(race bool, cover bool, exclude []string) error {
 
 	var g errgroup.Group
 
-	packages := strings.Split(out, "\n")
-	for _, p := range packages {
+	packages := make(map[int]string)
+	for key, packageName := range strings.Split(out, "\n") {
+		packages[key] = packageName
+	}
+
+	for key, p := range packages {
 		for _, e := range exclude {
-			if e == p {
-				fmt.Println("skipped: " + e)
+			if strings.Contains(p, e) {
+				fmt.Println("skipped: " + p)
+				delete(packages, key)
 				continue
 			}
 		}
+	}
+
+	for _, p := range packages {
 		g.Go(func(p string) func() error {
 			return func() error {
 				args := getTestArgs(race, cover, p)

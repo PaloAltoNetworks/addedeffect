@@ -406,7 +406,7 @@ func prependPathToExcludes(exclude []string) []string {
 	return ret
 }
 
-// TestWithExclude runs unit tests without race.
+// TestWithExclude runs unit tests without race and skips packages in excluded list.
 func TestWithExclude(race bool, cover bool, exclude []string) error {
 
 	out, err := sh.Output("go", "list", "./...")

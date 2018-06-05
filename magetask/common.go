@@ -95,24 +95,13 @@ func WriteVersionIn(out string) error {
 // Lint runs the linters.
 func Lint() error {
 
-	return LintWithExclude(nil)
-}
-
-// LintWithExclude runs the linters and skips packages in excluded list.
-func LintWithExclude(exclude []string) error {
-
-	args := []string{
+	if err := run(
+		nil,
+		"gometalinter",
 		"--exclude",
 		"bindata.go",
 		"--exclude",
 		"vendor",
-	}
-
-	if exclude != nil {
-		args = append(args, exclude...)
-	}
-
-	args = append(args,
 		"--vendor",
 		"--disable-all",
 		"--enable",
@@ -143,9 +132,7 @@ func LintWithExclude(exclude []string) error {
 		"30m",
 		"--tests",
 		"./...",
-	)
-
-	if err := run(nil, "gometalinter", args...); err != nil {
+	); err != nil {
 		return err
 	}
 
@@ -382,68 +369,14 @@ func getTestArgs(race bool, cover bool, p string) []string {
 // TestWith runs unit tests without race.
 func TestWith(race bool, cover bool) error {
 
-	return TestWithExclude(race, cover, nil)
-}
-
-func prependPathToExcludes(exclude []string) []string {
-
-	if len(exclude) == 0 {
-		return exclude
-	}
-
-	out, err := sh.Output("go", "list")
-	if err != nil {
-		return exclude
-	}
-
-	out = strings.TrimSuffix(out, "\n")
-	ret := []string{}
-
-	for _, value := range exclude {
-		ret = append(ret, out+"/"+value)
-	}
-
-	return ret
-}
-
-func prunePackagesToExclude(packages []string, exclude []string) (ret []string) {
-
-	ret = []string{}
-
-	for _, p := range packages {
-
-		excluded := false
-		for _, e := range exclude {
-			if p == e || strings.HasPrefix(p, e+"/") {
-				excluded = true
-				fmt.Println("skipped: " + p)
-			}
-		}
-
-		if !excluded {
-			ret = append(ret, p)
-		}
-	}
-
-	return
-}
-
-// TestWithExclude runs unit tests without race and skips packages in excluded list.
-func TestWithExclude(race bool, cover bool, exclude []string) error {
-
 	out, err := sh.Output("go", "list", "./...")
 	if err != nil {
 		return err
 	}
 
-	exclude = prependPathToExcludes(exclude)
-
 	var g errgroup.Group
 
 	packages := strings.Split(out, "\n")
-
-	packages = prunePackagesToExclude(packages, exclude)
-
 	for _, p := range packages {
 		g.Go(func(p string) func() error {
 			return func() error {

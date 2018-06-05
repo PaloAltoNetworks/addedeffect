@@ -406,6 +406,28 @@ func prependPathToExcludes(exclude []string) []string {
 	return ret
 }
 
+func prunePackagesToExclude(packages []string, exclude []string) (ret []string) {
+
+	ret = []string{}
+
+	for _, p := range packages {
+
+		excluded := false
+		for _, e := range exclude {
+			if p == e || strings.HasPrefix(p, e+"/") {
+				excluded = true
+				fmt.Println("skipped: " + p)
+			}
+		}
+
+		if !excluded {
+			ret = append(ret, p)
+		}
+	}
+
+	return
+}
+
 // TestWithExclude runs unit tests without race and skips packages in excluded list.
 func TestWithExclude(race bool, cover bool, exclude []string) error {
 
@@ -418,20 +440,9 @@ func TestWithExclude(race bool, cover bool, exclude []string) error {
 
 	var g errgroup.Group
 
-	packages := make(map[int]string)
-	for key, packageName := range strings.Split(out, "\n") {
-		packages[key] = packageName
-	}
+	packages := strings.Split(out, "\n")
 
-	for key, p := range packages {
-		for _, e := range exclude {
-			if strings.HasPrefix(p, e) {
-				fmt.Println("skipped: " + p)
-				delete(packages, key)
-				continue
-			}
-		}
-	}
+	packages = prunePackagesToExclude(packages, exclude)
 
 	for _, p := range packages {
 		g.Go(func(p string) func() error {

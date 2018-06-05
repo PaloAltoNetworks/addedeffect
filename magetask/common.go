@@ -94,10 +94,11 @@ func WriteVersionIn(out string) error {
 
 // Lint runs the linters.
 func Lint() error {
+
 	return LintWithExclude(nil)
 }
 
-// Lint runs the linters.
+// LintWithExclude runs the linters and skips packages in excluded list.
 func LintWithExclude(exclude []string) error {
 
 	args := []string{
@@ -381,14 +382,32 @@ func getTestArgs(race bool, cover bool, p string) []string {
 // TestWith runs unit tests without race.
 func TestWith(race bool, cover bool) error {
 
+	return TestWithExclude(race, cover, nil)
+}
+
+// TestWithExclude runs unit tests without race and skips packages in excluded list.
+func TestWithExclude(race bool, cover bool, exclude []string) error {
+
 	out, err := sh.Output("go", "list", "./...")
 	if err != nil {
 		return err
 	}
 
 	var g errgroup.Group
+	packages := make(map[string]string)
 
-	packages := strings.Split(out, "\n")
+	for _, packageLink := range strings.Split(out, "\n") {
+		packageNames := strings.SplitAfter(packageLink, "/")
+		packageName := packageNames[len(packageNames)-1]
+		packages[packageName] = packageLink
+	}
+
+	if exclude != nil {
+		for _, name := range exclude {
+			delete(packages, name)
+		}
+	}
+
 	for _, p := range packages {
 		g.Go(func(p string) func() error {
 			return func() error {

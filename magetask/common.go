@@ -425,7 +425,7 @@ func TestWithExclude(race bool, cover bool, exclude []string) error {
 
 	for key, p := range packages {
 		for _, e := range exclude {
-			if strings.Contains(p, e) {
+			if strings.HasPrefix(p, e) {
 				fmt.Println("skipped: " + p)
 				delete(packages, key)
 				continue

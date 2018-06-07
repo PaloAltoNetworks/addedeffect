@@ -203,7 +203,7 @@ func TestNamespaces_DescendentsOfNamespace(t *testing.T) {
 
 		Convey("When I call DescendentsOfNamespace", func() {
 
-			m.MockRetrieveMany(t, func(ctx *manipulate.Context, dest elemental.ContentIdentifiable) error {
+			m.MockRetrieveMany(t, func(ctx *manipulate.Context, dest elemental.Identifiables) error {
 
 				switch ctx.Filter.Values()[0][0].(string) {
 
@@ -251,7 +251,7 @@ func TestNamespaces_DescendentsOfNamespace(t *testing.T) {
 
 		Convey("When I call DescendentsOfNamespace but the manipulator returns an error", func() {
 
-			m.MockRetrieveMany(t, func(ctx *manipulate.Context, dest elemental.ContentIdentifiable) error {
+			m.MockRetrieveMany(t, func(ctx *manipulate.Context, dest elemental.Identifiables) error {
 				return fmt.Errorf("oops")
 			})
 
@@ -268,7 +268,7 @@ func TestNamespaces_DescendentsOfNamespace(t *testing.T) {
 
 		Convey("When I call DescendentsOfNamespace but the manipulator returns an error later in recursion", func() {
 
-			m.MockRetrieveMany(t, func(ctx *manipulate.Context, dest elemental.ContentIdentifiable) error {
+			m.MockRetrieveMany(t, func(ctx *manipulate.Context, dest elemental.Identifiables) error {
 
 				if ctx.Namespace == "/0/1" {
 					*dest.(*gaia.NamespacesList) = append(*dest.(*gaia.NamespacesList),

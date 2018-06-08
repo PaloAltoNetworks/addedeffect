@@ -22,7 +22,7 @@ var (
 // Versions of the various libraries used by the project.
 var (
     {{- range $name, $version := .Libs }}
-    {{- if and $version (hasprefix $name "github.com/aporeto-inc/") }}
+    {{- if and $version (or (hasprefix $name "github.com/aporeto-inc/") (hasprefix $name "go.aporeto.io/")) }}
     {{ varname $name }}Version = "{{ $version }}"
     {{- end}}
     {{- end}}
@@ -33,7 +33,7 @@ func Fields() []zapcore.Field {
 
 	return []zapcore.Field{
         {{- range $name, $version := .Libs }}
-        {{- if and $version (hasprefix $name "github.com/aporeto-inc/") }}
+        {{- if and $version (or (hasprefix $name "github.com/aporeto-inc/") (hasprefix $name "go.aporeto.io/")) }}
         zap.String("{{ short $name }}", {{ varname $name }}Version),
         {{- end}}
 		{{- end}}
@@ -48,7 +48,7 @@ func Map() map[string]interface{} {
 		"sha": ProjectSha[0:7],
 		"libs": map[string]string{
             {{- range $name, $version := .Libs }}
-            {{- if and $version (hasprefix $name "github.com/aporeto-inc/") }}
+            {{- if and $version (or (hasprefix $name "github.com/aporeto-inc/") (hasprefix $name "go.aporeto.io/")) }}
             "{{ short $name }}": {{ varname $name }}Version,
             {{- end}}
 			{{- end}}
@@ -63,7 +63,7 @@ func ToString(prefix string) string {
 	buffer += fmt.Sprintf("%s%32s : %s\n", prefix, "ProjectSha", ProjectSha[0:7])
 	buffer += fmt.Sprintf("%s%32s : %s\n", prefix, "Libraries", "")
     {{- range $name, $version := .Libs }}
-    {{- if and $version (hasprefix $name "github.com/aporeto-inc/") }}
+    {{- if and $version (or (hasprefix $name "github.com/aporeto-inc/") (hasprefix $name "go.aporeto.io/")) }}
     buffer += fmt.Sprintf("%s    %32s : %s\n", prefix, "{{ short $name}}", {{ varname $name}}Version)
     {{- end}}
 	{{- end}}

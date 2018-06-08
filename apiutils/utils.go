@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aporeto-inc/addedeffect/retry"
+	"go.aporeto.io/addedeffect/retry"
 	"go.uber.org/zap"
 )
 

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aporeto-inc/elemental"
-	"github.com/aporeto-inc/gaia/v1/golang"
-	"github.com/aporeto-inc/manipulate"
+	"go.aporeto.io/elemental"
+	"go.aporeto.io/gaia/v1/golang"
+	"go.aporeto.io/manipulate"
 )
 
 // NamespaceSetter is an interface that allows to set a namespace

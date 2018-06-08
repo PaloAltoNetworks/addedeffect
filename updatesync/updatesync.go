@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/aporeto-inc/elemental"
-	"github.com/aporeto-inc/manipulate"
+	"go.aporeto.io/elemental"
+	"go.aporeto.io/manipulate"
 )
 
 // UpdateSync is an advanced function that allows to retry an failed update operation due to an

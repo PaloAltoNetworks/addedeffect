@@ -16,15 +16,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// ServiceVersion holds the version of a servie
-type ServiceVersion struct {
-	Libs    map[string]string
+// Version holds the version of a servie
+type Version struct {
 	Version string
 	Sha     string
 }
 
 // GetServiceVersions returns the version of the services.
-func GetServiceVersions(ctx context.Context, api string, tlsConfig *tls.Config) (map[string]ServiceVersion, error) {
+func GetServiceVersions(ctx context.Context, api string, tlsConfig *tls.Config) (map[string]Version, error) {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -46,10 +45,43 @@ func GetServiceVersions(ctx context.Context, api string, tlsConfig *tls.Config) 
 
 	resp := out.(*http.Response)
 
-	config := map[string]ServiceVersion{}
+	config := map[string]Version{}
 
 	defer resp.Body.Close() // nolint: errcheck
 	if err := json.NewDecoder(resp.Body).Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+
+// GetModelVersion returns the version of the services.
+func GetModelVersion(ctx context.Context, api string, tlsConfig *tls.Config) (*Version, error) {
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
+
+	url := fmt.Sprintf("%s/_meta/model", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve model version. Retrying in 3s", url),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := out.(*http.Response)
+
+	config := &Version{}
+
+	defer resp.Body.Close() // nolint: errcheck
+	if err := json.NewDecoder(resp.Body).Decode(config); err != nil {
 		return nil, err
 	}
 

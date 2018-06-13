@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"go.aporeto.io/gaia/v1/golang"
+	"go.aporeto.io/gaia"
 
+	. "github.com/smartystreets/goconvey/convey"
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/manipulate"
 	"go.aporeto.io/manipulate/maniptest"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestNamespaces_NamespaceValidation(t *testing.T) {

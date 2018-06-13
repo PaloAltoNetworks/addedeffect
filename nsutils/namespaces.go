@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"go.aporeto.io/elemental"
-	"go.aporeto.io/gaia/v1/golang"
+	"go.aporeto.io/gaia"
 	"go.aporeto.io/manipulate"
 )
 

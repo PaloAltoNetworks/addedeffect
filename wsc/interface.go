@@ -11,7 +11,7 @@ type Websocket interface {
 	// The default is 64 messages.
 	Read() chan []byte
 
-	// Write write the given []byte in to the websocket.
+	// Write writes the given []byte in to the websocket.
 	// If the other side of the websocket cannot get all messages
 	// while the internal write channel is full, new messages will
 	// be discarded.
@@ -26,11 +26,9 @@ type Websocket interface {
 	// The content will be nil for clean disconnection or
 	// the error that caused the disconnection. If nothing pumps the
 	// Done() channel, the message will be discarded.
-	//
-	// If nothing pumps the Done() chan, the message will be discarded.
 	Done() chan error
 
-	// Close closes the webbsocket.
+	// Close closes the websocket.
 	//
 	// Closing the websocket a second time has no effect.
 	// A closed Websocket cannot be reused.

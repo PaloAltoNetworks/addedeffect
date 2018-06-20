@@ -22,10 +22,22 @@ func Configure(level string, format string) zap.Config {
 	return ConfigureWithOptions(level, format, "", false, false)
 }
 
+// Configure configures the shared default logger.
+func ConfigureWithName(serviceName string, level string, format string) zap.Config {
+
+	logger, config := NewLogger(serviceName, level, format, "", false, false)
+
+	zap.ReplaceGlobals(logger)
+
+	go handleElevationSignal(config)
+
+	return config
+}
+
 // ConfigureWithOptions configures the shared default logger with options such as file and timestamp formats.
 func ConfigureWithOptions(level string, format string, file string, fileOnly bool, prettyTimestamp bool) zap.Config {
 
-	logger, config := NewLogger(level, format, file, fileOnly, prettyTimestamp)
+	logger, config := NewLogger("", level, format, file, fileOnly, prettyTimestamp)
 
 	zap.ReplaceGlobals(logger)
 
@@ -35,9 +47,15 @@ func ConfigureWithOptions(level string, format string, file string, fileOnly boo
 }
 
 // NewLogger returns a new configured zap.Logger
-func NewLogger(level string, format string, file string, fileOnly bool, prettyTimestamp bool) (*zap.Logger, zap.Config) {
+func NewLogger(serviceName string, level string, format string, file string, fileOnly bool, prettyTimestamp bool) (*zap.Logger, zap.Config) {
 
 	var config zap.Config
+
+	if servicename != "" {
+		config.InitialFields = map[string]interface{}{
+			"service": serviceName,
+		}
+	}
 
 	switch format {
 	case "json":

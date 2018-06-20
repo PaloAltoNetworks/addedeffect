@@ -51,7 +51,7 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 
 	var config zap.Config
 
-	if servicename != "" {
+	if serviceName != "" {
 		config.InitialFields = map[string]interface{}{
 			"service": serviceName,
 		}

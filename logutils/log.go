@@ -51,6 +51,13 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 
 	var config zap.Config
 
+	var initialFields map[string]interface{}
+	if serviceName != "" {
+		initialFields = map[string]interface{}{
+			"srv": serviceName,
+		}
+	}
+
 	switch format {
 	case "json":
 		config = zap.NewProductionConfig()
@@ -60,6 +67,8 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 		config.EncoderConfig.MessageKey = "m"
 		config.EncoderConfig.NameKey = "n"
 		config.EncoderConfig.TimeKey = "t"
+
+		config.InitialFields = initialFields
 
 	case "stackdriver":
 		config = zap.NewProductionConfig()
@@ -82,6 +91,9 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 				enc.AppendString("EMERGENCY")
 			}
 		}
+
+		config.InitialFields = initialFields
+
 	default:
 		config = zap.NewDevelopmentConfig()
 		config.DisableStacktrace = true
@@ -94,12 +106,6 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 	w, err := handleOutputFile(&config, file, fileOnly)
 	if err != nil {
 		panic(err)
-	}
-
-	if serviceName != "" {
-		config.InitialFields = map[string]interface{}{
-			"srv": serviceName,
-		}
 	}
 
 	// Pretty timestamp

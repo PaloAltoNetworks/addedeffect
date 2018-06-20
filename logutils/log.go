@@ -51,12 +51,6 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 
 	var config zap.Config
 
-	if serviceName != "" {
-		config.InitialFields = map[string]interface{}{
-			"service": serviceName,
-		}
-	}
-
 	switch format {
 	case "json":
 		config = zap.NewProductionConfig()
@@ -100,6 +94,12 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 	w, err := handleOutputFile(&config, file, fileOnly)
 	if err != nil {
 		panic(err)
+	}
+
+	if serviceName != "" {
+		config.InitialFields = map[string]interface{}{
+			"srv": serviceName,
+		}
 	}
 
 	// Pretty timestamp

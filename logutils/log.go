@@ -22,7 +22,7 @@ func Configure(level string, format string) zap.Config {
 	return ConfigureWithOptions(level, format, "", false, false)
 }
 
-// Configure configures the shared default logger.
+// ConfigureWithName configures the shared default logger.
 func ConfigureWithName(serviceName string, level string, format string) zap.Config {
 
 	logger, config := NewLogger(serviceName, level, format, "", false, false)

@@ -32,11 +32,11 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is no sync needed", func() {
 
-			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				return nil
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf)
+			err := UpdateSync(manipulate.NewContext(context.Background()), m, o, uf)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -54,7 +54,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed", func() {
 
-			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				objects[0].(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
 
 				if synced <= 3 {
@@ -66,7 +66,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf)
+			err := UpdateSync(manipulate.NewContext(context.Background()), m, o, uf)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -84,11 +84,11 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object but there is an error right away", func() {
 
-			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				return elemental.NewError("Not Read Only Error", "bloob", "subject", http.StatusInternalServerError)
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf)
+			err := UpdateSync(manipulate.NewContext(context.Background()), m, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -108,7 +108,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed but the context is canceled", func() {
 
-			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)
 				e.Data = map[string]interface{}{"attribute": "updateTime"}
 				return e
@@ -117,7 +117,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 			defer cancel()
 
-			err := UpdateSync(ctx, m, nil, o, uf)
+			err := UpdateSync(manipulate.NewContext(ctx), m, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -131,14 +131,14 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed the manipulator returns an comm error", func() {
 
-			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				return manipulate.NewErrCannotCommunicate("nope")
 			})
 
 			ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 			defer cancel()
 
-			err := UpdateSync(ctx, m, nil, o, uf)
+			err := UpdateSync(manipulate.NewContext(ctx), m, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -148,7 +148,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed but the retrieve fails", func() {
 
-			m.MockUpdate(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				objects[0].(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
 
 				if synced <= 3 {
@@ -160,11 +160,11 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			m.MockRetrieve(t, func(ctx *manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockRetrieve(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
 				return fmt.Errorf("boom")
 			})
 
-			err := UpdateSync(context.TODO(), m, nil, o, uf)
+			err := UpdateSync(manipulate.NewContext(context.Background()), m, o, uf)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)

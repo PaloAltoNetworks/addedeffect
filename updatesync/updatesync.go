@@ -1,7 +1,6 @@
 package updatesync
 
 import (
-	"context"
 	"time"
 
 	"go.aporeto.io/elemental"
@@ -37,20 +36,19 @@ import (
 // Please keep in mind you have to be very careful with this function. You may still put the target object
 // in a very weird state, if you override attributes that can be managed by a different source of truth.
 func UpdateSync(
-	ctx context.Context,
+	mctx manipulate.Context,
 	m manipulate.Manipulator,
-	mctx *manipulate.Context,
 	obj elemental.Identifiable,
 	updateFunc func(elemental.Identifiable),
 ) error {
 
-	deadline, hasDeadline := ctx.Deadline()
+	deadline, hasDeadline := mctx.Context().Deadline()
 
 	for {
 
 		updateFunc(obj)
 
-		err := manipulate.Retry(ctx, func() error { return m.Update(mctx, obj) }, nil)
+		err := manipulate.Retry(mctx.Context(), func() error { return m.Update(mctx, obj) }, nil)
 		if err == nil {
 			return nil
 		}

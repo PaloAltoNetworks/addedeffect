@@ -98,7 +98,7 @@ func Accept(ctx context.Context, conn WSConnection, config Config) (Websocket, e
 		return s.conn.SetReadDeadline(time.Now().Add(s.config.PongWait))
 	})
 
-	go s.readPump(subCtx)
+	go s.readPump()
 	go s.writePump(subCtx)
 
 	return s, nil
@@ -138,7 +138,7 @@ func (s *ws) Close(code int) {
 	s.cancel()
 }
 
-func (s *ws) readPump(ctx context.Context) {
+func (s *ws) readPump() {
 
 	var err error
 	var msg []byte

@@ -11,8 +11,8 @@ import (
 	"os"
 	"strings"
 
-	"go.aporeto.io/addedeffect/retry"
 	"github.com/blang/semver"
+	"go.aporeto.io/addedeffect/retry"
 	"go.uber.org/zap"
 )
 

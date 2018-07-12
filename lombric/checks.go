@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func checkRequired(failFunc func(), keys ...string) error {
+func checkRequired(keys ...string) error {
 
 	var failed bool
 	for _, key := range keys {
@@ -27,7 +27,7 @@ func checkRequired(failFunc func(), keys ...string) error {
 	return nil
 }
 
-func checkAllowedValues(failFunc func(), allowedValues map[string][]string) error {
+func checkAllowedValues(allowedValues map[string][]string) error {
 
 	var failed bool
 	for key, values := range allowedValues {

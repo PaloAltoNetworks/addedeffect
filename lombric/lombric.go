@@ -77,11 +77,11 @@ func Initialize(conf Configurable) {
 		os.Exit(0)
 	}
 
-	if err := checkRequired(fail, requiredFlags...); err != nil {
+	if err := checkRequired(requiredFlags...); err != nil {
 		fail()
 	}
 
-	if err := checkAllowedValues(fail, allowedValues); err != nil {
+	if err := checkAllowedValues(allowedValues); err != nil {
 		fail()
 	}
 

@@ -42,8 +42,7 @@ func Test_stringInSlice(t *testing.T) {
 
 func Test_checkRequired(t *testing.T) {
 	type args struct {
-		failFunc func()
-		keys     []string
+		keys []string
 	}
 	tests := []struct {
 		name    string
@@ -53,7 +52,6 @@ func Test_checkRequired(t *testing.T) {
 		{
 			"test failure",
 			args{
-				func() {},
 				[]string{"a", "b"},
 			},
 			true,
@@ -61,7 +59,7 @@ func Test_checkRequired(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := checkRequired(tt.args.failFunc, tt.args.keys...); (err != nil) != tt.wantErr {
+			if err := checkRequired(tt.args.keys...); (err != nil) != tt.wantErr {
 				t.Errorf("checkRequired() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -70,7 +68,6 @@ func Test_checkRequired(t *testing.T) {
 
 func Test_checkAllowedValues(t *testing.T) {
 	type args struct {
-		failFunc      func()
 		allowedValues map[string][]string
 	}
 	tests := []struct {
@@ -81,7 +78,6 @@ func Test_checkAllowedValues(t *testing.T) {
 		{
 			"test failure",
 			args{
-				func() {},
 				map[string][]string{"a": []string{"1", "2"}},
 			},
 			true,
@@ -89,7 +85,7 @@ func Test_checkAllowedValues(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := checkAllowedValues(tt.args.failFunc, tt.args.allowedValues); (err != nil) != tt.wantErr {
+			if err := checkAllowedValues(tt.args.allowedValues); (err != nil) != tt.wantErr {
 				t.Errorf("checkAllowedValues() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

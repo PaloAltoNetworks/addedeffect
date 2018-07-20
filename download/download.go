@@ -154,7 +154,7 @@ func Binary(ctx context.Context, url string, dest string, mode os.FileMode, sign
 // IsOutdated checks if the given current is outdated relatively to the second using semver.
 func IsOutdated(current, available string) (bool, error) {
 
-	semVerRemote, err := semver.Make(available)
+	semVerRemote, err := semver.Make(strings.Replace(available, "v", "", 1))
 	if err != nil {
 		return false, err
 	}

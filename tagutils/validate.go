@@ -52,11 +52,6 @@ func ValidateMetadataStrings(strs ...string) error {
 
 	for _, s := range strs {
 
-		if !strings.HasPrefix(s, prefixMetadata) {
-			errs = append(errs, elemental.NewError("Invalid Metadata", "Metadata must start with an '@'", "crud", http.StatusUnprocessableEntity))
-			continue
-		}
-
 		if strings.HasPrefix(s, gaiaconstants.AuthKey) {
 			errs = append(errs, elemental.NewError("Invalid Metadata", "Prefix @auth: is reserved", "crud", http.StatusUnprocessableEntity))
 			continue

@@ -349,20 +349,6 @@ func TestTags_ValidateMetadataString(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a metadata string not starting with an @", t, func() {
-
-		str := "alexandre=kind"
-
-		Convey("When I validate it", func() {
-
-			errs := ValidateMetadataStrings(str)
-
-			Convey("Then the errs should not be nil", func() {
-				So(errs, ShouldNotBeNil)
-			})
-		})
-	})
-
 	Convey("Given I have a metadata string starting with an @auth:", t, func() {
 
 		str := "@auth:alexandre=kind"

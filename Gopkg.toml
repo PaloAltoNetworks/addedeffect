@@ -1,6 +1,7 @@
+
 [[constraint]]
   name = "github.com/uber/jaeger-client-go"
-  version = "2.x"
+  version = "2.0.0"
 
 [prune]
   go-tests = true

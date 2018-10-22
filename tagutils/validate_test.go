@@ -3,9 +3,8 @@ package tagutils
 import (
 	"testing"
 
-	"go.aporeto.io/gaia"
-
 	. "github.com/smartystreets/goconvey/convey"
+	"go.aporeto.io/gaia"
 )
 
 func TestTags_TagValidation(t *testing.T) {

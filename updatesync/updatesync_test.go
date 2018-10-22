@@ -7,12 +7,11 @@ import (
 	"testing"
 	"time"
 
+	. "github.com/smartystreets/goconvey/convey"
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/manipulate"
 	"go.aporeto.io/manipulate/maniptest"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestAPI_UpdateSync(t *testing.T) {

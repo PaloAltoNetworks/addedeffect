@@ -6,7 +6,6 @@ import (
 
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
-
 	gaiaconstants "go.aporeto.io/gaia/constants"
 )
 

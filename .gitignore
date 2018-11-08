@@ -1,3 +1,6 @@
 testresults.xml
 .DS_Store
 *.lock
+vendor
+*.cov
+artifacts

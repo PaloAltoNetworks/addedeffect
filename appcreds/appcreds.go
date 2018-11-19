@@ -16,11 +16,25 @@ func New(ctx context.Context, m manipulate.Manipulator, namespace string, name s
 	creds := gaia.NewAppCredential()
 	creds.Name = name
 	creds.Roles = roles
+	creds.Namespace = namespace
+
+	return NewWithAppCredential(ctx, m, creds)
+}
+
+// NewWithAppCredential creates a new *gaia.AppCredential from an *AppCredential
+func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, template *gaia.AppCredential) (*gaia.AppCredential, error) {
+
+	creds := gaia.NewAppCredential()
+	creds.Name = template.Name
+	creds.Description = template.Description
+	creds.Roles = template.Roles
+	creds.Protected = template.Protected
+	creds.Metadata = template.Metadata
 
 	if err := m.Create(
 		manipulate.NewContext(
 			ctx,
-			manipulate.ContextOptionNamespace(namespace),
+			manipulate.ContextOptionNamespace(template.Namespace),
 		),
 		creds,
 	); err != nil {

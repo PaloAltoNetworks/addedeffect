@@ -16,6 +16,13 @@ import (
 
 var projectName string
 
+const (
+	// AlpineContainer represents alpine container.
+	AlpineContainer = "alpine"
+	// RhelContainer represent rhel container.
+	RhelContainer = "rhel"
+)
+
 func init() {
 
 	wd, err := os.Getwd()
@@ -231,7 +238,7 @@ func Package() error {
 	return PackageFrom(projectName)
 }
 
-// PackageFrom packages the given binary for docker build
+// PackageFrom packages the given binary for alpine docker build
 func PackageFrom(path string) error {
 
 	if err := os.MkdirAll("docker/app", 0755); err != nil {
@@ -243,6 +250,44 @@ func PackageFrom(path string) error {
 	}
 
 	fmt.Println("complete: docker packaging")
+	return nil
+}
+
+// PackageEnforcer packages enforcerd binary for rhel/alpine docker build.
+func PackageEnforcer(containerType string) error {
+
+	licenseFile := "licenses/license.txt"
+	project := "enforcerd"
+	iptablesBin := "scripts/bin/iptables"
+
+	if containerType == RhelContainer {
+
+		if err := os.MkdirAll("docker/rhel/app", 0755); err != nil {
+			return err
+		}
+
+		if err := run(nil, "cp", "-a", project, "docker/rhel/app"); err != nil {
+			return err
+		}
+
+		if err := run(nil, "cp", "-a", licenseFile, "docker/rhel/app"); err != nil {
+			return err
+		}
+
+		if err := run(nil, "cp", "-a", iptablesBin, "docker/rhel/app"); err != nil {
+			return err
+		}
+		fmt.Println("complete: docker rhel packaging done.")
+	} else {
+		if err := os.MkdirAll("docker/alpine/app", 0755); err != nil {
+			return err
+		}
+
+		if err := run(nil, "cp", "-a", project, "docker/alpine/app"); err != nil {
+			return err
+		}
+		fmt.Println("complete: docker alpine packaging done.")
+	}
 	return nil
 }
 

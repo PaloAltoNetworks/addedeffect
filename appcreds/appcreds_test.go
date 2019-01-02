@@ -84,6 +84,29 @@ func TestApCred_New(t *testing.T) {
 				})
 			})
 		})
+
+		Convey("When I call NewWithAppCredential", func() {
+
+			template := gaia.NewAppCredential()
+			template.Name = "name"
+			template.Description = "description"
+			template.Protected = true
+			template.Metadata = []string{"random=tag"}
+			template.Roles = []string{"role=test"}
+			template.Namespace = "/ns"
+
+			c, _ := NewWithAppCredential(context.Background(), m, template)
+
+			Convey("Then credential should have template information", func() {
+				So(c.Name, ShouldEqual, template.Name)
+				So(c.Description, ShouldEqual, template.Description)
+				So(c.Protected, ShouldEqual, template.Protected)
+				So(c.Metadata, ShouldResemble, template.Metadata)
+				So(c.Roles, ShouldResemble, template.Roles)
+				So(c.Namespace, ShouldEqual, template.Namespace)
+			})
+		})
+
 	})
 
 	Convey("Given I have a manipulator that fails at creation", t, func() {

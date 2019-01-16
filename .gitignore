@@ -4,3 +4,4 @@ testresults.xml
 vendor
 *.cov
 artifacts
+profile.out

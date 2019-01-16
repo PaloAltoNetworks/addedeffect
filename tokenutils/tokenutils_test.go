@@ -210,3 +210,60 @@ func TestJWTUtils_SigAlg(t *testing.T) {
 		})
 	})
 }
+
+func TestExtractQuota(t *testing.T) {
+	type args struct {
+		token string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			"valid token with valid quota",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwicXVvdGEiOjMsImRhdGEiOnsiYWNjb3VudCI6ImFwb211eCIsImVtYWlsIjoiYWRtaW5AYXBvbXV4LmNvbSIsImlkIjoiNWI0OTBlY2M3ZGRmMWY3NWFiODRlN2IxIiwib3JnYW5pemF0aW9uIjoiYXBvbXV4IiwicmVhbG0iOiJ2aW5jZSJ9LCJhdWQiOiJhcG9yZXRvLmNvbSIsImV4cCI6MTU0NzY4MzIxOCwiaWF0IjoxNTQ3NTkzMjE4LCJpc3MiOiJtaWRnYXJkLmFwb211eC5jb20iLCJzdWIiOiJhcG9tdXgifQ.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA`,
+			},
+			3,
+			false,
+		},
+		{
+			"valid token with no quota",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YjQ5MGVjYzdkZGYxZjc1YWI4NGU3YjEiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTQ3NjgzMjE4LCJpYXQiOjE1NDc1OTMyMTgsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA`,
+			},
+			0,
+			false,
+		},
+		{
+			"valid token with invalid quota",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwicXVvdGEiOiIzIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YjQ5MGVjYzdkZGYxZjc1YWI4NGU3YjEiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTQ3NjgzMjE4LCJpYXQiOjE1NDc1OTMyMTgsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA`,
+			},
+			0,
+			true,
+		},
+		{
+			"invalid token",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInWFsbSI6IlNlIiwicXVvdGEiOiIzIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YjQ5MGVjYzdkZGYxZjc1YWI4NGU3YjEiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTQ3NjgzMjE4LCJpYXQiOjE1NDc1OTMyMTgsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA`,
+			},
+			0,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractQuota(tt.args.token)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractQuota() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ExtractQuota() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

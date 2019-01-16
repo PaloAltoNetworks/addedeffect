@@ -12,6 +12,7 @@ init:
 	dep status
 
 lint:
+	# --enable=unparam
 	golangci-lint run \
 		--disable-all \
 		--exclude-use-default=false \
@@ -25,7 +26,6 @@ lint:
 		--enable=deadcode \
 		--enable=unconvert \
 		--enable=misspell \
-		--enable=unparam \
 		--enable=prealloc \
 		--enable=nakedret \
 		./...

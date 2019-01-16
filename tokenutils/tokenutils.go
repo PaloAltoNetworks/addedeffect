@@ -69,3 +69,27 @@ func SigAlg(token string) (string, error) {
 
 	return header.Alg, nil
 }
+
+// ExtractQuota extracts the eventual quota from a token.
+// Not that the token is not verified in the process,
+// you the verification must be done before trusting
+// the extracted quota value.
+func ExtractQuota(token string) (int, error) {
+
+	claims, err := UnsecureClaimsMap(token)
+	if err != nil {
+		return 0, err
+	}
+
+	quota, ok := claims["quota"]
+	if !ok {
+		return 0, nil
+	}
+
+	q, ok := quota.(float64)
+	if !ok {
+		return 0, fmt.Errorf("invalid quota claim type")
+	}
+
+	return int(q), nil
+}

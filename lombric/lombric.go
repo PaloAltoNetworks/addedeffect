@@ -136,6 +136,7 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 	fields, overrides := deepFields(t)
 	defaultOverrides := map[string]string{}
 	allowedValues = map[string][]string{}
+	hiddenFlags := []string{}
 
 	for _, raw := range overrides {
 
@@ -170,6 +171,10 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 		if field.Tag.Get("required") == enabledKey {
 			requiredFlags = append(requiredFlags, key)
 			description += " [required]"
+		}
+
+		if field.Tag.Get("hidden") == enabledKey {
+			hiddenFlags = append(hiddenFlags, key)
 		}
 
 		if field.Type.Kind() != reflect.Slice {
@@ -253,6 +258,12 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 	if _, ok := conf.(VersionPrinter); ok {
 		pflag.BoolP("version", "v", false, "Display the version")
+	}
+
+	for _, hiddenFlag := range hiddenFlags {
+		if err := pflag.CommandLine.MarkHidden(hiddenFlag); err != nil {
+			panic("Unable to hide flags: " + err.Error())
+		}
 	}
 
 	pflag.Parse()

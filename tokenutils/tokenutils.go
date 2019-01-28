@@ -101,12 +101,23 @@ func ExtractAPIAndNamespace(jwttoken string) (string, string, error) {
 
 	claims, err := UnsecureClaimsMap(jwttoken)
 	if err != nil {
-		return "", "", fmt.Errorf("unable to decode token:%s", err)
+		return "", "", fmt.Errorf("unable to decode token: %s", err)
+	}
+
+	url, ok := claims["api"]
+	if !ok {
+		return "", "", fmt.Errorf("api field not found")
+	}
+
+	// extract api
+	api, ok := url.(string)
+	if !ok {
+		return "", "", fmt.Errorf("type assertion failed for api field")
 	}
 
 	data, ok := claims["opaque"]
 	if !ok {
-		return "", "", fmt.Errorf("opaque feilds not defined")
+		return "", "", fmt.Errorf("opaque fields not defined")
 	}
 
 	datamap, ok := data.(map[string]interface{})
@@ -117,18 +128,7 @@ func ExtractAPIAndNamespace(jwttoken string) (string, string, error) {
 	// extract ns
 	ns, ok := datamap["namespace"].(string)
 	if !ok {
-		return "", "", fmt.Errorf("namespace feild not defined in opaque feilds")
-	}
-
-	url, ok := claims["api"]
-	if !ok {
-		return "", "", fmt.Errorf("api feild not found")
-	}
-
-	// extract api
-	api, ok := url.(string)
-	if !ok {
-		return "", "", fmt.Errorf("type assertion failed for api feild")
+		return "", "", fmt.Errorf("namespace feild not defined in opaque fields")
 	}
 
 	return api, ns, nil

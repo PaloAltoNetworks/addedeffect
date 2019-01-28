@@ -324,6 +324,24 @@ func TestExtractAPIAndNamespace(t *testing.T) {
 			want1:   "",
 			wantErr: true,
 		},
+		{
+			name: "Test Token for type assertion failure (opaque)",
+			args: args{
+				jwttoken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1NDg3MDQ4MzUsImV4cCI6MTU4MDI0MDgzNSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIm9wYXF1ZSI6IjEyMyIsImFwaSI6IjQ1NiJ9.1V7ru9PXYkNyvOYDMgY4oSJuMrWLDRj-Or8rSUZZMLU",
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+		{
+			name: "Test Token for type assertion failure (api)",
+			args: args{
+				jwttoken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGkiOjEyMywibmJmIjoxNDQ0NDc4NDAwfQ.vAG0QIMstlC6LVNnMRCdoUA-NAy75kOj4DpTuR4yVak",
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

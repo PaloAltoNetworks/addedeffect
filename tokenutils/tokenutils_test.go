@@ -267,3 +267,77 @@ func TestExtractQuota(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractAPIAndNamespace(t *testing.T) {
+	type args struct {
+		jwttoken string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		want1   string
+		wantErr bool
+	}{
+		{
+			name: "Test token without api and namespace",
+			args: args{
+				jwttoken: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwicXVvdGEiOjMsImRhdGEiOnsiYWNjb3VudCI6ImFwb211eCIsImVtYWlsIjoiYWRtaW5AYXBvbXV4LmNvbSIsImlkIjoiNWI0OTBlY2M3ZGRmMWY3NWFiODRlN2IxIiwib3JnYW5pemF0aW9uIjoiYXBvbXV4IiwicmVhbG0iOiJ2aW5jZSJ9LCJhdWQiOiJhcG9yZXRvLmNvbSIsImV4cCI6MTU0NzY4MzIxOCwiaWF0IjoxNTQ3NTkzMjE4LCJpc3MiOiJtaWRnYXJkLmFwb211eC5jb20iLCJzdWIiOiJhcG9tdXgifQ.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA",
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+		{
+			name: "Test token with api and namespace",
+			args: args{
+				jwttoken: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwicXVvdGEiOjQsImRhdGEiOnsiYWNjb3VudCI6InZhcnVuIiwiZW1haWwiOiJ2YXJrc0BhcG9yZXRvLmNvbSIsImlkIjoiNWI1OGNiMDY4ODZkYjEwMDAxMGJkODNkIiwib3JnYW5pemF0aW9uIjoidmFydW4iLCJyZWFsbSI6InZpbmNlIn0sIm9wYXF1ZSI6eyJtYWNoaW5lIjoicHVsc2FyIiwibmFtZXNwYWNlIjoiL3ZhcnVuIn0sImFwaSI6Imh0dHBzOi8vYXBpLnNhbmRib3guYXBvcmV0by51cyIsImF1ZCI6InNhbmRib3guYXBvcmV0by51cyIsImV4cCI6MTU0ODc0MjI1MywiaWF0IjoxNTQ4NjUyMjUzLCJpc3MiOiJzYW5kYm94LmFwb3JldG8udXMiLCJzdWIiOiJ2YXJ1biJ9.cfkQH7ybikC3uNTR9GpbG-UIxxtHq_u3aDH4uCc7YdKZ5t1CGvefaSBW9a2TG51jQ8ilWd8sEqafKUmkbko_0w",
+			},
+			want:    "https://api.sandbox.aporeto.us",
+			want1:   "/varun",
+			wantErr: false,
+		},
+		{
+			name: "Test token without opaque",
+			args: args{
+				jwttoken: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoidmFydW4iLCJlbWFpbCI6InZhcmtzQGFwb3JldG8uY29tIiwiaWQiOiI1YjU4Y2IwNjg4NmRiMTAwMDEwYmQ4M2QiLCJvcmdhbml6YXRpb24iOiJ2YXJ1biIsInJlYWxtIjoidmluY2UifSwiYXBpIjoiaHR0cHM6Ly9hcGkuc2FuZGJveC5hcG9yZXRvLnVzIiwiYXVkIjoic2FuZGJveC5hcG9yZXRvLnVzIiwiZXhwIjoxNTQ4Nzg3MTA0LCJpYXQiOjE1NDg2OTcxMDQsImlzcyI6InNhbmRib3guYXBvcmV0by51cyIsInN1YiI6InZhcnVuIn0.7mqvGj1s40J_sATfE8TiEDV0KxOj87V8E4pAAf05isa5NMKM1DpToZeo1jzg9dHaUoHZvpiZXgtTkHby5gfT_Q",
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+		{
+			name: "Test token without ns",
+			args: args{
+				jwttoken: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoidmFydW4iLCJlbWFpbCI6InZhcmtzQGFwb3JldG8uY29tIiwiaWQiOiI1YjU4Y2IwNjg4NmRiMTAwMDEwYmQ4M2QiLCJvcmdhbml6YXRpb24iOiJ2YXJ1biIsInJlYWxtIjoidmluY2UifSwib3BhcXVlIjp7Imp1bmsiOiJ0cnVlIn0sImFwaSI6Imh0dHBzOi8vYXBpLnNhbmRib3guYXBvcmV0by51cyIsImF1ZCI6InNhbmRib3guYXBvcmV0by51cyIsImV4cCI6MTU0ODc4NzE1OCwiaWF0IjoxNTQ4Njk3MTU4LCJpc3MiOiJzYW5kYm94LmFwb3JldG8udXMiLCJzdWIiOiJ2YXJ1biJ9.sKxocX22rCofvfjIbdSISsmKn4D7RYk5entp2zblLfFdvmpj9TBJh1F69rCrDiZattf30rLjlds90_-7n5Eiyw",
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+		{
+			name: "Invalid token",
+			args: args{
+				jwttoken: "eyJhbGciOiJFUzI1NiIsInWFsbSI6IlNlIiwicXVvdGEiOiIzIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YjQ5MGVjYzdkZGYxZjc1YWI4NGU3YjEiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTQ3NjgzMjE4LCJpYXQiOjE1NDc1OTMyMTgsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA",
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := ExtractAPIAndNamespace(tt.args.jwttoken)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractAPIAndNamespace() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ExtractAPIAndNamespace() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("ExtractAPIAndNamespace() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

@@ -93,3 +93,43 @@ func ExtractQuota(token string) (int, error) {
 
 	return int(q), nil
 }
+
+// ExtractAPIAndNamespace parses jwt token to retrieve api and ns
+// Not that the token is not verified in the process,
+// you must do the verification before trusting.
+func ExtractAPIAndNamespace(jwttoken string) (string, string, error) {
+
+	claims, err := UnsecureClaimsMap(jwttoken)
+	if err != nil {
+		return "", "", fmt.Errorf("unable to decode token:%s", err)
+	}
+
+	data, ok := claims["opaque"]
+	if !ok {
+		return "", "", fmt.Errorf("opaque feilds not defined")
+	}
+
+	datamap, ok := data.(map[string]interface{})
+	if !ok {
+		return "", "", fmt.Errorf("type asseration failed for opaque fields")
+	}
+
+	// extract ns
+	ns, ok := datamap["namespace"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("namespace feild not defined in opaque feilds")
+	}
+
+	url, ok := claims["api"]
+	if !ok {
+		return "", "", fmt.Errorf("api feild not found")
+	}
+
+	// extract api
+	api, ok := url.(string)
+	if !ok {
+		return "", "", fmt.Errorf("type assertion failed for api feild")
+	}
+
+	return api, ns, nil
+}

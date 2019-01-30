@@ -120,7 +120,7 @@ func TestParseAudience(t *testing.T) {
 				"retrieve,:lists",
 			},
 			nil,
-			true,
+			false, // TODO: switch to false when workaround is gone
 		},
 		{
 			"invalid multiple aud string",

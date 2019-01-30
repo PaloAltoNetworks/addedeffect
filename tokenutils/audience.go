@@ -24,20 +24,20 @@ func UnsecureAudience(token string, modelManager elemental.ModelManager) (Audien
 		return nil, nil
 	}
 
-	// TODO: In order to not invalidate all
-	// currently issued tokens, if the audience
-	// doesn't start with the correct prefix
-	// we assume there is no audience.
-	// This must be removed after a little while.
-	if !strings.HasPrefix(audStr, "aud:") {
-		return nil, nil
-	}
-
 	return ParseAudience(audStr, modelManager)
 }
 
 // ParseAudience parses the audience string and returns an AudiencesList.
 func ParseAudience(audString string, modelManager elemental.ModelManager) (AudiencesList, error) {
+
+	// TODO: In order to not invalidate all
+	// currently issued tokens, if the audience
+	// doesn't start with the correct prefix
+	// we assume there is no audience.
+	// This must be removed after a little while.
+	if !strings.HasPrefix(audString, "aud:") {
+		return nil, nil
+	}
 
 	auds := strings.Split(audString, ";")
 	out := make(AudiencesList, len(auds))

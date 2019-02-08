@@ -215,7 +215,7 @@ func Test_MatchingPolicies(t *testing.T) {
 }
 
 func Test_Benchmark(t *testing.T) {
-	Convey("When I insert 1000 policies", t, func() {
+	Convey("When I insert 10000 policies", t, func() {
 		e := NewResolutionEngine()
 		for i := 0; i < 10000; i++ {
 			p := gaia.NewPolicy()

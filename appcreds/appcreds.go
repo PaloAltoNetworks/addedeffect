@@ -11,12 +11,13 @@ import (
 )
 
 // New creates a new *gaia.AppCredential.
-func New(ctx context.Context, m manipulate.Manipulator, namespace string, name string, roles []string) (*gaia.AppCredential, error) {
+func New(ctx context.Context, m manipulate.Manipulator, namespace string, name string, roles []string, subnets []string) (*gaia.AppCredential, error) {
 
 	creds := gaia.NewAppCredential()
 	creds.Name = name
 	creds.Roles = roles
 	creds.Namespace = namespace
+	creds.AuthorizedSubnets = subnets
 
 	return NewWithAppCredential(ctx, m, creds)
 }
@@ -30,6 +31,7 @@ func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, templat
 	creds.Roles = template.Roles
 	creds.Protected = template.Protected
 	creds.Metadata = template.Metadata
+	creds.AuthorizedSubnets = template.AuthorizedSubnets
 
 	if err := m.Create(
 		manipulate.NewContext(

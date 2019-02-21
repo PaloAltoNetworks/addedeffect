@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"testing"
 
-	"go.aporeto.io/tg/tglib"
-
+	. "github.com/smartystreets/goconvey/convey"
 	"go.aporeto.io/elemental"
 	"go.aporeto.io/gaia"
 	"go.aporeto.io/manipulate"
-
-	. "github.com/smartystreets/goconvey/convey"
 	"go.aporeto.io/manipulate/maniptest"
+	"go.aporeto.io/tg/tglib"
 )
 
 func TestApCred_New(t *testing.T) {
@@ -55,7 +53,7 @@ func TestApCred_New(t *testing.T) {
 
 		Convey("When I call New", func() {
 
-			c, err := New(context.Background(), m, "/ns", "name", []string{"@auth:role=role1"})
+			c, err := New(context.Background(), m, "/ns", "name", []string{"@auth:role=role1"}, nil)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
@@ -119,7 +117,7 @@ func TestApCred_New(t *testing.T) {
 
 		Convey("When I call New", func() {
 
-			c, err := New(context.Background(), m, "/ns", "name", []string{"@auth:role=role1"})
+			c, err := New(context.Background(), m, "/ns", "name", []string{"@auth:role=role1"}, nil)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
@@ -155,7 +153,7 @@ func TestApCred_New(t *testing.T) {
 
 		Convey("When I call New", func() {
 
-			c, err := New(context.Background(), m, "/ns", "name", []string{"@auth:role=role1"})
+			c, err := New(context.Background(), m, "/ns", "name", []string{"@auth:role=role1"}, nil)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)

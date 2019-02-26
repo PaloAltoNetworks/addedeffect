@@ -71,11 +71,11 @@ func WriteVersionIn(out string) error {
 	projectVersion := ""
 
 	if projectVersion = os.Getenv("PROJECT_SHA"); projectVersion == "" {
-		return fmt.Errorf("Unable to find project SHA `%s %s`", cmd, strings.Join(args, " "))
+		return fmt.Errorf("Unable to find project SHA")
 	}
 
 	if projectVersion = os.Getenv("PROJECT_VERSION"); projectVersion == "" {
-		return fmt.Errorf("Unable to find project version `%s %s`", cmd, strings.Join(args, " "))
+		return fmt.Errorf("Unable to find project version")
 	}
 
 	if _, err := os.Stat("./Gopkg.toml"); err == nil {

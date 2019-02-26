@@ -70,7 +70,7 @@ func WriteVersionIn(out string) error {
 	projectSha := ""
 	projectVersion := ""
 
-	if projectVersion = os.Getenv("PROJECT_SHA"); projectVersion == "" {
+	if projectSha = os.Getenv("PROJECT_SHA"); projectSha == "" {
 		return fmt.Errorf("Unable to find project SHA")
 	}
 

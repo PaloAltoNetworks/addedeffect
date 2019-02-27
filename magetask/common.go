@@ -67,15 +67,19 @@ func GetSemver(branch string) (sver string, err error) {
 // WriteVersionIn creates the version file if needed in the given folder.
 func WriteVersionIn(out string) error {
 
-	projectSha := ""
-	projectVersion := ""
-
-	if projectSha = os.Getenv("PROJECT_SHA"); projectSha == "" {
-		return fmt.Errorf("Unable to find project SHA")
+	projectBranch, err := sh.Output("git", "rev-parse", "--abbrev-ref", "HEAD")
+	if err != nil {
+		return err
 	}
 
-	if projectVersion = os.Getenv("PROJECT_VERSION"); projectVersion == "" {
-		return fmt.Errorf("Unable to find project version")
+	projectVersion, err := GetSemver(projectBranch)
+	if err != nil {
+		return err
+	}
+
+	projectSha, err := sh.Output("git", "rev-parse", "HEAD")
+	if err != nil {
+		return err
 	}
 
 	if _, err := os.Stat("./Gopkg.toml"); err == nil {

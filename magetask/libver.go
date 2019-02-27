@@ -1,7 +1,7 @@
 package magetask
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path"
 
@@ -70,7 +70,7 @@ func parseProject(proj project) map[string]string {
 func makeVersionFromDep(folder string, outFolder string, projectVersion string, projectSha string) error {
 
 	if projectVersion == "" || projectSha == "" {
-		return fmt.Errorf("you must set both projectVersion=%s and projectSha=%s", projectVersion, projectSha)
+		return errors.New("you must set both projectVersion and projectSha")
 	}
 
 	if folder == "" {

@@ -37,9 +37,9 @@ func WriteVersion() error {
 }
 
 // GetSemver gets the semantic version of the repository
-func GetSemver() (sver string, err error) {
+func GetSemver(branch string) (sver string, err error) {
 
-	if sver = os.Getenv("PROJECT_VERSION"); sver == "" {
+	if sver = os.Getenv("PROJECT_VERSION"); projectVersion == "" {
 		return "", fmt.Errorf("Unable to find project version")
 	}
 

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/blang/semver"
 	"github.com/magefile/mage/sh"
 	"golang.org/x/sync/errgroup"
 )
@@ -38,34 +37,17 @@ func WriteVersion() error {
 }
 
 // GetSemver gets the semantic version of the repository
-func GetSemver(branch string) (sver string, err error) {
+func GetSemver() (sver string, err error) {
 
-	versions, err := sh.Output("git", "tag", "--sort", "version:refname", "--merged", branch)
-	if err != nil {
-		return "", err
-	}
-
-	sver = "0.0.0"
-	last, _ := semver.New(sver)
-	for _, v := range strings.Split(versions, "\n") {
-
-		v = strings.TrimLeft(v, "v")
-
-		curr, err := semver.New(v)
-		if err != nil {
-			continue
-		}
-		if last.Compare(*curr) < 0 {
-			last = curr
-			sver = "v" + v
-		}
+	if sver = os.Getenv("PROJECT_VERSION"); sver == "" {
+		return "", fmt.Errorf("Unable to find project version")
 	}
 
 	return
 }
 
 // WriteVersionIn creates the version file if needed in the given folder.
-func WriteVersionIn(out string) error {
+func WriteVersionIn(out string) (err error) {
 
 	projectSha := ""
 	projectVersion := ""
@@ -74,8 +56,9 @@ func WriteVersionIn(out string) error {
 		return fmt.Errorf("Unable to find project SHA")
 	}
 
-	if projectVersion = os.Getenv("PROJECT_VERSION"); projectVersion == "" {
-		return fmt.Errorf("Unable to find project version")
+	projectVersion, err = GetSemver()
+	if err != nil {
+		return err
 	}
 
 	if _, err := os.Stat("./Gopkg.toml"); err == nil {

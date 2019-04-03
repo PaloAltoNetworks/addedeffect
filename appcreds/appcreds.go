@@ -25,6 +25,11 @@ func New(ctx context.Context, m manipulate.Manipulator, namespace string, name s
 // NewWithAppCredential creates a new *gaia.AppCredential from an *AppCredential
 func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, template *gaia.AppCredential) (*gaia.AppCredential, error) {
 
+	csr, pk, err := makeCSR()
+	if err != nil {
+		return nil, err
+	}
+
 	creds := gaia.NewAppCredential()
 	creds.Name = template.Name
 	creds.Description = template.Description
@@ -32,6 +37,7 @@ func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, templat
 	creds.Protected = template.Protected
 	creds.Metadata = template.Metadata
 	creds.AuthorizedSubnets = template.AuthorizedSubnets
+	creds.CSR = string(csr)
 
 	if err := m.Create(
 		manipulate.NewContext(
@@ -43,14 +49,16 @@ func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, templat
 		return nil, err
 	}
 
-	return Renew(ctx, m, creds)
+	creds.Credentials.CertificateKey = base64.StdEncoding.EncodeToString(pk)
+
+	return creds, nil
 }
 
 // Renew renews the given appcred.
 func Renew(ctx context.Context, m manipulate.Manipulator, creds *gaia.AppCredential) (*gaia.AppCredential, error) {
 
 	// Then we generate a private key and a CSR from the appcred info.
-	csr, pk, err := makeCSR(creds.Name, creds.ID, creds.Namespace)
+	csr, pk, err := makeCSR()
 	if err != nil {
 		return nil, err
 	}
@@ -74,14 +82,14 @@ func Renew(ctx context.Context, m manipulate.Manipulator, creds *gaia.AppCredent
 	return creds, nil
 }
 
-func makeCSR(name string, id string, namespace string) (csr []byte, key []byte, err error) {
+func makeCSR() (csr []byte, key []byte, err error) {
 
 	pk, err := tglib.ECPrivateKeyGenerator()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	csr, err = tglib.GenerateSimpleCSR([]string{namespace}, nil, "app:credential:"+id+":"+name, nil, pk)
+	csr, err = tglib.GenerateSimpleCSR(nil, nil, "", nil, pk)
 	if err != nil {
 		return nil, nil, err
 	}

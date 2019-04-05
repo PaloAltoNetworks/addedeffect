@@ -31,7 +31,7 @@ func RetrieveManifest(ctx context.Context, url string) (Manifest, error) {
 			}
 
 			if resp.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("Unable to download manifest: %s", resp.Status)
+				return nil, fmt.Errorf("unable to download manifest: %s", resp.Status)
 			}
 
 			return resp, nil
@@ -113,7 +113,7 @@ func Binary(ctx context.Context, url string, dest string, mode os.FileMode, sign
 			}
 
 			if resp.StatusCode != 200 {
-				return nil, fmt.Errorf("Unable to find the request binary: %s", resp.Status)
+				return nil, fmt.Errorf("unable to find the request binary: %s", resp.Status)
 			}
 
 			return resp, nil
@@ -144,7 +144,7 @@ func Binary(ctx context.Context, url string, dest string, mode os.FileMode, sign
 		}
 
 		if fmt.Sprintf("%x", h.Sum(nil)) != signature {
-			return fmt.Errorf("Inavlid signature")
+			return fmt.Errorf("invalid signature")
 		}
 	}
 

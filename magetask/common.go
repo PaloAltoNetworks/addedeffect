@@ -40,7 +40,7 @@ func WriteVersion() error {
 func GetSemver() (sver string, err error) {
 
 	if sver = os.Getenv("PROJECT_VERSION"); sver == "" {
-		return "", fmt.Errorf("Unable to find project version")
+		return "", fmt.Errorf("unable to find project version")
 	}
 
 	return
@@ -53,7 +53,7 @@ func WriteVersionIn(out string) (err error) {
 	projectVersion := ""
 
 	if projectSha = os.Getenv("PROJECT_SHA"); projectSha == "" {
-		return fmt.Errorf("Unable to find project SHA")
+		return fmt.Errorf("unable to find project SHA")
 	}
 
 	projectVersion, err = GetSemver()
@@ -294,7 +294,7 @@ func run(env map[string]string, cmd string, args ...string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("Unable to run command `%s %s`: %s", cmd, strings.Join(args, " "), err)
+		return fmt.Errorf("unable to run command `%s %s`: %s", cmd, strings.Join(args, " "), err)
 	}
 
 	return nil

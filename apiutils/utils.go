@@ -284,7 +284,7 @@ func makeJobFunc(client *http.Client, url string) func() (interface{}, error) {
 			return resp, nil
 		}
 
-		return nil, fmt.Errorf("Bad response status: %s", resp.Status)
+		return nil, fmt.Errorf("bad response status: %s", resp.Status)
 	}
 }
 

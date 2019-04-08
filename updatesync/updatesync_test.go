@@ -31,7 +31,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is no sync needed", func() {
 
-			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 				return nil
 			})
 
@@ -53,8 +53,8 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed", func() {
 
-			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
-				objects[0].(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
+			m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
+				object.(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
 
 				if synced <= 3 {
 					e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)
@@ -83,7 +83,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object but there is an error right away", func() {
 
-			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 				return elemental.NewError("Not Read Only Error", "bloob", "subject", http.StatusInternalServerError)
 			})
 
@@ -107,7 +107,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed but the context is canceled", func() {
 
-			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 				e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)
 				e.Data = map[string]interface{}{"attribute": "updateTime"}
 				return e
@@ -130,7 +130,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed the manipulator returns an comm error", func() {
 
-			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 				return manipulate.NewErrCannotCommunicate("nope")
 			})
 
@@ -147,8 +147,8 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 		Convey("When I update my object there is a sync needed but the retrieve fails", func() {
 
-			m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
-				objects[0].(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
+			m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
+				object.(*gaia.ProcessingUnit).Name = fmt.Sprintf("sync%d", synced)
 
 				if synced <= 3 {
 					e := elemental.NewError("Read Only Error", "bloob", "subject", http.StatusUnprocessableEntity)
@@ -159,7 +159,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 				return nil
 			})
 
-			m.MockRetrieve(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+			m.MockRetrieve(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 				return fmt.Errorf("boom")
 			})
 

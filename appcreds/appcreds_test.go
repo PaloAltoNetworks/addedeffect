@@ -20,13 +20,13 @@ func TestAppCred_New(t *testing.T) {
 		m := maniptest.NewTestManipulator()
 
 		var expectedCSR string
-		m.MockCreate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+		m.MockCreate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 
 			if ctx.Namespace() != "/ns" {
 				panic("expected ns to be /ns")
 			}
 
-			ac := objects[0].(*gaia.AppCredential)
+			ac := object.(*gaia.AppCredential)
 			ac.ID = "ID"
 			ac.Namespace = "/ns"
 			ac.Credentials = gaia.NewCredential()
@@ -73,7 +73,7 @@ func TestAppCred_New(t *testing.T) {
 
 		m := maniptest.NewTestManipulator()
 
-		m.MockCreate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+		m.MockCreate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 			return fmt.Errorf("boom")
 		})
 
@@ -100,13 +100,13 @@ func TestAppCred_NewWithAppCredential(t *testing.T) {
 		m := maniptest.NewTestManipulator()
 
 		var expectedCSR string
-		m.MockCreate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+		m.MockCreate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 
 			if ctx.Namespace() != "/ns" {
 				panic("expected ns to be /ns")
 			}
 
-			ac := objects[0].(*gaia.AppCredential)
+			ac := object.(*gaia.AppCredential)
 			ac.ID = "ID"
 			ac.Namespace = "/ns"
 			ac.Credentials = gaia.NewCredential()
@@ -171,7 +171,7 @@ func TestAppCred_NewWithAppCredential(t *testing.T) {
 
 		m := maniptest.NewTestManipulator()
 
-		m.MockCreate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+		m.MockCreate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 			return fmt.Errorf("boom")
 		})
 
@@ -212,13 +212,13 @@ func TestAppCred_Renew(t *testing.T) {
 		ac.Roles = []string{"@auth:role=role1"}
 
 		var expectedCSR string
-		m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+		m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 
 			if ctx.Namespace() != "/ns" {
 				panic("expected ns to be /ns")
 			}
 
-			ac := objects[0].(*gaia.AppCredential)
+			ac := object.(*gaia.AppCredential)
 			ac.Credentials = gaia.NewCredential()
 			ac.Credentials.APIURL = "https://labas"
 			ac.Credentials.Name = ac.Name
@@ -269,7 +269,7 @@ func TestAppCred_Renew(t *testing.T) {
 		ac.Namespace = "/ns"
 		ac.Roles = []string{"@auth:role=role1"}
 
-		m.MockUpdate(t, func(ctx manipulate.Context, objects ...elemental.Identifiable) error {
+		m.MockUpdate(t, func(ctx manipulate.Context, object elemental.Identifiable) error {
 			return fmt.Errorf("paf")
 		})
 

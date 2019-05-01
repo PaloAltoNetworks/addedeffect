@@ -9,12 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build windows
-
-package logutils
-
-import (
-	"go.uber.org/zap"
-)
-
-func handleElevationSignal(cfg zap.Config) {}
+// Package tokenutils contains various utilities used to interact
+// with Aporeto JWTs.
+package tokenutils // import "go.aporeto.io/addedeffect/tokenutils"

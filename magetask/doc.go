@@ -9,12 +9,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build windows
-
-package logutils
-
-import (
-	"go.uber.org/zap"
-)
-
-func handleElevationSignal(cfg zap.Config) {}
+// Package magetask is deprecated and should not be used.
+package magetask // import "go.aporeto.io/addedeffect/magetask"

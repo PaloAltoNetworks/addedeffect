@@ -9,12 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build windows
-
-package logutils
-
-import (
-	"go.uber.org/zap"
-)
-
-func handleElevationSignal(cfg zap.Config) {}
+// Package appcreds contains utilities to generate and
+// interact with Aporeto AppCredentials.
+package appcreds // import "go.aporeto.io/addedeffect/appcreds"

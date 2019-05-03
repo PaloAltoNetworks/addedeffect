@@ -131,7 +131,7 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
 
-	logger := InitLogger(w, config)
+	logger := initLogger(w, config)
 
 	if err != nil {
 		panic(err)
@@ -140,8 +140,8 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 	return logger, config
 }
 
-// InitLogger constructs the logger from the options
-func InitLogger(w zapcore.WriteSyncer, conf zap.Config) *zap.Logger {
+// initLogger constructs the logger from the options
+func initLogger(w zapcore.WriteSyncer, conf zap.Config) *zap.Logger {
 	var enc zapcore.Encoder
 	var coreFile zapcore.Core
 

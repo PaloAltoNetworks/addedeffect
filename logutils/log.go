@@ -143,7 +143,7 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 // initLogger constructs the logger from the options
 func initLogger(w zapcore.WriteSyncer, conf zap.Config) *zap.Logger {
 	var enc zapcore.Encoder
-	var coreFile zapcore.Core
+	var core, coreFile, coreConsole zapcore.Core
 
 	switch conf.Encoding {
 	case "json":
@@ -155,16 +155,20 @@ func initLogger(w zapcore.WriteSyncer, conf zap.Config) *zap.Logger {
 	}
 
 	console := zapcore.Lock(os.Stdout)
-	coreConsole := zapcore.NewCore(enc, console, conf.Level)
+	coreConsole = zapcore.NewCore(enc, console, conf.Level)
 
-	if w != nil {
+	if w == nil {
+		core = zapcore.NewTee(
+			coreConsole,
+		)
+
+	} else {
 		coreFile = zapcore.NewCore(enc, w, conf.Level)
+		core = zapcore.NewTee(
+			coreFile,
+			coreConsole,
+		)
 	}
-
-	core := zapcore.NewTee(
-		coreFile,
-		coreConsole,
-	)
 
 	logger := zap.New(core)
 	return logger

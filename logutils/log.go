@@ -142,10 +142,8 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
 
-	logger, err := config.Build()
-	if w != nil {
-		logger, err = config.Build(SetOutput(w, config))
-	}
+	logger := initLogger(w, config)
+
 	if err != nil {
 		panic(err)
 	}
@@ -153,10 +151,11 @@ func NewLogger(serviceName string, level string, format string, file string, fil
 	return logger, config
 }
 
-// SetOutput returns the zap option with the new sync writer
-func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
+// initLogger constructs the logger from the options
+func initLogger(w zapcore.WriteSyncer, conf zap.Config) *zap.Logger {
 	var enc zapcore.Encoder
-	// Copy paste from zap.Config.buildEncoder.
+	var core, coreFile, coreConsole zapcore.Core
+
 	switch conf.Encoding {
 	case "json":
 		enc = zapcore.NewJSONEncoder(conf.EncoderConfig)
@@ -165,13 +164,31 @@ func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
 	default:
 		panic("unknown encoding")
 	}
-	return zap.WrapCore(func(zapcore.Core) zapcore.Core {
-		return zapcore.NewCore(enc, w, conf.Level)
-	})
+
+	console := zapcore.Lock(os.Stdout)
+	coreConsole = zapcore.NewCore(enc, console, conf.Level)
+
+	if w == nil {
+		core = zapcore.NewTee(
+			coreConsole,
+		)
+
+	} else {
+		coreFile = zapcore.NewCore(enc, w, conf.Level)
+		core = zapcore.NewTee(
+			coreFile,
+			coreConsole,
+		)
+	}
+
+	logger := zap.New(core)
+	return logger
 }
 
 // handleOutputFile handles options in log configs to redirect to file
 func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.WriteSyncer, error) {
+
+	var w zapcore.WriteSyncer
 
 	if file == "" {
 		return nil, nil
@@ -183,17 +200,20 @@ func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.W
 		}
 	}
 
-	if fileOnly {
-		w := zapcore.AddSync(&lumberjack.Logger{
+	if file != "" {
+		w = zapcore.AddSync(&lumberjack.Logger{
 			Filename:   file,
 			MaxSize:    logFileSizeDefault,
 			MaxBackups: logFileNumBackups,
 			MaxAge:     logFileAge,
 		})
-		config.OutputPaths = []string{file}
-		return w, nil
 	}
 
-	config.OutputPaths = append(config.OutputPaths, file)
-	return nil, nil
+	if fileOnly {
+		config.OutputPaths = []string{file}
+	} else {
+		config.OutputPaths = append(config.OutputPaths, file)
+	}
+
+	return w, nil
 }

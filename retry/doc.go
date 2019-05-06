@@ -9,12 +9,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build windows
-
-package logutils
-
-import (
-	"go.uber.org/zap"
-)
-
-func handleElevationSignal(cfg zap.Config) {}
+// Package retry contains a very simple arbitrary function retrier.
+package retry // import "go.aporeto.io/addedeffect/retry"

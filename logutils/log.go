@@ -102,7 +102,7 @@ func getConfig(serviceName, format string) zap.Config {
 		return getJSONConfig(initialFields)
 
 	case "stackdriver":
-		return getJSONConfig(initialFields)
+		return getStackdriverConfig(initialFields)
 
 	default:
 		return getDefaultConfig()

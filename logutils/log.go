@@ -165,14 +165,13 @@ func initLogger(w zapcore.WriteSyncer, conf zap.Config) *zap.Logger {
 		panic("unknown encoding")
 	}
 
-	console := zapcore.Lock(os.Stdout)
+	console := zapcore.Lock(os.Stderr)
 	coreConsole = zapcore.NewCore(enc, console, conf.Level)
 
 	if w == nil {
 		core = zapcore.NewTee(
 			coreConsole,
 		)
-
 	} else {
 		coreFile = zapcore.NewCore(enc, w, conf.Level)
 		core = zapcore.NewTee(
@@ -206,6 +205,7 @@ func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.W
 			MaxSize:    logFileSizeDefault,
 			MaxBackups: logFileNumBackups,
 			MaxAge:     logFileAge,
+			Compress:   true,
 		})
 	}
 

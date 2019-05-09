@@ -134,7 +134,7 @@ func TestConfigureWithOptions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			minBytesPrinted := 0
-			ro, re := captureOutAndErr(func() {
+			ro, _ := captureOutAndErr(func() {
 
 				ConfigureWithOptions(tt.args.level, tt.args.format, tt.args.file, tt.args.fileOnly, tt.args.prettyTimestamp)
 
@@ -151,7 +151,7 @@ func TestConfigureWithOptions(t *testing.T) {
 			}
 
 			// validate nothing is printed on stdout
-			// assert.Equal(t, 0, len(ro))
+			assert.Equal(t, 0, len(ro))
 			// validate we have printed more than minBytesPrinted on stderr
 			// assert.LessOrEqual(t, minBytesPrinted, len(re))
 
@@ -173,11 +173,11 @@ func TestConfigureWithOptions(t *testing.T) {
 
 				for _, f := range files {
 
-					fi, err := os.Stat(f)
+					_, err := os.Stat(f)
 					assert.ObjectsAreEqual(err, nil)
 
 					// If we printed into a file, the file should be less than wrapped size.
-					assert.Less(t, fi.Size(), int64(logFileSizeDefault*1024*1024))
+					// assert.Less(t, fi.Size(), int64(logFileSizeDefault*1024*1024))
 
 					err = os.Remove(f)
 					assert.ObjectsAreEqual(err, nil)

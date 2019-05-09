@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/smartystreets/assertions"
 	"go.uber.org/zap"
 )
 
@@ -59,13 +59,19 @@ func captureOutAndErr(f func()) (o, e string) {
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
-		io.Copy(&buf, oreader) // nolint
+		_, err := io.Copy(&buf, oreader)
+		if err != nil {
+			panic(err)
+		}
 		oout <- buf.String()
 	}()
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
-		io.Copy(&buf, ereader) // nolint
+		_, err := io.Copy(&buf, ereader)
+		if err != nil {
+			panic(err)
+		}
 		eout <- buf.String()
 	}()
 	wg.Wait()
@@ -73,8 +79,14 @@ func captureOutAndErr(f func()) (o, e string) {
 	// Execute function
 	f()
 
-	owriter.Close() // nolint
-	ewriter.Close() // nolint
+	err = owriter.Close()
+	if err != nil {
+		panic(err)
+	}
+	err = ewriter.Close()
+	if err != nil {
+		panic(err)
+	}
 	// Return captures
 	return <-oout, <-eout
 }
@@ -83,6 +95,7 @@ func TestConfigureWithOptions(t *testing.T) {
 	type args struct {
 		level           string
 		format          string
+		service         string
 		file            string
 		fileOnly        bool
 		prettyTimestamp bool
@@ -99,10 +112,11 @@ func TestConfigureWithOptions(t *testing.T) {
 				"info",
 				"json",
 				"",
+				"",
 				false,
 				false,
 			},
-			iterations: 20,
+			iterations: 2,
 			want:       "",
 		},
 		{
@@ -110,11 +124,38 @@ func TestConfigureWithOptions(t *testing.T) {
 			args: args{
 				"info",
 				"json",
+				"",
 				"/tmp/some-log-file",
 				true,
 				false,
 			},
-			iterations: 20,
+			iterations: 3,
+			want:       "",
+		},
+		{
+			name: "service name on json",
+			args: args{
+				"info",
+				"stackdriver",
+				"some-bizzare-bad-named-service-1",
+				"",
+				false,
+				false,
+			},
+			iterations: 1,
+			want:       "",
+		},
+		{
+			name: "service name on stackdriver",
+			args: args{
+				"info",
+				"json",
+				"some-bizzare-bad-named-service-2",
+				"",
+				false,
+				false,
+			},
+			iterations: 1,
 			want:       "",
 		},
 		{
@@ -122,6 +163,7 @@ func TestConfigureWithOptions(t *testing.T) {
 			args: args{
 				"info",
 				"json",
+				"",
 				"/tmp/some-tee-log-file",
 				false,
 				false,
@@ -134,9 +176,13 @@ func TestConfigureWithOptions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			minBytesPrinted := 0
-			ro, _ := captureOutAndErr(func() {
+			ro, re := captureOutAndErr(func() {
 
-				ConfigureWithOptions(tt.args.level, tt.args.format, tt.args.file, tt.args.fileOnly, tt.args.prettyTimestamp)
+				if tt.args.service != "" {
+					ConfigureWithName(tt.args.service, tt.args.level, tt.args.format)
+				} else {
+					ConfigureWithOptions(tt.args.level, tt.args.format, tt.args.file, tt.args.fileOnly, tt.args.prettyTimestamp)
+				}
 
 				for i := 0; i < tt.iterations; i++ {
 					buf := fmt.Sprintf("%80d - hello", i)
@@ -145,42 +191,46 @@ func TestConfigureWithOptions(t *testing.T) {
 				}
 			})
 
-			// On fileOnly case, nothing is expected on stderr as well.
+			// validate nothing is printed on stdout
+			assertions.ShouldEqual(0, len(ro))
 			if tt.args.fileOnly {
-				minBytesPrinted = 0
+				// validate nothing is printed on stderr in fileOnly case
+				assertions.ShouldEqual(0, len(re))
+			} else {
+				// validate we have printed more than minBytesPrinted on stderr
+				assertions.ShouldBeLessThan(minBytesPrinted, len(re))
 			}
 
-			// validate nothing is printed on stdout
-			assert.Equal(t, 0, len(ro))
-			// validate we have printed more than minBytesPrinted on stderr
-			// assert.LessOrEqual(t, minBytesPrinted, len(re))
+			if tt.args.service != "" {
+				assertions.ShouldContainSubstring(re, tt.args.service)
+			}
 
 			if tt.args.file != "" {
 
-				// numFilesExpected := 1
-				// if minBytesPrinted > logFileSizeDefault*1024*1024 {
-				// 	numFilesExpected += logFileNumBackups
-				// }
+				numFilesExpected := 1
+				if minBytesPrinted > logFileSizeDefault*1024*1024 {
+					numFilesExpected += logFileNumBackups
+				}
 
 				// Wait for one second as file may not have been deleted.
 				time.Sleep(time.Second)
 
 				files, err := filepath.Glob(tt.args.file + "*")
-				assert.ObjectsAreEqual(err, nil)
+				assertions.ShouldBeNil(err)
 
 				// logging to files tests wraparound. we should have
-				// assert.Equal(t, numFilesExpected, len(files))
+				assertions.ShouldEqual(numFilesExpected, len(files))
 
 				for _, f := range files {
 
-					_, err := os.Stat(f)
-					assert.ObjectsAreEqual(err, nil)
+					fi, err := os.Stat(f)
+					assertions.ShouldBeNil(err)
 
 					// If we printed into a file, the file should be less than wrapped size.
-					// assert.Less(t, fi.Size(), int64(logFileSizeDefault*1024*1024))
+					assertions.ShouldBeLessThan(t, fi.Size(), int64(logFileSizeDefault*1024*1024))
 
 					err = os.Remove(f)
-					assert.ObjectsAreEqual(err, nil)
+					assertions.ShouldBeNil(err)
 				}
 			}
 		})

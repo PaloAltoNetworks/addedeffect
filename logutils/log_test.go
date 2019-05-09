@@ -59,13 +59,13 @@ func captureOutAndErr(f func()) (o, e string) {
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
-		io.Copy(&buf, oreader)
+		io.Copy(&buf, oreader) // nolint
 		oout <- buf.String()
 	}()
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
-		io.Copy(&buf, ereader)
+		io.Copy(&buf, ereader) // nolint
 		eout <- buf.String()
 	}()
 	wg.Wait()
@@ -73,8 +73,8 @@ func captureOutAndErr(f func()) (o, e string) {
 	// Execute function
 	f()
 
-	owriter.Close()
-	ewriter.Close()
+	owriter.Close() // nolint
+	ewriter.Close() // nolint
 	// Return captures
 	return <-oout, <-eout
 }

@@ -145,6 +145,11 @@ func TestConfigureWithOptions(t *testing.T) {
 				}
 			})
 
+			// On fileOnly case, nothing is expected on stderr as well.
+			if tt.args.fileOnly {
+				minBytesPrinted = 0
+			}
+
 			// validate nothing is printed on stdout
 			assert.Equal(t, 0, len(ro))
 			// validate we have printed more than minBytesPrinted on stderr

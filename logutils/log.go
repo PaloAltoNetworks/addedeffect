@@ -202,14 +202,8 @@ func getEncoder(c zap.Config) (zapcore.Encoder, error) {
 
 // SetOutput returns the zap option with the new sync writer
 func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
-	var enc zapcore.Encoder
-	// Copy paste from zap.Config.buildEncoder.
-	switch conf.Encoding {
-	case "json":
-		enc = zapcore.NewJSONEncoder(conf.EncoderConfig)
-	case "console":
-		enc = zapcore.NewConsoleEncoder(conf.EncoderConfig)
-	default:
+	enc, err := getEncoder(conf)
+	if err != nil {
 		panic("unknown encoding")
 	}
 	return zap.WrapCore(func(zapcore.Core) zapcore.Core {

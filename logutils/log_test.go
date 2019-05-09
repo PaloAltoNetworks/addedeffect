@@ -143,8 +143,6 @@ func TestConfigureWithOptions(t *testing.T) {
 					minBytesPrinted += len(buf)
 					zap.L().Info(buf)
 				}
-
-				time.Sleep(time.Second)
 			})
 
 			// validate nothing is printed on stdout
@@ -153,11 +151,20 @@ func TestConfigureWithOptions(t *testing.T) {
 			assert.LessOrEqual(t, minBytesPrinted, len(re))
 
 			if tt.args.file != "" {
+
+				numFilesExpected := 1
+				if minBytesPrinted > logFileSizeDefault*1024*1024 {
+					numFilesExpected += logFileNumBackups
+				}
+
+				// Wait for one second as file may not have been deleted.
+				time.Sleep(time.Second)
+
 				files, err := filepath.Glob(tt.args.file + "*")
 				assert.ObjectsAreEqual(err, nil)
 
 				// logging to files tests wraparound. we should have
-				assert.Equal(t, 1+logFileNumBackups, len(files))
+				assert.Equal(t, numFilesExpected, len(files))
 
 				for _, f := range files {
 

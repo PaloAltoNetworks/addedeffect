@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/smartystreets/assertions"
+	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/zap"
 )
 
@@ -107,29 +108,29 @@ func TestConfigureWithOptions(t *testing.T) {
 		want       string
 	}{
 		{
-			name: "no file logging",
-			args: args{
-				"info",
-				"json",
-				"",
-				"",
-				false,
-				false,
-			},
-			iterations: 2,
-			want:       "",
-		},
-		{
 			name: "file only",
 			args: args{
 				"info",
-				"json",
+				"stackdriver",
 				"",
 				"/tmp/some-log-file",
 				true,
 				false,
 			},
 			iterations: 3,
+			want:       "",
+		},
+		{
+			name: "no file logging at info level",
+			args: args{
+				"info",
+				"json",
+				"",
+				"",
+				false,
+				true,
+			},
+			iterations: 6,
 			want:       "",
 		},
 		{
@@ -178,31 +179,50 @@ func TestConfigureWithOptions(t *testing.T) {
 			minBytesPrinted := 0
 			ro, re := captureOutAndErr(func() {
 
+				opts := []Option{OptionFile(tt.args.file, tt.args.fileOnly)}
 				if tt.args.service != "" {
-					ConfigureWithName(tt.args.service, tt.args.level, tt.args.format)
-				} else {
-					ConfigureWithOptions(tt.args.level, tt.args.format, tt.args.file, tt.args.fileOnly, tt.args.prettyTimestamp)
+					opts = append(opts, OptionServiceName(tt.args.service))
 				}
-
+				if tt.args.prettyTimestamp {
+					opts = append(opts, OptionPrettyTimeStamp())
+				}
+				Configure(tt.args.level, tt.args.format, opts...)
 				for i := 0; i < tt.iterations; i++ {
 					buf := fmt.Sprintf("%80d - hello", i)
 					minBytesPrinted += len(buf)
-					zap.L().Info(buf)
+					switch i % 6 {
+					case 0:
+						zap.L().Info(buf)
+					case 1:
+						zap.L().Warn(buf)
+					case 2:
+						zap.L().Debug(buf)
+					case 3, 4, 5:
+						zap.L().Error(buf)
+					}
 				}
 			})
 
 			// validate nothing is printed on stdout
-			assertions.ShouldEqual(0, len(ro))
+			if ok, message := assertions.So(ro, ShouldBeBlank); !ok {
+				t.Fatalf("Failure in %s:\n%s", tt.name, message)
+			}
 			if tt.args.fileOnly {
 				// validate nothing is printed on stderr in fileOnly case
-				assertions.ShouldEqual(0, len(re))
+				if ok, message := assertions.So(re, ShouldBeBlank); !ok {
+					t.Fatalf("Failure in %s:\n%s", tt.name, message)
+				}
 			} else {
 				// validate we have printed more than minBytesPrinted on stderr
-				assertions.ShouldBeLessThan(minBytesPrinted, len(re))
+				if ok, message := assertions.So(minBytesPrinted, ShouldBeLessThan, len(re)); !ok {
+					t.Fatalf("Failure in %s:\n%s", tt.name, message)
+				}
 			}
 
 			if tt.args.service != "" {
-				assertions.ShouldContainSubstring(re, tt.args.service)
+				if ok, message := assertions.So(re, ShouldContainSubstring, tt.args.service); !ok {
+					t.Fatalf("Failure in %s:\n%s", tt.name, message)
+				}
 			}
 
 			if tt.args.file != "" {
@@ -216,21 +236,31 @@ func TestConfigureWithOptions(t *testing.T) {
 				time.Sleep(time.Second)
 
 				files, err := filepath.Glob(tt.args.file + "*")
-				assertions.ShouldBeNil(err)
+				if ok, message := assertions.So(err, ShouldBeNil); !ok {
+					t.Fatalf("Failure in %s:\n%s", tt.name, message)
+				}
 
 				// logging to files tests wraparound. we should have
-				assertions.ShouldEqual(numFilesExpected, len(files))
+				if ok, message := assertions.So(numFilesExpected, ShouldEqual, len(files)); !ok {
+					t.Fatalf("Failure in %s:\n%s", tt.name, message)
+				}
 
 				for _, f := range files {
 
 					fi, err := os.Stat(f)
-					assertions.ShouldBeNil(err)
+					if ok, message := assertions.So(err, ShouldBeNil); !ok {
+						t.Fatalf("Failure in %s:\n%s", tt.name, message)
+					}
 
 					// If we printed into a file, the file should be less than wrapped size.
-					assertions.ShouldBeLessThan(t, fi.Size(), int64(logFileSizeDefault*1024*1024))
+					if ok, message := assertions.So(fi.Size(), ShouldBeLessThan, int64(logFileSizeDefault*1024*1024)); !ok {
+						t.Fatalf("Failure in %s:\n%s", tt.name, message)
+					}
 
 					err = os.Remove(f)
-					assertions.ShouldBeNil(err)
+					if ok, message := assertions.So(err, ShouldBeNil); !ok {
+						t.Fatalf("Failure in %s:\n%s", tt.name, message)
+					}
 				}
 			}
 		})

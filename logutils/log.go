@@ -28,92 +28,27 @@ const (
 	logFileAge         = 30
 )
 
-// Configure configures the shared default logger.
-func Configure(level string, format string) zap.Config {
+// getConfig provides a zap configuration
+func getConfig(level, format string) (config zap.Config) {
 
-	return ConfigureWithOptions(level, format, "", false, false)
-}
+	switch format {
+	case "json":
+		config = getJSONConfig()
 
-// ConfigureWithName configures the shared default logger.
-func ConfigureWithName(serviceName string, level string, format string) zap.Config {
+	case "stackdriver":
+		config = getStackdriverConfig()
 
-	logger, config := newLogger(serviceName, level, format, "", false, false)
-
-	zap.ReplaceGlobals(logger)
-
-	go handleElevationSignal(config)
-
-	return config
-}
-
-// ConfigureWithOptions configures the shared default logger with options such as file and timestamp formats.
-func ConfigureWithOptions(level string, format string, file string, fileOnly bool, prettyTimestamp bool) zap.Config {
-
-	logger, config := newLogger("", level, format, file, fileOnly, prettyTimestamp)
-
-	zap.ReplaceGlobals(logger)
-
-	go handleElevationSignal(config)
-
-	return config
-}
-
-// newLogger returns a new configured zap.Logger
-func newLogger(serviceName string, level string, format string, file string, fileOnly bool, prettyTimestamp bool) (*zap.Logger, zap.Config) {
-
-	config := getConfig(serviceName, format)
-
-	// Handle log file output
-	w, err := handleOutputFile(&config, file, fileOnly)
-	if err != nil {
-		panic(err)
-	}
-
-	// Pretty timestamp
-	if prettyTimestamp {
-		config.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(t.Format("2006-01-02 15:04:05.000"))
-		}
+	default:
+		config = getDefaultConfig()
 	}
 
 	// Set the logger
 	config.Level = levelToZapLevel(level)
-
-	logger, err := config.Build()
-	if w != nil {
-		logger, err = config.Build(SetOutput(w, config))
-	}
-	if err != nil {
-		panic(err)
-	}
-
-	return logger, config
-}
-
-// getConfig provides a zap configuration
-func getConfig(serviceName, format string) zap.Config {
-
-	var initialFields map[string]interface{}
-	if serviceName != "" {
-		initialFields = map[string]interface{}{
-			"srv": serviceName,
-		}
-	}
-
-	switch format {
-	case "json":
-		return getJSONConfig(initialFields)
-
-	case "stackdriver":
-		return getStackdriverConfig(initialFields)
-
-	default:
-		return getDefaultConfig()
-	}
+	return config
 }
 
 // getJSONConfig provides a JSON zap configuration
-func getJSONConfig(initialFields map[string]interface{}) zap.Config {
+func getJSONConfig() zap.Config {
 
 	config := zap.NewProductionConfig()
 	config.DisableStacktrace = true
@@ -123,13 +58,11 @@ func getJSONConfig(initialFields map[string]interface{}) zap.Config {
 	config.EncoderConfig.NameKey = "n"
 	config.EncoderConfig.TimeKey = "t"
 
-	config.InitialFields = initialFields
-
 	return config
 }
 
 // getStackdriverConfig provides a stackdriver zap configuration
-func getStackdriverConfig(initialFields map[string]interface{}) zap.Config {
+func getStackdriverConfig() zap.Config {
 
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.LevelKey = "severity"
@@ -151,8 +84,6 @@ func getStackdriverConfig(initialFields map[string]interface{}) zap.Config {
 			enc.AppendString("EMERGENCY")
 		}
 	}
-
-	config.InitialFields = initialFields
 
 	return config
 }
@@ -200,23 +131,34 @@ func getEncoder(c zap.Config) (zapcore.Encoder, error) {
 	}
 }
 
-// SetOutput returns the zap option with the new sync writer
-func SetOutput(w zapcore.WriteSyncer, conf zap.Config) zap.Option {
-	enc, err := getEncoder(conf)
+// initLogger constructs the logger from the options
+func initLogger(conf *Config) (*zap.Logger, error) {
+
+	enc, err := getEncoder(conf.z)
 	if err != nil {
-		panic("unknown encoding")
+		return nil, err
 	}
-	return zap.WrapCore(func(zapcore.Core) zapcore.Core {
-		return zapcore.NewCore(enc, w, conf.Level)
-	})
+
+	core := zapcore.NewCore(enc, zapcore.Lock(os.Stderr), conf.z.Level)
+	if conf.w != nil {
+		if conf.fileOnly {
+			core = zapcore.NewCore(enc, conf.w, conf.z.Level)
+		} else {
+			core = zapcore.NewTee(
+				zapcore.NewCore(enc, conf.w, conf.z.Level),
+				core,
+			)
+		}
+	}
+	if conf.service != "" {
+		return zap.New(core, zap.Fields(zap.String("srv", conf.service))), nil
+	}
+	return zap.New(core), nil
 }
 
 // handleOutputFile handles options in log configs to redirect to file
 func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.WriteSyncer, error) {
 
-	if file == "" {
-		return nil, nil
-	}
 	dir := filepath.Dir(file)
 	if dir != "." {
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {

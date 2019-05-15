@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	logFileSizeDefault = 10
+	logFileSizeDefault = 1
 	logFileNumBackups  = 1
 	logFileAge         = 30
 )
@@ -172,6 +172,7 @@ func handleOutputFile(config *zap.Config, file string, fileOnly bool) (zapcore.W
 		MaxSize:    logFileSizeDefault,
 		MaxBackups: logFileNumBackups,
 		MaxAge:     logFileAge,
+		Compress:   true,
 	})
 
 	if fileOnly {

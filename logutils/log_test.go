@@ -233,7 +233,7 @@ func TestConfigureWithOptions(t *testing.T) {
 				}
 
 				// Wait for one second as file may not have been deleted.
-				time.Sleep(time.Second)
+				time.Sleep(5 * time.Second)
 
 				files, err := filepath.Glob(tt.args.file + "*")
 				if ok, message := assertions.So(err, ShouldBeNil); !ok {
@@ -241,7 +241,7 @@ func TestConfigureWithOptions(t *testing.T) {
 				}
 
 				// logging to files tests wraparound. we should have
-				if ok, message := assertions.So(numFilesExpected, ShouldEqual, len(files)); !ok {
+				if ok, message := assertions.So(len(files), ShouldEqual, numFilesExpected); !ok {
 					t.Fatalf("Failure in %s:\n%s", tt.name, message)
 				}
 

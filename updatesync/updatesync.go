@@ -59,7 +59,7 @@ func UpdateSync(
 
 		updateFunc(obj)
 
-		err := manipulate.Retry(mctx.Context(), func() error { return m.Update(mctx, obj) }, nil)
+		err := m.Update(mctx, obj)
 		if err == nil {
 			return nil
 		}

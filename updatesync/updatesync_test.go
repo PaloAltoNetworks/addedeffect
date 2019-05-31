@@ -152,7 +152,7 @@ func TestAPI_UpdateSync(t *testing.T) {
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "Disconnected: interupted by context: context deadline exceeded. original error: Cannot communicate: nope")
+				So(err.Error(), ShouldEqual, "Cannot communicate: nope")
 			})
 		})
 

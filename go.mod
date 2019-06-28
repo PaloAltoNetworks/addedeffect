@@ -15,12 +15,12 @@ require (
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
-	go.aporeto.io/elemental v1.63.0
-	go.aporeto.io/gaia v1.4.0
-	go.aporeto.io/manipulate v1.72.0
+	go.aporeto.io/elemental v1.67.0
+	go.aporeto.io/gaia v1.6.0
+	go.aporeto.io/manipulate v1.74.0
 	go.aporeto.io/tg v1.20.0
 	go.uber.org/zap v1.10.0
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/tools v0.0.0-20190628175203-6cfa55603c28
+	golang.org/x/tools v0.0.0-20190628203336-59bec042292d
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

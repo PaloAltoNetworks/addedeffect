@@ -17,7 +17,7 @@ require (
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	go.aporeto.io/elemental v1.67.0
 	go.aporeto.io/gaia v1.6.0
-	go.aporeto.io/manipulate v1.74.0
+	go.aporeto.io/manipulate v1.75.0
 	go.aporeto.io/tg v1.20.0
 	go.uber.org/zap v1.10.0
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58

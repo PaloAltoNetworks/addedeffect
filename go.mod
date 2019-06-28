@@ -21,6 +21,6 @@ require (
 	go.aporeto.io/tg v1.20.0
 	go.uber.org/zap v1.10.0
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/tools v0.0.0-20190627220010-94c5763a7c84
+	golang.org/x/tools v0.0.0-20190628021728-85b1a4bcd4e6
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

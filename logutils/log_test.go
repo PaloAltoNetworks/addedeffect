@@ -137,7 +137,7 @@ func TestConfigureWithOptions(t *testing.T) {
 			args: args{
 				"info",
 				"stackdriver",
-				"some-bizzare-bad-named-service-1",
+				"some-bizarre-bad-named-service-1",
 				"",
 				false,
 				false,
@@ -150,7 +150,7 @@ func TestConfigureWithOptions(t *testing.T) {
 			args: args{
 				"info",
 				"json",
-				"some-bizzare-bad-named-service-2",
+				"some-bizarre-bad-named-service-2",
 				"",
 				false,
 				false,

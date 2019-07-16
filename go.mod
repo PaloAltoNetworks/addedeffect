@@ -3,17 +3,15 @@ module go.aporeto.io/addedeffect
 go 1.12
 
 require (
-	go.aporeto.io/elemental v1.69.0
-	go.aporeto.io/gaia v1.8.0
-	go.aporeto.io/manipulate v1.77.0
-	go.aporeto.io/tg v1.20.0
+	go.aporeto.io/elemental v1.80.1
+	go.aporeto.io/gaia v1.21.0
+	go.aporeto.io/manipulate v1.84.0
+	go.aporeto.io/tg v1.23.0
 )
 
 require (
-	github.com/BurntSushi/toml v0.3.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
-	github.com/magefile/mage v1.8.0
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/smartystreets/assertions v1.0.0
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
@@ -23,7 +21,5 @@ require (
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	go.uber.org/zap v1.10.0
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/tools v0.0.0-20190628203336-59bec042292d
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

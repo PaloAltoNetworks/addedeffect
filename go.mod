@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	go.aporeto.io/elemental v1.85.0
-	go.aporeto.io/gaia v1.34.0
+	go.aporeto.io/gaia v1.36.0
 	go.aporeto.io/manipulate v1.92.0
 	go.aporeto.io/tg v1.24.0
 )

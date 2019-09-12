@@ -4,8 +4,8 @@ go 1.12
 
 require (
 	go.aporeto.io/elemental v1.92.0
-	go.aporeto.io/gaia v1.70.0
-	go.aporeto.io/manipulate v1.102.0
+	go.aporeto.io/gaia v1.73.0
+	go.aporeto.io/manipulate v1.105.0
 	go.aporeto.io/tg v1.25.0
 )
 
@@ -18,8 +18,8 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.4.0
 	github.com/uber-go/atomic v1.4.0 // indirect
-	github.com/uber/jaeger-client-go v2.16.0+incompatible
-	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
+	github.com/uber/jaeger-client-go v2.17.0+incompatible
+	github.com/uber/jaeger-lib v2.1.1+incompatible // indirect
 	go.uber.org/zap v1.10.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

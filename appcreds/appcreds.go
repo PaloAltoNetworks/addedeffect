@@ -34,32 +34,32 @@ func New(ctx context.Context, m manipulate.Manipulator, namespace string, name s
 	return NewWithAppCredential(ctx, m, creds)
 }
 
-// NewFromTemplate generates a new CSR for the provided app credential and calls the upstream service using the supplied
+// Create generates a new CSR for the provided app credential and calls the upstream service using the supplied
 // manipulator to provision the app credential. The returned credential will have the private key used to generate the CSR
 // added back as an attribute. An error and a nil app cred reference is returned if CSR generation or the API call to the
 // upstream service failed.
-func NewFromTemplate(ctx context.Context, m manipulate.Manipulator, template *gaia.AppCredential) (*gaia.AppCredential, error) {
+func Create(ctx context.Context, m manipulate.Manipulator, ac *gaia.AppCredential) (*gaia.AppCredential, error) {
 
 	csr, pk, err := makeCSR()
 	if err != nil {
 		return nil, err
 	}
 
-	template.CSR = string(csr)
+	ac.CSR = string(csr)
 
-	if err := m.Create(manipulate.NewContext(ctx, manipulate.ContextOptionNamespace(template.Namespace)), template); err != nil {
+	if err := m.Create(manipulate.NewContext(ctx, manipulate.ContextOptionNamespace(ac.Namespace)), ac); err != nil {
 		return nil, err
 	}
 
-	template.Credentials.CertificateKey = base64.StdEncoding.EncodeToString(pk)
+	ac.Credentials.CertificateKey = base64.StdEncoding.EncodeToString(pk)
 
-	return template, nil
+	return ac, nil
 }
 
 // NewWithAppCredential creates a new *gaia.AppCredential from an *AppCredential
-// Deprecated: use NewFromTemplate instead
+// Deprecated: use Create instead
 func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, template *gaia.AppCredential) (*gaia.AppCredential, error) {
-	fmt.Println("DEPRECATED: NewWithAppCredential is deprecated in favor of NewFromTemplate instead")
+	fmt.Println("DEPRECATED: NewWithAppCredential is deprecated in favor of Create instead")
 
 	csr, pk, err := makeCSR()
 	if err != nil {

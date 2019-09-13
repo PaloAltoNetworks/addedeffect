@@ -104,7 +104,7 @@ func TestAppCred_New(t *testing.T) {
 	})
 }
 
-func TestNewFromTemplate(t *testing.T) {
+func TestCreate(t *testing.T) {
 
 	Convey("Given I have a manipulator", t, func() {
 
@@ -130,7 +130,7 @@ func TestNewFromTemplate(t *testing.T) {
 			return nil
 		})
 
-		Convey("When I call NewWithAppCredential", func() {
+		Convey("When I call Create", func() {
 
 			template := gaia.NewAppCredential()
 			template.Name = "name"
@@ -144,7 +144,7 @@ func TestNewFromTemplate(t *testing.T) {
 				"SomeKey2": {"SomeValue2"},
 			}
 
-			c, err := NewFromTemplate(context.Background(), m, template)
+			c, err := Create(context.Background(), m, template)
 
 			Convey("Then credential should have template information", func() {
 				So(c.Name, ShouldEqual, template.Name)
@@ -201,7 +201,7 @@ func TestNewFromTemplate(t *testing.T) {
 			template.Roles = []string{"role=test"}
 			template.Namespace = "/ns"
 
-			c, err := NewFromTemplate(context.Background(), m, template)
+			c, err := Create(context.Background(), m, template)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)

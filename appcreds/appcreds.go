@@ -47,6 +47,7 @@ func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, templat
 	creds.Roles = template.Roles
 	creds.Protected = template.Protected
 	creds.Metadata = template.Metadata
+	creds.Annotations = template.Annotations
 	creds.AuthorizedSubnets = template.AuthorizedSubnets
 	creds.CSR = string(csr)
 

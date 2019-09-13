@@ -3,5 +3,6 @@ testresults.xml
 *.lock
 vendor
 *.cov
+.idea
 artifacts
 profile.out

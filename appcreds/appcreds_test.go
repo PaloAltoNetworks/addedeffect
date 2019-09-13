@@ -139,6 +139,10 @@ func TestAppCred_NewWithAppCredential(t *testing.T) {
 			template.Metadata = []string{"random=tag"}
 			template.Roles = []string{"role=test"}
 			template.Namespace = "/ns"
+			template.Annotations = map[string][]string{
+				"SomeKey1": {"SomeValue1"},
+				"SomeKey2": {"SomeValue2"},
+			}
 
 			c, err := NewWithAppCredential(context.Background(), m, template)
 
@@ -149,6 +153,7 @@ func TestAppCred_NewWithAppCredential(t *testing.T) {
 				So(c.Metadata, ShouldResemble, template.Metadata)
 				So(c.Roles, ShouldResemble, template.Roles)
 				So(c.Namespace, ShouldEqual, template.Namespace)
+				So(c.Annotations, ShouldResemble, template.Annotations)
 			})
 
 			Convey("Then err should be nil", func() {

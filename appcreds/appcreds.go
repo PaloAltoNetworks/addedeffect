@@ -28,10 +28,13 @@ func New(ctx context.Context, m manipulate.Manipulator, namespace string, name s
 	creds := gaia.NewAppCredential()
 	creds.Name = name
 	creds.Roles = roles
-	creds.Namespace = namespace
 	creds.AuthorizedSubnets = subnets
 
-	return NewWithAppCredential(ctx, m, creds)
+	if err := Create(ctx, m, namespace, creds); err != nil {
+		return nil, err
+	}
+
+	return creds, nil
 }
 
 // Create generates a new CSR for the provided app credential and calls the upstream service using the supplied

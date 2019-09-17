@@ -28,32 +28,35 @@ func New(ctx context.Context, m manipulate.Manipulator, namespace string, name s
 	creds := gaia.NewAppCredential()
 	creds.Name = name
 	creds.Roles = roles
-	creds.Namespace = namespace
 	creds.AuthorizedSubnets = subnets
 
-	return NewWithAppCredential(ctx, m, creds)
+	if err := Create(ctx, m, namespace, creds); err != nil {
+		return nil, err
+	}
+
+	return creds, nil
 }
 
 // Create generates a new CSR for the provided app credential and calls the upstream service using the supplied
 // manipulator to provision the app credential. The returned credential will have the private key used to generate the CSR
 // added back as an attribute. An error and a nil app cred reference is returned if CSR generation or the API call to the
 // upstream service failed.
-func Create(ctx context.Context, m manipulate.Manipulator, ac *gaia.AppCredential) (*gaia.AppCredential, error) {
+func Create(ctx context.Context, m manipulate.Manipulator, namespace string, ac *gaia.AppCredential) error {
 
 	csr, pk, err := makeCSR()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	ac.CSR = string(csr)
 
-	if err := m.Create(manipulate.NewContext(ctx, manipulate.ContextOptionNamespace(ac.Namespace)), ac); err != nil {
-		return nil, err
+	if err := m.Create(manipulate.NewContext(ctx, manipulate.ContextOptionNamespace(namespace)), ac); err != nil {
+		return err
 	}
 
 	ac.Credentials.CertificateKey = base64.StdEncoding.EncodeToString(pk)
 
-	return ac, nil
+	return nil
 }
 
 // NewWithAppCredential creates a new *gaia.AppCredential from an *AppCredential

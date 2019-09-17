@@ -138,33 +138,22 @@ func TestCreate(t *testing.T) {
 			template.Protected = true
 			template.Metadata = []string{"random=tag"}
 			template.Roles = []string{"role=test"}
-			template.Namespace = "/ns"
 			template.Annotations = map[string][]string{
 				"SomeKey1": {"SomeValue1"},
 				"SomeKey2": {"SomeValue2"},
 			}
 
-			c, err := Create(context.Background(), m, template)
-
-			Convey("Then credential should have template information", func() {
-				So(c.Name, ShouldEqual, template.Name)
-				So(c.Description, ShouldEqual, template.Description)
-				So(c.Protected, ShouldEqual, template.Protected)
-				So(c.Metadata, ShouldResemble, template.Metadata)
-				So(c.Roles, ShouldResemble, template.Roles)
-				So(c.Namespace, ShouldEqual, template.Namespace)
-				So(c.Annotations, ShouldResemble, template.Annotations)
-			})
+			err := Create(context.Background(), m, "/ns", template)
 
 			Convey("Then err should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			Convey("Then the cred should be correct", func() {
-				So(c.Name, ShouldEqual, "name")
-				So(c.ID, ShouldEqual, "ID")
-				So(c.Namespace, ShouldEqual, "/ns")
-				So(c.Credentials.CertificateKey, ShouldNotBeEmpty)
+				So(template.Name, ShouldEqual, "name")
+				So(template.ID, ShouldEqual, "ID")
+				So(template.Namespace, ShouldEqual, "/ns")
+				So(template.Credentials.CertificateKey, ShouldNotBeEmpty)
 			})
 
 			Convey("When I verify the csr", func() {
@@ -199,17 +188,12 @@ func TestCreate(t *testing.T) {
 			template.Protected = true
 			template.Metadata = []string{"random=tag"}
 			template.Roles = []string{"role=test"}
-			template.Namespace = "/ns"
 
-			c, err := Create(context.Background(), m, template)
+			err := Create(context.Background(), m, "/ns", template)
 
 			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "boom")
-			})
-
-			Convey("Then the cred should be nilt", func() {
-				So(c, ShouldBeNil)
 			})
 		})
 	})

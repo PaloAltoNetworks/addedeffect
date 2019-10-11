@@ -13,7 +13,7 @@ package download
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // #nosec
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -36,7 +36,7 @@ func RetrieveManifest(ctx context.Context, url string) (Manifest, error) {
 	out, err := retry.Retry(
 		ctx,
 		func() (interface{}, error) {
-			resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int()))
+			resp, err := http.Get(fmt.Sprintf("%s?nocache=%d", url, rand.Int())) // #nosec
 			if err != nil {
 				return nil, err
 			}
@@ -118,7 +118,7 @@ func Binary(ctx context.Context, url string, dest string, mode os.FileMode, sign
 	out, err := retry.Retry(
 		ctx,
 		func() (interface{}, error) {
-			resp, err := http.Get(url)
+			resp, err := http.Get(url) // #nosec
 			if err != nil {
 				return nil, err
 			}
@@ -149,7 +149,7 @@ func Binary(ctx context.Context, url string, dest string, mode os.FileMode, sign
 
 	if signature != "" {
 
-		h := sha1.New()
+		h := sha1.New() // #nosec
 		if _, err = h.Write(data); err != nil {
 			return err
 		}

@@ -47,5 +47,5 @@ func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorder
 
 	opentracing.InitGlobalTracer(tracer)
 
-	return func() { close.Close() }, nil // nolint: errcheck
+	return func() { _ = close.Close() }, nil // nolint: errcheck
 }

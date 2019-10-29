@@ -181,8 +181,8 @@ github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 go.aporeto.io/elemental v1.100.1-0.20191025225333-48d6efebe8c5 h1:G7v8YSK+jeC2/PMkHvVJB1FY1OI5DiA/8kz0k04/ETU=
 go.aporeto.io/elemental v1.100.1-0.20191025225333-48d6efebe8c5/go.mod h1:WnMGuvU+1fFYSAswDxwdrQToRd6Wr8JjqqG1RmfDo6U=
-go.aporeto.io/gaia v1.94.1-0.20191025230123-62d098ca38ed h1:wvh6C5SEfsX18e/TypnImOTmW+82XKq9pUCaidrMb7w=
-go.aporeto.io/gaia v1.94.1-0.20191025230123-62d098ca38ed/go.mod h1:lAcajnuv34TO+QqIW5CVIW3CUVqVOZHFi7ok/RAc/mI=
+go.aporeto.io/gaia v1.94.1-0.20191029005213-ff2a2ef89b03 h1:b36hfaiqSav1+J/teedVTlP5b/dezChCoyBduxW5NPk=
+go.aporeto.io/gaia v1.94.1-0.20191029005213-ff2a2ef89b03/go.mod h1:lAcajnuv34TO+QqIW5CVIW3CUVqVOZHFi7ok/RAc/mI=
 go.aporeto.io/manipulate v1.114.1-0.20191025230117-6250df846104 h1:/F9N7KaCbwrJ1zr7ZQjW8vNeVOr7uZV+XBbcLGbQAMU=
 go.aporeto.io/manipulate v1.114.1-0.20191025230117-6250df846104/go.mod h1:xcLw9qrPVyCAkz0Ioqnon13lNWURLvDFfvoJz2OmFvw=
 go.aporeto.io/regolithe v1.50.1-0.20191011181323-a84eb0eb88ba/go.mod h1:n5Wi2kGXJ+eZe4fUTiVZ++RlgIo3DKiG71I7TV1Pfz4=

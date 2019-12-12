@@ -6,7 +6,7 @@ require (
 	go.aporeto.io/elemental v1.100.1-0.20191207025209-fcdec5ab5950
 	go.aporeto.io/gaia v1.94.1-0.20191211223811-f0ed8cb35ac3
 	go.aporeto.io/manipulate v1.114.1-0.20191211185709-27b562bfb267
-	go.aporeto.io/tg v1.34.1-0.20191109023217-abc7ad30b2e6
+	go.aporeto.io/tg v1.34.1-0.20191212031200-49e4a3e985d8
 )
 
 require (

@@ -21,6 +21,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	testMode = true
+}
+
 type testConf struct {
 	ABool                   bool          `mapstructure:"a-bool"                    desc:"This is a boolean"            required:"true" default:"true"`
 	ABoolNoDef              bool          `mapstructure:"a-bool-nodef"              desc:"This is a no def boolean"     `

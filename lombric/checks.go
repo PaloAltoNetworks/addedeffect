@@ -56,9 +56,16 @@ func checkAllowedValues(allowedValues map[string][]string) error {
 	return nil
 }
 
+var testMode bool
+
 func fail() {
 	fmt.Println()
 	pflag.Usage()
+
+	if testMode {
+		os.Exit(0)
+	}
+
 	os.Exit(1)
 }
 

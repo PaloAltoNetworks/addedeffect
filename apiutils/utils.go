@@ -39,8 +39,9 @@ func GetServiceVersions(ctx context.Context, api string, tlsConfig *tls.Config) 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 
@@ -73,8 +74,9 @@ func GetModelVersion(ctx context.Context, api string, tlsConfig *tls.Config) (*V
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 
@@ -107,8 +109,9 @@ func GetConfig(ctx context.Context, api string, tlsConfig *tls.Config) (map[stri
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 
@@ -141,8 +144,9 @@ func GetPublicCA(ctx context.Context, api string, tlsConfig *tls.Config) ([]byte
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 
@@ -187,8 +191,9 @@ func GetJWTCert(ctx context.Context, api string, tlsConfig *tls.Config) ([]byte,
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 
@@ -234,8 +239,9 @@ func GetManifestURL(ctx context.Context, api string, tlsConfig *tls.Config) ([]b
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 
@@ -262,8 +268,9 @@ func GetGoogleOAuthClientID(ctx context.Context, api string, tlsConfig *tls.Conf
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: tlsConfig,
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
 		},
 	}
 

@@ -39,6 +39,10 @@ func Snip(err error, token string) error {
 // verifying its validity. Only use or trust this after proper validation.
 func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) {
 
+	if token == "" {
+		return nil, errors.New("invalid jwt: empty")
+	}
+
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return nil, errors.New("invalid jwt: not enough segments")
@@ -59,6 +63,10 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 
 // SigAlg returns the signature used by the token
 func SigAlg(token string) (string, error) {
+
+	if token == "" {
+		return "", errors.New("invalid jwt: empty")
+	}
 
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {

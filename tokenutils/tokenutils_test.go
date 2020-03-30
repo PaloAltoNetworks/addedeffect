@@ -106,6 +106,25 @@ func TestTokenUtils_UnsecureClaimsMap(t *testing.T) {
 		})
 	})
 
+	Convey("Given I have a token an empty token", t, func() {
+
+		token := ""
+
+		Convey("When I UnsecureClaimsMap", func() {
+
+			claims, err := UnsecureClaimsMap(token)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid jwt: empty")
+			})
+
+			Convey("Then claims should be nil", func() {
+				So(claims, ShouldBeNil)
+			})
+		})
+	})
+
 	Convey("Given I have a token a token with invalid base64", t, func() {
 
 		token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.not-base64.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
@@ -176,6 +195,25 @@ func TestJWTUtils_SigAlg(t *testing.T) {
 			Convey("Then err should be nil", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "invalid jwt: not enough segments")
+			})
+
+			Convey("Then alg should be empty", func() {
+				So(alg, ShouldBeEmpty)
+			})
+		})
+	})
+
+	Convey("Given I have an empty token", t, func() {
+
+		token := ""
+
+		Convey("When I SigAlg", func() {
+
+			alg, err := SigAlg(token)
+
+			Convey("Then err should be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid jwt: empty")
 			})
 
 			Convey("Then alg should be empty", func() {

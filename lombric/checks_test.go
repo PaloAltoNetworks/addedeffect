@@ -89,7 +89,7 @@ func Test_checkAllowedValues(t *testing.T) {
 		{
 			"test failure",
 			args{
-				map[string][]string{"a": []string{"1", "2"}},
+				map[string][]string{"a": {"1", "2"}},
 			},
 			true,
 		},

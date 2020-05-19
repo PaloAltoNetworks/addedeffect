@@ -13,6 +13,7 @@ package tokenutils
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -312,6 +313,107 @@ func TestExtractQuota(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("ExtractQuota() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExtractRestrictions(t *testing.T) {
+	type args struct {
+		token string
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantNs    string
+		wantPerms []string
+		wantErr   bool
+	}{
+		{
+			"valid token with no authz limit",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJleHAiOjE1OTAwMTUzNTIsImlhdCI6MTU4OTkyNTM1MiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.agqImtfkfjJugJH59XfQwkasIayYtvG6tz3p84jMulfbgwZzTLzgfRDLNIcfnfqfUix_702BUJxvdlsaSsgeUg`,
+			},
+			"",
+			nil,
+			false,
+		},
+		{
+			"valid token with namespace authz limit",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmFtZXNwYWNlIjoiL3Rlc3QifSwiZXhwIjoxNTkwMDE1MzY2LCJpYXQiOjE1ODk5MjUzNjYsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.3xYCsLm6FuIUnYKE3GPYqrB9-GhUTDUETSuk6hWy8DqnK8DOj95AXWbJsKN7yUSpBp8CuPmbrPRAljnOSROIJg`,
+			},
+			"/test",
+			nil,
+			false,
+		},
+		{
+			"valid token with invalid namespace authz limit type",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmFtZXNwYWNlIjoxfSwiZXhwIjoxNTkwMDE1MzY2LCJpYXQiOjE1ODk5MjUzNjYsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.dIsnGMSEy961FqXgJH-TBVw8_9VrzH_j4xcQJG4JY0--ekwNuMpLr0CyOJFj_XFuVsY-ZS8Lwj5yJCYHv7TS8Q`,
+			},
+			"",
+			nil,
+			true,
+		},
+		{
+			"valid token with authorized identity authz limit",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0Il19LCJleHAiOjE1OTAwMTUzOTIsImlhdCI6MTU4OTkyNTM5MiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.ZgFBGxiU5F_ImSZMy8BwwyOv-1dnDw1z4zY5spUqxSKAzCrtrr_G0FomsL-w0CZOKWDv2Hs99FQPxIRRjfSwSQ`,
+			},
+			"",
+			[]string{"@auth:role=test"},
+			false,
+		},
+		{
+			"valid token with invalid authorized identity authz limit type",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOiJAYXV0aDpyb2xlPXRlc3QifSwiZXhwIjoxNTkwMDE1MzkyLCJpYXQiOjE1ODk5MjUzOTIsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.zBBcocIRkBUzcHGUKQk6ywitqMFe9sQsyMRp2raVyuBW0jirIR-yUybXGtOuw8YucCq8uIvC9CPHXUPww6kGtA`,
+			},
+			"",
+			nil,
+			true,
+		},
+		{
+			"valid token with invalid authorized identity authz limit item type",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0IiwgMV19LCJleHAiOjE1OTAwMTUzOTIsImlhdCI6MTU4OTkyNTM5MiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.zBBcocIRkBUzcHGUKQk6ywitqMFe9sQsyMRp2raVyuBW0jirIR-yUybXGtOuw8YucCq8uIvC9CPHXUPww6kGtA`,
+			},
+			"",
+			nil,
+			true,
+		},
+		{
+			"valid token with both namespace and identities authz limit",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0Il0sIm5hbWVzcGFjZSI6Ii90ZXN0In0sImV4cCI6MTU5MDAxNTE4NiwiaWF0IjoxNTg5OTI1MTg2LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDQzIiwic3ViIjoiYXBvbXV4In0.YzCP6YUCNYzLyV6kSUfnWdc8INP-uEXAFGaiPftYOsDfdnM0rRzFZqygAsuaVvagucOneEV5WfAH3Fxd7MEB0w`,
+			},
+			"/test",
+			[]string{"@auth:role=test"},
+			false,
+		},
+		{
+			"invalid token",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInWFsbSI6IlNlIiwicXVvdGEiOiIzIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YjQ5MGVjYzdkZGYxZjc1YWI4NGU3YjEiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTQ3NjgzMjE4LCJpYXQiOjE1NDc1OTMyMTgsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.N7B-X3rRcySodn0q4u1NUAVFIEtjnZEYJGidAFSwflyAhpqchRmm6P_waaVBcGhnRNhsIUayuJjeMpXccYFrWA`,
+			},
+			"",
+			nil,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotAuthorizedNS, gotAuthorizedPerms, err := ExtractRestrictions(tt.args.token)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractRestrictions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotAuthorizedNS != tt.wantNs {
+				t.Errorf("ExtractRestrictions() gotAuthorizedNS = %v, want %v", gotAuthorizedNS, tt.wantNs)
+			}
+			if !reflect.DeepEqual(gotAuthorizedPerms, tt.wantPerms) {
+				t.Errorf("ExtractRestrictions() gotAuthorizedPerms = %v, want %v", gotAuthorizedPerms, tt.wantPerms)
 			}
 		})
 	}

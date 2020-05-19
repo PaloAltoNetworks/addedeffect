@@ -112,3 +112,43 @@ func ExtractQuota(token string) (int, error) {
 
 	return int(q), nil
 }
+
+// ExtractRestrictions extracts the eventual authz restrictions embded in the token.
+func ExtractRestrictions(token string) (ns string, perms []string, err error) {
+
+	claims, err := UnsecureClaimsMap(token)
+	if err != nil {
+		return "", nil, err
+	}
+
+	restrictions, ok := claims["restrictions"].(map[string]interface{})
+	if !ok {
+		return "", nil, nil
+	}
+
+	lns, ok := restrictions["namespace"]
+	if ok {
+		ns, ok = lns.(string)
+		if !ok {
+			return "", nil, fmt.Errorf("invalid restrictions.namespace claim type")
+		}
+	}
+
+	lai, ok := restrictions["perms"]
+	if ok {
+		permsIface, ok := lai.([]interface{})
+		if !ok {
+			return "", nil, fmt.Errorf("invalid restrictions.permissions claim type")
+		}
+
+		for _, perm := range permsIface {
+			pstr, ok := perm.(string)
+			if !ok {
+				return "", nil, fmt.Errorf("invalid restrictions.permissions claim item type")
+			}
+			perms = append(perms, pstr)
+		}
+	}
+
+	return ns, perms, nil
+}

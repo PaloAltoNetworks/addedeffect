@@ -114,23 +114,23 @@ func ExtractQuota(token string) (int, error) {
 }
 
 // ExtractRestrictions extracts the eventual authz restrictions embded in the token.
-func ExtractRestrictions(token string) (ns string, perms []string, err error) {
+func ExtractRestrictions(token string) (ns string, perms []string, networks []string, err error) {
 
 	claims, err := UnsecureClaimsMap(token)
 	if err != nil {
-		return "", nil, err
+		return "", nil, nil, err
 	}
 
 	restrictions, ok := claims["restrictions"].(map[string]interface{})
 	if !ok {
-		return "", nil, nil
+		return "", nil, nil, nil
 	}
 
 	lns, ok := restrictions["namespace"]
 	if ok {
 		ns, ok = lns.(string)
 		if !ok {
-			return "", nil, fmt.Errorf("invalid restrictions.namespace claim type")
+			return "", nil, nil, fmt.Errorf("invalid restrictions.namespace claim type")
 		}
 	}
 
@@ -138,17 +138,33 @@ func ExtractRestrictions(token string) (ns string, perms []string, err error) {
 	if ok {
 		permsIface, ok := lai.([]interface{})
 		if !ok {
-			return "", nil, fmt.Errorf("invalid restrictions.permissions claim type")
+			return "", nil, nil, fmt.Errorf("invalid restrictions.permissions claim type")
 		}
 
 		for _, perm := range permsIface {
 			pstr, ok := perm.(string)
 			if !ok {
-				return "", nil, fmt.Errorf("invalid restrictions.permissions claim item type")
+				return "", nil, nil, fmt.Errorf("invalid restrictions.permissions claim item type")
 			}
 			perms = append(perms, pstr)
 		}
 	}
 
-	return ns, perms, nil
+	lnet, ok := restrictions["networks"]
+	if ok {
+		lnetIface, ok := lnet.([]interface{})
+		if !ok {
+			return "", nil, nil, fmt.Errorf("invalid restrictions.networks claim type")
+		}
+
+		for _, net := range lnetIface {
+			nstr, ok := net.(string)
+			if !ok {
+				return "", nil, nil, fmt.Errorf("invalid restrictions.networks claim item type")
+			}
+			networks = append(networks, nstr)
+		}
+	}
+
+	return ns, perms, networks, nil
 }

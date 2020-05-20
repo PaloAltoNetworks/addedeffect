@@ -327,69 +327,111 @@ func TestExtractRestrictions(t *testing.T) {
 		args      args
 		wantNs    string
 		wantPerms []string
+		wantNets  []string
 		wantErr   bool
 	}{
 		{
-			"valid token with no authz limit",
+			"valid token with no restrictions",
 			args{
 				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJleHAiOjE1OTAwMTUzNTIsImlhdCI6MTU4OTkyNTM1MiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.agqImtfkfjJugJH59XfQwkasIayYtvG6tz3p84jMulfbgwZzTLzgfRDLNIcfnfqfUix_702BUJxvdlsaSsgeUg`,
 			},
 			"",
 			nil,
+			nil,
 			false,
 		},
+
 		{
-			"valid token with namespace authz limit",
+			"valid token with namespace restriction",
 			args{
 				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmFtZXNwYWNlIjoiL3Rlc3QifSwiZXhwIjoxNTkwMDE1MzY2LCJpYXQiOjE1ODk5MjUzNjYsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.3xYCsLm6FuIUnYKE3GPYqrB9-GhUTDUETSuk6hWy8DqnK8DOj95AXWbJsKN7yUSpBp8CuPmbrPRAljnOSROIJg`,
 			},
 			"/test",
 			nil,
+			nil,
 			false,
 		},
 		{
-			"valid token with invalid namespace authz limit type",
+			"valid token with invalid namespace restriction",
 			args{
 				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmFtZXNwYWNlIjoxfSwiZXhwIjoxNTkwMDE1MzY2LCJpYXQiOjE1ODk5MjUzNjYsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.dIsnGMSEy961FqXgJH-TBVw8_9VrzH_j4xcQJG4JY0--ekwNuMpLr0CyOJFj_XFuVsY-ZS8Lwj5yJCYHv7TS8Q`,
 			},
 			"",
 			nil,
+			nil,
 			true,
 		},
+
 		{
-			"valid token with authorized identity authz limit",
+			"valid token with permissions restriction",
 			args{
 				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0Il19LCJleHAiOjE1OTAwMTUzOTIsImlhdCI6MTU4OTkyNTM5MiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.ZgFBGxiU5F_ImSZMy8BwwyOv-1dnDw1z4zY5spUqxSKAzCrtrr_G0FomsL-w0CZOKWDv2Hs99FQPxIRRjfSwSQ`,
 			},
 			"",
 			[]string{"@auth:role=test"},
+			nil,
 			false,
 		},
 		{
-			"valid token with invalid authorized identity authz limit type",
+			"valid token with invalid permissions restriction",
 			args{
 				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOiJAYXV0aDpyb2xlPXRlc3QifSwiZXhwIjoxNTkwMDE1MzkyLCJpYXQiOjE1ODk5MjUzOTIsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.zBBcocIRkBUzcHGUKQk6ywitqMFe9sQsyMRp2raVyuBW0jirIR-yUybXGtOuw8YucCq8uIvC9CPHXUPww6kGtA`,
 			},
 			"",
 			nil,
+			nil,
 			true,
 		},
 		{
-			"valid token with invalid authorized identity authz limit item type",
+			"valid token with invalid permissions restriction item type",
 			args{
 				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0IiwgMV19LCJleHAiOjE1OTAwMTUzOTIsImlhdCI6MTU4OTkyNTM5MiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.zBBcocIRkBUzcHGUKQk6ywitqMFe9sQsyMRp2raVyuBW0jirIR-yUybXGtOuw8YucCq8uIvC9CPHXUPww6kGtA`,
 			},
 			"",
 			nil,
+			nil,
+			true,
+		},
+
+		{
+			"valid token with networks restriction",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmV0d29ya3MiOlsiMTI3LjAuMC4xLzMyIl19LCJleHAiOjE1OTAwNDMyMDUsImlhdCI6MTU4OTk1MzIwNSwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQ0MyIsInN1YiI6ImFwb211eCJ9.aO-D-1e7XX18ZGGi2FoKl-lfpc8xBzShrPVHZzLHqXd22ojZEWxKOVaIh8ZVyjs8KWBu-CmCKBCi3eg875j_1A`,
+			},
+			"",
+			nil,
+			[]string{"127.0.0.1/32"},
+			false,
+		},
+		{
+			"valid token with invalid networks restriction",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmV0d29ya3MiOiIxMjcuMC4wLjEvMzIifSwiZXhwIjoxNTkwMDQzMjA1LCJpYXQiOjE1ODk5NTMyMDUsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0NDMiLCJzdWIiOiJhcG9tdXgifQ.dIsnGMSEy961FqXgJH-TBVw8_9VrzH_j4xcQJG4JY0--ekwNuMpLr0CyOJFj_XFuVsY-ZS8Lwj5yJCYHv7TS8Q`,
+			},
+			"",
+			nil,
+			nil,
 			true,
 		},
 		{
-			"valid token with both namespace and identities authz limit",
+			"valid token with invalid networks restriction item",
 			args{
-				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0Il0sIm5hbWVzcGFjZSI6Ii90ZXN0In0sImV4cCI6MTU5MDAxNTE4NiwiaWF0IjoxNTg5OTI1MTg2LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDQzIiwic3ViIjoiYXBvbXV4In0.YzCP6YUCNYzLyV6kSUfnWdc8INP-uEXAFGaiPftYOsDfdnM0rRzFZqygAsuaVvagucOneEV5WfAH3Fxd7MEB0w`,
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsibmV0d29ya3MiOlsxXX0sImV4cCI6MTU5MDA0MzIwNSwiaWF0IjoxNTg5OTUzMjA1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDQzIiwic3ViIjoiYXBvbXV4In0.dIsnGMSEy961FqXgJH-TBVw8_9VrzH_j4xcQJG4JY0--ekwNuMpLr0CyOJFj_XFuVsY-ZS8Lwj5yJCYHv7TS8Q`,
 			},
-			"/test",
+			"",
+			nil,
+			nil,
+			true,
+		},
+
+		{
+			"valid token with namespace, identities and networks restrictions",
+			args{
+				`eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1ZTFjZjNlZmEzNzAwMzhmYWY3Zjg3NzciLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIiwic3ViamVjdCI6ImFwb211eCJ9LCJyZXN0cmljdGlvbnMiOnsicGVybXMiOlsiQGF1dGg6cm9sZT10ZXN0Il0sIm5hbWVzcGFjZSI6Ii9hcG9tdXgvY2hpbGQiLCJuZXR3b3JrcyI6WyIxMjcuMC4wLjEvMzIiXX0sImV4cCI6MTU5MDA0Mjk5OCwiaWF0IjoxNTg5OTUyOTk4LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDQzIiwic3ViIjoiYXBvbXV4In0.JQcljRWeraT2Ma2u9DpeO0ub0SLNj5jDjKMVppibsm17YH6CyNKO5pyf-Kg6SldxuJau1nf0W_V7K3sQFmqj0g`,
+			},
+			"/apomux/child",
 			[]string{"@auth:role=test"},
+			[]string{"127.0.0.1/32"},
 			false,
 		},
 		{
@@ -399,21 +441,25 @@ func TestExtractRestrictions(t *testing.T) {
 			},
 			"",
 			nil,
+			nil,
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotAuthorizedNS, gotAuthorizedPerms, err := ExtractRestrictions(tt.args.token)
+			gotNs, gotPerms, gotNetworks, err := ExtractRestrictions(tt.args.token)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ExtractRestrictions() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if gotAuthorizedNS != tt.wantNs {
-				t.Errorf("ExtractRestrictions() gotAuthorizedNS = %v, want %v", gotAuthorizedNS, tt.wantNs)
+			if gotNs != tt.wantNs {
+				t.Errorf("ExtractRestrictions() gotAuthorizedNS = %v, want %v", gotNs, tt.wantNs)
 			}
-			if !reflect.DeepEqual(gotAuthorizedPerms, tt.wantPerms) {
-				t.Errorf("ExtractRestrictions() gotAuthorizedPerms = %v, want %v", gotAuthorizedPerms, tt.wantPerms)
+			if !reflect.DeepEqual(gotPerms, tt.wantPerms) {
+				t.Errorf("ExtractRestrictions() gotAuthorizedPerms = %v, want %v", gotPerms, tt.wantPerms)
+			}
+			if !reflect.DeepEqual(gotNetworks, tt.wantNets) {
+				t.Errorf("ExtractRestrictions() gotNetworks = %v, want %v", gotNetworks, tt.wantNets)
 			}
 		})
 	}

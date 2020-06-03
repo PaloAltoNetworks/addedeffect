@@ -22,19 +22,35 @@ import (
 	"go.aporeto.io/tg/tglib"
 )
 
-// New creates a new *gaia.AppCredential.
-func New(ctx context.Context, m manipulate.Manipulator, namespace string, name string, roles []string, subnets []string) (*gaia.AppCredential, error) {
+// NewWithOptions returns an *gaia.AppCredential according to the
+// provided configuration.
+func NewWithOptions(ctx context.Context, m manipulate.Manipulator, namespace string, name string, roles []string, options ...Option) (*gaia.AppCredential, error) {
+
+	cfg := newConfig()
+	for _, opt := range options {
+		opt(&cfg)
+	}
 
 	creds := gaia.NewAppCredential()
 	creds.Name = name
 	creds.Roles = roles
-	creds.AuthorizedSubnets = subnets
+	creds.AuthorizedSubnets = cfg.subnets
+	creds.MaxIssuedTokenValidity = cfg.maxValidity.String()
 
 	if err := Create(ctx, m, namespace, creds); err != nil {
 		return nil, err
 	}
 
 	return creds, nil
+}
+
+// New creates a new *gaia.AppCredential.
+func New(ctx context.Context, m manipulate.Manipulator, namespace string, name string, roles []string, subnets []string) (*gaia.AppCredential, error) {
+
+	return NewWithOptions(
+		ctx, m, namespace, name, roles,
+		OptionSubnets(subnets),
+	)
 }
 
 // Create generates a new CSR for the provided app credential and calls the upstream service using the supplied

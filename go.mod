@@ -24,3 +24,5 @@ require (
 	golang.org/x/tools v0.0.0-20200226171234-020676185e75 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
+
+replace go.aporeto.io/gaia => go.aporeto.io/gaia v1.94.1-0.20200603182337-2b86363a94b7

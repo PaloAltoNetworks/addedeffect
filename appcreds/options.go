@@ -11,7 +11,7 @@ func newConfig() config {
 	return config{}
 }
 
-// An Optin can be used to configure a new appcred.
+// An Option can be used to configure a new appcred.
 type Option func(*config)
 
 // OptionSubnets configures the appcred to only

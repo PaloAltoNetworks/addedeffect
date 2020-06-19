@@ -4,8 +4,8 @@ go 1.13
 
 require (
 	go.aporeto.io/elemental v1.100.1-0.20200507180645-f7ef7a598da7
-	go.aporeto.io/gaia v1.94.1-0.20200507180722-404db1271713
-	go.aporeto.io/manipulate v1.114.1-0.20200507180715-3e8a257652af
+	go.aporeto.io/gaia v1.94.1-0.20200617164623-a2fa2783eb05
+	go.aporeto.io/manipulate v1.114.1-0.20200608212508-6029fea35752
 	go.aporeto.io/tg v1.34.1-0.20200407170715-afab00a55eba
 )
 

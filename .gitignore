@@ -8,3 +8,4 @@ artifacts
 profile.out
 remod.dev
 .remod
+dist

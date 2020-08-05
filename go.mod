@@ -3,24 +3,24 @@ module go.aporeto.io/addedeffect
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20200729012332-b8c6e84fe209
-	go.aporeto.io/gaia v1.94.1-0.20200729012413-20e45ef2cb2e
-	go.aporeto.io/manipulate v1.121.1-0.20200729012406-957188e018ad
-	go.aporeto.io/tg v1.34.1-0.20200625070346-1dca773a2406
+	go.aporeto.io/elemental v1.100.1-0.20200731065958-3c0219b4b984
+	go.aporeto.io/gaia v1.94.1-0.20200805192553-eebf6d566de6
+	go.aporeto.io/manipulate v1.121.1-0.20200805192337-5687e32fe21e
+	go.aporeto.io/tg v1.34.1-0.20200731064715-73c288bdd03a
 )
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
-	github.com/opentracing/opentracing-go v1.1.0
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/smartystreets/assertions v1.0.0
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.6.2
+	github.com/spf13/viper v1.7.0
 	github.com/uber/jaeger-client-go v2.22.1+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
-	go.uber.org/zap v1.14.0
-	golang.org/x/tools v0.0.0-20200226171234-020676185e75 // indirect
+	go.uber.org/zap v1.15.0
+	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

@@ -120,7 +120,9 @@ func Initialize(conf Configurable) {
 				viper.Set(key, string(bytes.TrimSpace(data)))
 
 				if u.Query().Get("delete") != "" {
-					os.Remove(u.Path)
+					if err := os.Remove(u.Path); err != nil {
+						panic(fmt.Sprintf("unable to delete secret file: %s", err))
+					}
 				}
 			}
 		}

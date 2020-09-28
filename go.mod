@@ -3,9 +3,9 @@ module go.aporeto.io/addedeffect
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20200731065958-3c0219b4b984
-	go.aporeto.io/gaia v1.94.1-0.20200904224058-cdf4aaed406a
-	go.aporeto.io/manipulate v1.121.1-0.20200812203533-137f230527a9
+	go.aporeto.io/elemental v1.100.1-0.20200918171102-0bf423f6b322
+	go.aporeto.io/gaia v1.94.1-0.20200925192949-d3db1d45c5f2
+	go.aporeto.io/manipulate v1.121.1-0.20200922171856-b13905a4245c
 	go.aporeto.io/tg v1.34.1-0.20200731064715-73c288bdd03a
 )
 

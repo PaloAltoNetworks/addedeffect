@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"reflect"
 	"strconv"
@@ -100,14 +101,27 @@ func Initialize(conf Configurable) {
 
 	// Replace secret from content of files if needed.
 	if _, ok := conf.(EnvPrexixer); ok {
+
 		for _, key := range secretFlags {
+
 			value := viper.GetString(key)
+
 			if strings.HasPrefix(value, "file://") {
-				data, err := ioutil.ReadFile(strings.TrimPrefix(value, "file://"))
+
+				u, err := url.Parse(value)
+				if err != nil {
+					panic(fmt.Sprintf("invalid url for secret: %s", err))
+				}
+
+				data, err := ioutil.ReadFile(u.Path)
 				if err != nil {
 					panic(fmt.Sprintf("unable to read secret file for key '%s': %s", key, err))
 				}
 				viper.Set(key, string(bytes.TrimSpace(data)))
+
+				if u.Query().Get("delete") != "" {
+					os.Remove(u.Path)
+				}
 			}
 		}
 	}

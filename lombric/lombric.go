@@ -111,7 +111,7 @@ func Initialize(conf Configurable) {
 				if err != nil {
 					panic(fmt.Sprintf("unable to read secret file for key '%s': %s", key, err))
 				}
-				data = bytes.TrimRight(data, "\n")
+				data = bytes.TrimSpace(data)
 				viper.Set(key, string(data))
 			}
 		}

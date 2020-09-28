@@ -68,7 +68,7 @@ func TestLombric_Initialize(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		defer sfile.Close()
+		defer sfile.Close() // nolint
 
 		if _, err := sfile.WriteString("this-is-super=s3cr3t\n\n"); err != nil {
 			panic(err)

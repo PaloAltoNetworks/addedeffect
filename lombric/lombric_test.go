@@ -12,6 +12,8 @@
 package lombric
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"testing"
@@ -26,30 +28,32 @@ func init() {
 }
 
 type testConf struct {
-	ABool                   bool          `mapstructure:"a-bool"                    desc:"This is a boolean"            required:"true" default:"true"`
+	ABool                   bool          `mapstructure:"a-bool"                    desc:"This is a boolean"            default:"true"`
+	ARequiredBool           bool          `mapstructure:"a-required-bool"           desc:"This is a boolean"            required:"true"`
 	ABoolNoDef              bool          `mapstructure:"a-bool-nodef"              desc:"This is a no def boolean"     `
-	ABoolSlice              []bool        `mapstructure:"a-bool-slice"              desc:"This is a bool slice"         required:"true" default:"true,false,true"`
-	ADuration               time.Duration `mapstructure:"a-duration"                desc:"This is a duration"           required:"true" default:"10s"`
+	ABoolSlice              []bool        `mapstructure:"a-bool-slice"              desc:"This is a bool slice"         default:"true,false,true"`
+	ADuration               time.Duration `mapstructure:"a-duration"                desc:"This is a duration"           default:"10s"`
 	ADurationNoDef          time.Duration `mapstructure:"a-duration-nodef"          desc:"This is a no def duration"    `
-	AInteger                int           `mapstructure:"a-integer"                 desc:"This is a number"             required:"true" default:"42"`
+	AInteger                int           `mapstructure:"a-integer"                 desc:"This is a number"             default:"42"`
 	AIntegerNoDef           int           `mapstructure:"a-integer-nodef"           desc:"This is a no def number"      `
-	AIntSlice               []int         `mapstructure:"a-int-slice"               desc:"This is a int slice"          required:"true" default:"1,2,3"`
+	AIntSlice               []int         `mapstructure:"a-int-slice"               desc:"This is a int slice"          default:"1,2,3"`
 	AnEnum                  string        `mapstructure:"a-enum"                    desc:"This is an enum"              allowed:"a,b,c" default:"a"`
 	AnIPSlice               []net.IP      `mapstructure:"a-ip-slice"                desc:"This is an ip slice"          default:"127.0.0.1,192.168.100.1"`
 	AnotherStringSliceNoDef []string      `mapstructure:"a-string-slice-from-var"   desc:"This is a no def string"      `
 	ASecret                 string        `mapstructure:"a-secret-from-var"         desc:"This is a secret"             secret:"true"`
-	AString                 string        `mapstructure:"a-string"                  desc:"This is a string"             required:"true" default:"hello"`
+	ASecretFromFile         string        `mapstructure:"a-secret-from-file"        desc:"This is a secret from file"   secret:"true"`
+	AString                 string        `mapstructure:"a-string"                  desc:"This is a string"             default:"hello"`
 	AStringNoDef            string        `mapstructure:"a-string-nodef"            desc:"This is a no def string"      `
-	AStringSlice            []string      `mapstructure:"a-string-slice"            desc:"This is a string slice"       required:"true" default:"a,b,c"`
+	AStringSlice            []string      `mapstructure:"a-string-slice"            desc:"This is a string slice"       default:"a,b,c"`
 	AStringSliceNoDef       []string      `mapstructure:"a-string-slice-nodef"      desc:"This is a no def string slice"`
 
 	embedTestConf `mapstructure:",squash" override:"embedded-string-a=outter1,embedded-ignored-string=-"`
 }
 
 type embedTestConf struct {
-	EmbeddedStringA        string `mapstructure:"embedded-string-a"        desc:"This is a string"       required:"true" default:"inner1"`
-	EmbeddedStringB        string `mapstructure:"embedded-string-b"        desc:"This is a string"       required:"true" default:"inner2"`
-	EmbeddedIgnoredStringB string `mapstructure:"embedded-ignored-string"  desc:"This is a string"       required:"true" default:"inner3"`
+	EmbeddedStringA        string `mapstructure:"embedded-string-a"        desc:"This is a string"       default:"inner1"`
+	EmbeddedStringB        string `mapstructure:"embedded-string-b"        desc:"This is a string"       default:"inner2"`
+	EmbeddedIgnoredStringB string `mapstructure:"embedded-ignored-string"  desc:"This is a string"       default:"inner3"`
 }
 
 // Prefix return the configuration prefix.
@@ -60,15 +64,28 @@ func TestLombric_Initialize(t *testing.T) {
 
 	Convey("Given have a conf", t, func() {
 
+		sfile, err := ioutil.TempFile(os.TempDir(), "secret")
+		if err != nil {
+			panic(err)
+		}
+		defer sfile.Close()
+
+		if _, err := sfile.WriteString("this-is-super=s3cr3t\n\n"); err != nil {
+			panic(err)
+		}
+
 		conf := &testConf{}
-		os.Setenv("LOMBRIC_A_STRING_SLICE_FROM_VAR", "x y z") // nolint: errcheck
-		os.Setenv("LOMBRIC_A_SECRET_FROM_VAR", "secret")      // nolint: errcheck
+		os.Setenv("LOMBRIC_A_STRING_SLICE_FROM_VAR", "x y z")                           // nolint: errcheck
+		os.Setenv("LOMBRIC_A_REQUIRED_BOOL", "true")                                    // nolint: errcheck
+		os.Setenv("LOMBRIC_A_SECRET_FROM_VAR", "secret")                                // nolint: errcheck
+		os.Setenv("LOMBRIC_A_SECRET_FROM_FILE", fmt.Sprintf("file://%s", sfile.Name())) // nolint: errcheck
 
 		Initialize(conf)
 
 		Convey("Then the flags should be correctly set", func() {
 
 			So(conf.ABool, ShouldEqual, true)
+			So(conf.ARequiredBool, ShouldEqual, true)
 			So(conf.ABoolNoDef, ShouldEqual, false)
 			So(conf.ABoolSlice, ShouldResemble, []bool{true, false, true})
 			So(conf.ADuration, ShouldEqual, 10*time.Second)
@@ -79,6 +96,8 @@ func TestLombric_Initialize(t *testing.T) {
 			So(conf.AnIPSlice, ShouldResemble, []net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(192, 168, 100, 1)})
 			So(conf.AnotherStringSliceNoDef, ShouldResemble, []string{"x", "y", "z"})
 			So(conf.ASecret, ShouldEqual, "secret")
+			So(conf.ASecretFromFile, ShouldEqual, "this-is-super=s3cr3t")
+			So(viper.GetString("a-secret-from-file"), ShouldEqual, "this-is-super=s3cr3t")
 			So(conf.AString, ShouldEqual, "hello")
 			So(conf.AStringNoDef, ShouldEqual, "")
 			So(conf.AStringSlice, ShouldResemble, []string{"a", "b", "c"})

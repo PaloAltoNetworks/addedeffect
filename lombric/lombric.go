@@ -12,7 +12,9 @@
 package lombric
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -96,12 +98,31 @@ func Initialize(conf Configurable) {
 		fail()
 	}
 
+	if _, ok := conf.(EnvPrexixer); ok {
+
+		// Clean up all secrets
+		for _, key := range secretFlags {
+
+			// Check if we should read from a file
+			value := viper.GetString(key)
+
+			if strings.HasPrefix(value, "file://") {
+				data, err := ioutil.ReadFile(strings.TrimPrefix(value, "file://"))
+				if err != nil {
+					panic(fmt.Sprintf("unable to read secret file for key '%s': %s", key, err))
+				}
+				data = bytes.TrimRight(data, "\n")
+				viper.Set(key, string(data))
+			}
+		}
+	}
+
 	if err := viper.Unmarshal(conf); err != nil {
 		panic("Unable to unmarshal configuration: " + err.Error())
 	}
 
+	// Clean up all secrets
 	if p, ok := conf.(EnvPrexixer); ok {
-		// Clean up all secrets
 		for _, key := range secretFlags {
 			env := strings.Replace(strings.ToUpper(p.Prefix()+"_"+key), "-", "_", -1)
 			if err := os.Unsetenv(env); err != nil {

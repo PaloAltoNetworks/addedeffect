@@ -98,14 +98,10 @@ func Initialize(conf Configurable) {
 		fail()
 	}
 
+	// Replace secret from content of files if needed.
 	if _, ok := conf.(EnvPrexixer); ok {
-
-		// Clean up all secrets
 		for _, key := range secretFlags {
-
-			// Check if we should read from a file
 			value := viper.GetString(key)
-
 			if strings.HasPrefix(value, "file://") {
 				data, err := ioutil.ReadFile(strings.TrimPrefix(value, "file://"))
 				if err != nil {

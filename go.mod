@@ -3,10 +3,10 @@ module go.aporeto.io/addedeffect
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20200918171102-0bf423f6b322
-	go.aporeto.io/gaia v1.94.1-0.20200925192949-d3db1d45c5f2
-	go.aporeto.io/manipulate v1.121.1-0.20200922171856-b13905a4245c
-	go.aporeto.io/tg v1.34.1-0.20200731064715-73c288bdd03a
+	go.aporeto.io/elemental v1.100.1-0.20201027173736-8ad73fb22718
+	go.aporeto.io/gaia v1.94.1-0.20201104162703-ac9716ef4a74
+	go.aporeto.io/manipulate v1.121.1-0.20201104162656-53f194eeda9d
+	go.aporeto.io/tg v1.34.1-0.20201026071503-46fe5dfd3023
 )
 
 require (

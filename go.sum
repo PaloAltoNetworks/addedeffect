@@ -269,8 +269,8 @@ github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.aporeto.io/elemental v1.100.1-0.20201110214307-3e4e638fb38b h1:G198Z5TadHX5uPXS2jGIIipm2zhGLGNnoqG/5kK+SDM=
 go.aporeto.io/elemental v1.100.1-0.20201110214307-3e4e638fb38b/go.mod h1:dEPeesaLUHZVeZQr6Z+jYzy1IbweLWZ1tsywhSxTPeQ=
-go.aporeto.io/gaia v1.94.1-0.20201209195333-38e59280d208 h1:wmR0Z+GV3VL+fAjAYUPDJQZDbRZmvi3nrERDcTc6v1U=
-go.aporeto.io/gaia v1.94.1-0.20201209195333-38e59280d208/go.mod h1:RhtY0dnI+v1/OUHklolloFNlNxOdWbprfXMPoz1HLyY=
+go.aporeto.io/gaia v1.94.1-0.20201215190023-f7ed2fb286ad h1:tHJxwVyUXbxYHOuvfWnEQ/7g7vZ+Q/hdWo2XlBgvaTA=
+go.aporeto.io/gaia v1.94.1-0.20201215190023-f7ed2fb286ad/go.mod h1:RhtY0dnI+v1/OUHklolloFNlNxOdWbprfXMPoz1HLyY=
 go.aporeto.io/manipulate v1.121.1-0.20201209195324-1d1416c236fa h1:r3UghcI3A5N3WMMYECmJCk6BzxWc/fOWc+CG93m+CGc=
 go.aporeto.io/manipulate v1.121.1-0.20201209195324-1d1416c236fa/go.mod h1:Zb+wTCI93VIGIut6MCrCKALCjbgwxAek22u6ijQRuBg=
 go.aporeto.io/regolithe v1.50.1-0.20201104174627-9a638d8ba486/go.mod h1:YnJqIj7KOAiAiSI7vPs3ELLjrbBdrOsouRRPLMyUlGA=

@@ -24,14 +24,3 @@ require (
 	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
-
-// remod:start
-
-replace (
-	go.aporeto.io/elemental => ../elemental
-	go.aporeto.io/gaia => ../gaia
-	go.aporeto.io/manipulate => ../manipulate
-	go.aporeto.io/tg => ../tg
-)
-
-// remod:end

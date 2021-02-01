@@ -46,7 +46,7 @@ type VersionPrinter interface {
 // Initialize does all the basic job of bindings
 func Initialize(conf Configurable) {
 
-	requiredFlags, secretFlags, allowedValues := installFlags(conf)
+	requiredFlags, secretFlags, allowedValues, filesValues := installFlags(conf)
 
 	pflag.VisitAll(func(f *pflag.Flag) {
 
@@ -102,7 +102,7 @@ func Initialize(conf Configurable) {
 	// Replace secret from content of files if needed.
 	if _, ok := conf.(EnvPrexixer); ok {
 
-		for _, key := range secretFlags {
+		for _, key := range filesValues {
 
 			value := viper.GetString(key)
 
@@ -172,7 +172,7 @@ func deepFields(ift reflect.Type) ([]reflect.StructField, []string) {
 	return fields, overrides
 }
 
-func installFlags(conf Configurable) (requiredFlags []string, secretFlags []string, allowedValues map[string][]string) {
+func installFlags(conf Configurable) (requiredFlags []string, secretFlags []string, allowedValues map[string][]string, fromFilesFlags []string) {
 
 	t := reflect.ValueOf(conf).Elem().Type()
 
@@ -209,6 +209,10 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 		if field.Tag.Get("secret") == enabledKey {
 			secretFlags = append(secretFlags, key)
+		}
+
+		if field.Tag.Get("file") == enabledKey {
+			fromFilesFlags = append(fromFilesFlags, key)
 		}
 
 		if field.Tag.Get("required") == enabledKey {
@@ -311,5 +315,5 @@ func installFlags(conf Configurable) (requiredFlags []string, secretFlags []stri
 
 	pflag.Parse()
 
-	return requiredFlags, secretFlags, allowedValues
+	return requiredFlags, secretFlags, allowedValues, fromFilesFlags
 }

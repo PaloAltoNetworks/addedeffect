@@ -41,12 +41,12 @@ type testConf struct {
 	AnIPSlice               []net.IP      `mapstructure:"a-ip-slice"                desc:"This is an ip slice"          default:"127.0.0.1,192.168.100.1"`
 	AnotherStringSliceNoDef []string      `mapstructure:"a-string-slice-from-var"   desc:"This is a no def string"      `
 	ASecret                 string        `mapstructure:"a-secret-from-var"         desc:"This is a secret"             secret:"true"`
-	ASecretFromFile         string        `mapstructure:"a-secret-from-file"        desc:"This is a secret from file"   secret:"true"`
-	ASecretFromFileDelete   string        `mapstructure:"a-secret-from-file-del"    desc:"This is a secret from file"   secret:"true"`
 	AString                 string        `mapstructure:"a-string"                  desc:"This is a string"             default:"hello"`
 	AStringNoDef            string        `mapstructure:"a-string-nodef"            desc:"This is a no def string"      `
 	AStringSlice            []string      `mapstructure:"a-string-slice"            desc:"This is a string slice"       default:"a,b,c"`
 	AStringSliceNoDef       []string      `mapstructure:"a-string-slice-nodef"      desc:"This is a no def string slice"`
+	ASimpleFromFile         string        `mapstructure:"a-simple-from-file"        desc:"This is a simple from file"   file:"true"`
+	ASimpleFromFileDelete   string        `mapstructure:"a-simple-from-file-del"    desc:"This is a simple from file"   file:"true"`
 
 	embedTestConf `mapstructure:",squash" override:"embedded-string-a=outter1,embedded-ignored-string=-"`
 }
@@ -80,7 +80,7 @@ func TestLombric_Initialize(t *testing.T) {
 			panic(err)
 		}
 		defer sfile2.Close() // nolint
-		if _, err := sfile2.WriteString("wow\n\n"); err != nil {
+		if _, err := sfile2.WriteString("42\n\n"); err != nil {
 			panic(err)
 		}
 		spath2 := fmt.Sprintf("file://%s?delete=true", sfile2.Name())
@@ -89,8 +89,8 @@ func TestLombric_Initialize(t *testing.T) {
 		os.Setenv("LOMBRIC_A_STRING_SLICE_FROM_VAR", "x y z") // nolint: errcheck
 		os.Setenv("LOMBRIC_A_REQUIRED_BOOL", "true")          // nolint: errcheck
 		os.Setenv("LOMBRIC_A_SECRET_FROM_VAR", "secret")      // nolint: errcheck
-		os.Setenv("LOMBRIC_A_SECRET_FROM_FILE", spath1)       // nolint: errcheck
-		os.Setenv("LOMBRIC_A_SECRET_FROM_FILE_DEL", spath2)   // nolint: errcheck
+		os.Setenv("LOMBRIC_A_SIMPLE_FROM_FILE", spath1)       // nolint: errcheck
+		os.Setenv("LOMBRIC_A_SIMPLE_FROM_FILE_DEL", spath2)   // nolint: errcheck
 
 		Initialize(conf)
 
@@ -108,9 +108,10 @@ func TestLombric_Initialize(t *testing.T) {
 			So(conf.AnIPSlice, ShouldResemble, []net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(192, 168, 100, 1)})
 			So(conf.AnotherStringSliceNoDef, ShouldResemble, []string{"x", "y", "z"})
 			So(conf.ASecret, ShouldEqual, "secret")
-			So(conf.ASecretFromFile, ShouldEqual, "this-is-super=s3cr3t")
-			So(conf.ASecretFromFileDelete, ShouldEqual, "wow")
-			So(viper.GetString("a-secret-from-file"), ShouldEqual, "this-is-super=s3cr3t")
+			So(conf.ASimpleFromFile, ShouldEqual, "this-is-super=s3cr3t")
+			So(conf.ASimpleFromFileDelete, ShouldEqual, "42")
+			So(viper.GetString("a-simple-from-file"), ShouldEqual, "this-is-super=s3cr3t")
+			So(viper.GetInt("a-simple-from-file-del"), ShouldEqual, 42)
 			So(conf.AString, ShouldEqual, "hello")
 			So(conf.AStringNoDef, ShouldEqual, "")
 			So(conf.AStringSlice, ShouldResemble, []string{"a", "b", "c"})

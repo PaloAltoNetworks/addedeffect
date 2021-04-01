@@ -60,9 +60,9 @@ func makeTestServer() *httptest.Server {
 		case failCode:
 			w.WriteHeader(http.StatusInternalServerError)
 		case badData:
-			w.Write(data.badData)
+			w.Write(data.badData) // nolint: errcheck
 		case goodData:
-			w.Write(data.goodData)
+			w.Write(data.goodData) // nolint: errcheck
 		}
 	}))
 }

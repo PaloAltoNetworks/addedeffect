@@ -48,7 +48,7 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 		return nil, errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := base64.RawStdEncoding.DecodeString(parts[1])
+	data, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
 		return nil, fmt.Errorf("invalid jwt: %s", err)
 	}
@@ -73,7 +73,7 @@ func SigAlg(token string) (string, error) {
 		return "", errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := base64.RawStdEncoding.DecodeString(parts[0])
+	data, err := base64.RawURLEncoding.DecodeString(parts[0])
 	if err != nil {
 		return "", fmt.Errorf("invalid jwt: %s", err)
 	}

@@ -14,8 +14,8 @@ VERSION="$(grep 'VERSION=\"[0-9\.]*\"' codecov | cut -d'"' -f2)"
 # verify it has the hash published on GitHub
 shasum \
   --algorithm 512 \
-  --check --ignore-missing \
-  <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA512SUM")
+  --check \
+  <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA512SUM" | grep codecov)
 
 # run it
 bash codecov

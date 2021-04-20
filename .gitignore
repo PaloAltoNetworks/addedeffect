@@ -7,3 +7,4 @@ vendor
 artifacts
 profile.out
 dist
+/scripts/codecov

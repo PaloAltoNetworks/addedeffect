@@ -128,19 +128,37 @@ func TestTokenUtils_UnsecureClaimsMap(t *testing.T) {
 
 	Convey("Given I have a token a token with invalid base64", t, func() {
 
-		token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.not-base64.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+		token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.XXX.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+
+		Convey("When I UnsecureClaimsMap", func() {
+
+			claims, err := UnsecureClaimsMap(token)
+
+			Convey("Then err should not be nil", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid jwt: invalid character ']' looking for beginning of value")
+			})
+
+			Convey("Then claims should be nil", func() {
+				So(claims, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given I have a token a token with valid base64 URL", t, func() {
+
+		token := "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.ew0KICAicmVhbG0iOiAiPz8_Pz8_Ig0KfQ0KDQo.hJwIQMyvQ1-VqfImMnaNYDPq6uxy8fscLLVji9loOW9OrPLZfqqfMxrg0tko9CPLxoB4wG3_KWshPPeyUBUspQ"
 
 		Convey("When I UnsecureClaimsMap", func() {
 
 			claims, err := UnsecureClaimsMap(token)
 
 			Convey("Then err should be nil", func() {
-				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid jwt: illegal base64 data at input byte 3")
+				So(err, ShouldBeNil)
 			})
 
-			Convey("Then claims should be nil", func() {
-				So(claims, ShouldBeNil)
+			Convey("Then claims should not be nil", func() {
+				So(claims, ShouldNotBeNil)
 			})
 		})
 	})
@@ -225,15 +243,15 @@ func TestJWTUtils_SigAlg(t *testing.T) {
 
 	Convey("Given I have a token a token with invalid base64", t, func() {
 
-		token := "not-base-64.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
+		token := "XXX.eyJyZWFsbSI6IlZpbmNlIiwiZGF0YSI6eyJhY2NvdW50IjoiYXBvbXV4IiwiZW1haWwiOiJhZG1pbkBhcG9tdXguY29tIiwiaWQiOiI1YTZhNTUxMTdkZGYxZjIxMmY4ZWIwY2UiLCJvcmdhbml6YXRpb24iOiJhcG9tdXgiLCJyZWFsbSI6InZpbmNlIn0sImF1ZCI6ImFwb3JldG8uY29tIiwiZXhwIjoxNTIwNjQ5MTAyLCJpYXQiOjE1MTgwNTcxMDIsImlzcyI6Im1pZGdhcmQuYXBvbXV4LmNvbSIsInN1YiI6ImFwb211eCJ9.jvh034mNSV-Fy--GIGnnYeWouluV6CexC9_8IHJ-IR4"
 
 		Convey("When I SigAlg", func() {
 
 			alg, err := SigAlg(token)
 
-			Convey("Then err should be nil", func() {
+			Convey("Then err should not be nil", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid jwt: illegal base64 data at input byte 3")
+				So(err.Error(), ShouldEqual, "invalid jwt: invalid character ']' looking for beginning of value")
 			})
 
 			Convey("Then alg should be empty", func() {

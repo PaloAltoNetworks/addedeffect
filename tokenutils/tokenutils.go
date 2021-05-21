@@ -12,11 +12,12 @@
 package tokenutils
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 // Snip snips the given token from the given error.
@@ -48,7 +49,7 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 		return nil, errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := base64.RawStdEncoding.DecodeString(parts[1])
+	data, err := jwt.DecodeSegment(parts[1])
 	if err != nil {
 		return nil, fmt.Errorf("invalid jwt: %s", err)
 	}
@@ -73,7 +74,7 @@ func SigAlg(token string) (string, error) {
 		return "", errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := base64.RawStdEncoding.DecodeString(parts[0])
+	data, err := jwt.DecodeSegment(parts[0])
 	if err != nil {
 		return "", fmt.Errorf("invalid jwt: %s", err)
 	}

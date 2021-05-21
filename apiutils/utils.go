@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.aporeto.io/addedeffect/retry"
@@ -289,6 +290,44 @@ func GetGoogleOAuthClientID(ctx context.Context, api string, tlsConfig *tls.Conf
 
 	defer resp.Body.Close() // nolint: errcheck
 	return ioutil.ReadAll(resp.Body)
+}
+
+// GetTime returns the current time from the api server.
+func GetTime(ctx context.Context, api string, tlsConfig *tls.Config) (time.Time, error) {
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			ForceAttemptHTTP2: true,
+			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig:   tlsConfig,
+		},
+	}
+
+	url := fmt.Sprintf("%s/_meta/time", api)
+	out, err := retry.Retry(
+		ctx,
+		makeJobFunc(client, url),
+		makeRetryFunc("Unable to retrieve time. Retrying in 3s", url),
+	)
+
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	resp := out.(*http.Response)
+
+	defer resp.Body.Close() // nolint: errcheck
+
+	timeBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return time.Time{}, err
+	}
+	unixTimeInt, err := strconv.ParseInt(string(timeBytes), 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Unix(unixTimeInt, 0), nil
 }
 
 func makeJobFunc(client *http.Client, url string) func() (interface{}, error) {

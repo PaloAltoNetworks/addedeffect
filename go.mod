@@ -3,15 +3,16 @@ module go.aporeto.io/addedeffect
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20210116012353-bf59238510ef
-	go.aporeto.io/gaia v1.94.1-0.20210129221832-6e856120e0da
-	go.aporeto.io/manipulate v1.121.1-0.20210129221823-964131a56eee
-	go.aporeto.io/tg v1.34.1-0.20210128000739-9dff3a820553
+	go.aporeto.io/elemental v1.100.1-0.20210428215439-6059ff91f9f7
+	go.aporeto.io/gaia v1.94.1-0.20210510155446-2e19d3882305
+	go.aporeto.io/manipulate v1.121.1-0.20210430210031-d53ab589c9dc
+	go.aporeto.io/tg v1.34.1-0.20210427202027-51db463efa40
 )
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/smartystreets/assertions v1.0.0

@@ -258,8 +258,8 @@ github.com/yl2chen/cidranger v1.0.2/go.mod h1:9U1yz7WPYDwf0vpNWFaeRh0bjwz5RVgRy/
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.aporeto.io/elemental v1.100.1-0.20210428215439-6059ff91f9f7 h1:JOC4BEStOIkz76PiNUuGeYt6iHXqGc29NxJbYDw06YM=
 go.aporeto.io/elemental v1.100.1-0.20210428215439-6059ff91f9f7/go.mod h1:PIPBBu7d/Feb43jWR2o+tBHUZsYgJSbvB/7IWAUnXfI=
-go.aporeto.io/gaia v1.94.1-0.20210513024422-35cbd06eda57 h1:yRV1MtyzoZGJTDCoVcwJPFJ9GBza+xKzdrRS16oLrUQ=
-go.aporeto.io/gaia v1.94.1-0.20210513024422-35cbd06eda57/go.mod h1:pQPCedYDOXY4alg97Ab5BEfhqr5F67vaBScSKY7gx3A=
+go.aporeto.io/gaia v1.94.1-0.20210520192306-977c4e2821fe h1:PgZiuE8hpmxRfL/AxC6PI78tTyiD47M1CSWMl2diHfU=
+go.aporeto.io/gaia v1.94.1-0.20210520192306-977c4e2821fe/go.mod h1:pQPCedYDOXY4alg97Ab5BEfhqr5F67vaBScSKY7gx3A=
 go.aporeto.io/manipulate v1.121.1-0.20210430210031-d53ab589c9dc h1:0FTxH1mRzKRX0EeY84NGF5TVRE14ynst0mIWJP/LicY=
 go.aporeto.io/manipulate v1.121.1-0.20210430210031-d53ab589c9dc/go.mod h1:FeoGNgsf/pQIuJrX5QtOhFKeAfc3Rn69+mXAgjjcuwk=
 go.aporeto.io/regolithe v1.50.1-0.20210426235633-b469f0c145a4/go.mod h1:YnJqIj7KOAiAiSI7vPs3ELLjrbBdrOsouRRPLMyUlGA=

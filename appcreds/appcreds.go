@@ -76,6 +76,7 @@ func Create(ctx context.Context, m manipulate.Manipulator, namespace string, ac 
 }
 
 // NewWithAppCredential creates a new *gaia.AppCredential from an *AppCredential
+//
 // Deprecated: use Create instead
 func NewWithAppCredential(ctx context.Context, m manipulate.Manipulator, template *gaia.AppCredential) (*gaia.AppCredential, error) {
 	fmt.Println("DEPRECATED: NewWithAppCredential is deprecated in favor of Create instead")

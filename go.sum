@@ -260,10 +260,10 @@ github.com/yl2chen/cidranger v1.0.2/go.mod h1:9U1yz7WPYDwf0vpNWFaeRh0bjwz5RVgRy/
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.aporeto.io/elemental v1.100.1-0.20210706184354-966eab3720af h1:d7zuaCeA9rjewnOGT5m32Jp5smUUfTr27kwadaArkGs=
 go.aporeto.io/elemental v1.100.1-0.20210706184354-966eab3720af/go.mod h1:ONdSSuUHgXBFYcePWVg9Y4XAOO2nrsnShQ8DXsTHBPo=
-go.aporeto.io/gaia v1.94.1-0.20210712165721-c3775d771236 h1:ybikKGohJYd8IkrqDKcRS7n6cUIi8OMOJinsYW21Y3c=
-go.aporeto.io/gaia v1.94.1-0.20210712165721-c3775d771236/go.mod h1:3TnmGENSZo8dYW9u99Q273F+7uU0VdeVnLkQKeu1EVo=
-go.aporeto.io/manipulate v1.121.1-0.20210707030021-2daacd79f3a2 h1:d/FcnIiqXlEnASV0x4aW1J0mncmSCIbylXWGHfhpwqw=
-go.aporeto.io/manipulate v1.121.1-0.20210707030021-2daacd79f3a2/go.mod h1:KI/A73rZfuSy/e5DH/XEYDsrm0yPzwFuWBWWR4Ye/Dg=
+go.aporeto.io/gaia v1.94.1-0.20210809205629-5ee0a82171f5 h1:POcu0/An7VtCg7EfMYMqTD48r1f4F9U1Dx7c0FdJcmM=
+go.aporeto.io/gaia v1.94.1-0.20210809205629-5ee0a82171f5/go.mod h1:3TnmGENSZo8dYW9u99Q273F+7uU0VdeVnLkQKeu1EVo=
+go.aporeto.io/manipulate v1.121.1-0.20210716232320-78183f8e8655 h1:c6wO6qJajxkSPRhaSVa0/OtLFKn+aawsRSDy+T0tzaI=
+go.aporeto.io/manipulate v1.121.1-0.20210716232320-78183f8e8655/go.mod h1:KI/A73rZfuSy/e5DH/XEYDsrm0yPzwFuWBWWR4Ye/Dg=
 go.aporeto.io/regolithe v1.50.1-0.20210528201106-653300479f97/go.mod h1:St1liiK+bGvmDNkVSfOP7iAlQmDkShfEcDZMXmFbyKk=
 go.aporeto.io/tg v1.34.1-0.20210528201128-159c302ba155 h1:/kTGNNFJzNRFpAJ+9ykVXW/lCnBKcMUGSMPWvXXjMJg=
 go.aporeto.io/tg v1.34.1-0.20210528201128-159c302ba155/go.mod h1:Hgsce79sVOYB4LMv/RA/vzJyftp7FhZbJT6SB8OJlso=

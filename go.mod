@@ -3,9 +3,9 @@ module go.aporeto.io/addedeffect
 go 1.13
 
 require (
-	go.aporeto.io/elemental v1.100.1-0.20210706184354-966eab3720af
-	go.aporeto.io/gaia v1.94.1-0.20210824221000-5f46e0956013
-	go.aporeto.io/manipulate v1.121.1-0.20210716232320-78183f8e8655
+	go.aporeto.io/elemental v1.100.1-0.20210902231953-3a4b35f01a40
+	go.aporeto.io/gaia v1.94.1-0.20210910195508-d49258616e51
+	go.aporeto.io/manipulate v1.121.1-0.20210910195501-bc86bac17f0d
 	go.aporeto.io/tg v1.34.1-0.20210528201128-159c302ba155
 )
 
@@ -21,7 +21,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/uber/jaeger-client-go v2.22.1+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.19.0
 	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

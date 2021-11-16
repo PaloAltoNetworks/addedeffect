@@ -271,8 +271,8 @@ github.com/yl2chen/cidranger v1.0.2/go.mod h1:9U1yz7WPYDwf0vpNWFaeRh0bjwz5RVgRy/
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.aporeto.io/elemental v1.100.1-0.20211007231947-44c1aabe7914 h1:jOn0b9pZIcC+nBSmreptH1FMtdvuXUrHmvK6nr3C93E=
 go.aporeto.io/elemental v1.100.1-0.20211007231947-44c1aabe7914/go.mod h1:1WRCDolBBhyTFah5tpf9DNVHaJefug7lV9V9UzPNDAE=
-go.aporeto.io/gaia v1.94.1-0.20211019221122-3a204c60ffef h1:eGhGNV/CvN4jTtwsqo/QC3ICv8zCkf2nuq9mxBdXZKw=
-go.aporeto.io/gaia v1.94.1-0.20211019221122-3a204c60ffef/go.mod h1:j3hQIaDww3iCFfAA2Mc+PKhiR3L6osrEWK8SruyTzak=
+go.aporeto.io/gaia v1.94.1-0.20211108202809-f16188348138 h1:QhonnvCQfOKYaOrNCg1Teqnyjz/gCKTUH7akoK4atDU=
+go.aporeto.io/gaia v1.94.1-0.20211108202809-f16188348138/go.mod h1:j3hQIaDww3iCFfAA2Mc+PKhiR3L6osrEWK8SruyTzak=
 go.aporeto.io/manipulate v1.121.1-0.20211019221115-0ade7e9c8369 h1:0R8mOD7QVAxxJXPnmSOCKuhCuHVa/MjEWzG+TjHCWMg=
 go.aporeto.io/manipulate v1.121.1-0.20211019221115-0ade7e9c8369/go.mod h1:7Q93BJ6FV9ml3kI0QPVgZBfLuIAQHqSe+RszYBjthqU=
 go.aporeto.io/regolithe v1.50.1-0.20210528201106-653300479f97/go.mod h1:St1liiK+bGvmDNkVSfOP7iAlQmDkShfEcDZMXmFbyKk=

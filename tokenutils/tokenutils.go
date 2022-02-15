@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"strings"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v4"
 )
 
 // Snip snips the given token from the given error.
@@ -49,7 +49,8 @@ func UnsecureClaimsMap(token string) (claims map[string]interface{}, err error) 
 		return nil, errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := jwt.DecodeSegment(parts[1])
+	// NOTE: DecodeSegment() is deprecated and will go away in a future library release.
+	data, err := jwt.DecodeSegment(parts[1]) // nolint: staticcheck
 	if err != nil {
 		return nil, fmt.Errorf("invalid jwt: %s", err)
 	}
@@ -74,7 +75,8 @@ func SigAlg(token string) (string, error) {
 		return "", errors.New("invalid jwt: not enough segments")
 	}
 
-	data, err := jwt.DecodeSegment(parts[0])
+	// NOTE: DecodeSegment() is deprecated and will go away in a future library release.
+	data, err := jwt.DecodeSegment(parts[0]) // nolint: staticcheck
 	if err != nil {
 		return "", fmt.Errorf("invalid jwt: %s", err)
 	}

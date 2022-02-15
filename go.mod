@@ -12,7 +12,7 @@ require (
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/smartystreets/assertions v1.0.0
 	github.com/smartystreets/goconvey v1.6.4

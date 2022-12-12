@@ -2,7 +2,7 @@ testresults.xml
 .DS_Store
 *.lock
 vendor
-*.cov
+unit_coverage.out
 .idea
 artifacts
 profile.out

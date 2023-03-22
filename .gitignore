@@ -2,6 +2,7 @@ testresults.xml
 .DS_Store
 *.lock
 vendor
+cov.report
 unit_coverage.out
 .idea
 artifacts

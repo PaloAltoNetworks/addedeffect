@@ -28,7 +28,7 @@ func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorder
 		return nil, nil
 	}
 
-	tracer, close, err := jaegercfg.Configuration{
+	tracer, closeFunc, err := jaegercfg.Configuration{
 		ServiceName: serviceName,
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  "const",
@@ -47,5 +47,5 @@ func ConfigureTracerWithURL(tracerURL string, serviceName string) (CloseRecorder
 
 	opentracing.InitGlobalTracer(tracer)
 
-	return func() { _ = close.Close() }, nil // nolint: errcheck
+	return func() { _ = closeFunc.Close() }, nil // nolint: errcheck
 }
